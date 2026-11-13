@@ -1,0 +1,12 @@
+{
+  "id": "SlayTheSpirits",
+  "name": "Slay the Spirits",
+  "author": "dhkatz",
+  "description": "A configurable multiplayer drinking game: penalties for bosses, deaths, big hits and more, plus Tavern cards that make your friends drink. Host's rules apply to everyone.",
+  "version": "$version$",
+  "min_game_version": "0.113.0",
+  "has_pck": true,
+  "has_dll": true,
+  "affects_gameplay": true,
+  "dependencies": []
+}

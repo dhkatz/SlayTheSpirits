@@ -1,0 +1,15 @@
+<Project>
+  <!-- Test projects: shared test packages. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Projects that compile against the game opt in with <UsesSts2Game>true</UsesSts2Game>. -->
+  <Import Project="$(BuildDir)Sts2.Game.targets" Condition="'$(UsesSts2Game)' == 'true'" />
+
+  <!-- Mod projects (produce a deployable mod folder) opt in with <IsSts2Mod>true</IsSts2Mod>. -->
+  <Import Project="$(BuildDir)Sts2.Mod.targets" Condition="'$(IsSts2Mod)' == 'true'" />
+</Project>

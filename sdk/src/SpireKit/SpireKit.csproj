@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    SpireKit: the game-bound half of the SDK (Harmony, sts2.dll, Godot).
+    Keep this layer thin: translate game concepts into SpireKit.Core abstractions and back.
+    Shipped by being merged (ILRepack) into each mod's DLL, so every mod pins its own SDK version.
+  -->
+  <PropertyGroup>
+    <RootNamespace>SpireKit</RootNamespace>
+    <UsesSts2Game>true</UsesSts2Game>
+    <Description>Game-bound layer of the SpireKit modding SDK for Slay the Spire 2.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpireKit.Core\SpireKit.Core.csproj" />
+  </ItemGroup>
+</Project>

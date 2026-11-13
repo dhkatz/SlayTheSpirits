@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+artifacts/
+dist/
+TestResults/
+
+# Machine-specific paths (copy local.props.example -> local.props)
+local.props
+
+# IDEs
+.vs/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Godot packer scratch
+build/pck/.godot/
+
+# Never commit decompiled game code
+**/_sts2-reference/

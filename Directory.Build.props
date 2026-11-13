@@ -1,0 +1,37 @@
+<Project>
+  <!-- Machine-specific overrides (git-ignored). See local.props.example. -->
+  <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')" />
+
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <BuildDir>$(RepoRoot)build\</BuildDir>
+
+    <!-- The game runs on the .NET 9 runtime it bundles (data_sts2_*\coreclr.dll 9.0.x). -->
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Missing XML docs are fine on internals/tests; public SDK surface gets docs by convention. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Deterministic>true</Deterministic>
+
+    <Authors>dhkatz</Authors>
+    <Copyright>Copyright (c) dhkatz</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Sts2GameDir)' != ''">
+    <Sts2DataDir>$(Sts2GameDir)\data_sts2_windows_x86_64</Sts2DataDir>
+    <Sts2ModsDir>$(Sts2GameDir)\mods</Sts2ModsDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

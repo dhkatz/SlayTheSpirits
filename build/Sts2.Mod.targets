@@ -1,0 +1,92 @@
+<Project>
+  <!--
+    Turns a mod project into a deployable STS2 mod folder:
+
+      artifacts/mods/<ModId>/
+        <ModId>.dll   project + all project references merged by ILRepack (SDK embedded, version pinned)
+        <ModId>.pck   everything under ModAssetsDir, mounted by the game at res://<ModId>/
+        <ModId>.json  manifest (ModManifestFile with $version$ replaced)
+
+    Then copies that folder into <Sts2GameDir>/mods when DeployMods=true.
+
+    Project properties:
+      ModId            required; must equal the manifest id
+      ModManifestFile  default: mod.json next to the project
+      ModAssetsDir     default: Assets/ next to the project
+  -->
+  <PropertyGroup>
+    <ModManifestFile Condition="'$(ModManifestFile)' == ''">$(MSBuildProjectDirectory)\mod.json</ModManifestFile>
+    <ModAssetsDir Condition="'$(ModAssetsDir)' == ''">$(MSBuildProjectDirectory)\Assets\</ModAssetsDir>
+    <ModOutputDir>$(RepoRoot)artifacts\mods\$(ModId)\</ModOutputDir>
+    <!-- Absolute: Godot runs with a different working directory. -->
+    <ModMergeDir>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)merged\</ModMergeDir>
+    <GodotExe Condition="'$(GodotExe)' == ''">$(Sts2GameDir)\SlayTheSpire2.exe</GodotExe>
+    <ModPackProject>$(BuildDir)pck</ModPackProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILRepack" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="all" />
+  </ItemGroup>
+
+  <Target Name="Sts2ValidateMod" BeforeTargets="Build">
+    <Error Condition="'$(ModId)' == ''" Text="Set ModId in the mod project." />
+    <Error Condition="!Exists('$(ModManifestFile)')" Text="Manifest not found: $(ModManifestFile)" />
+  </Target>
+
+  <!-- 1. Merge the mod assembly with every referenced project assembly (not the game's). -->
+  <Target Name="Sts2MergeAssemblies" AfterTargets="Build" DependsOnTargets="Sts2ValidateMod">
+    <ItemGroup>
+      <_ModMergeInput Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_ILRepackExe>$(PkgILRepack)\tools\ILRepack.exe</_ILRepackExe>
+      <_ModMergedDll>$(ModMergeDir)$(ModId).dll</_ModMergedDll>
+    </PropertyGroup>
+    <MakeDir Directories="$(ModMergeDir)" />
+    <Exec Command="&quot;$(_ILRepackExe)&quot; /parallel /lib:&quot;$(Sts2DataDir)&quot; /out:&quot;$(_ModMergedDll)&quot; &quot;$(TargetPath)&quot; @(_ModMergeInput->'&quot;%(FullPath)&quot;', ' ')"
+          StandardOutputImportance="low" />
+  </Target>
+
+  <!-- 2. Pack assets into a PCK using Godot (headless). -->
+  <Target Name="Sts2PackAssets" AfterTargets="Sts2MergeAssemblies">
+    <PropertyGroup>
+      <_ModPck>$(ModMergeDir)$(ModId).pck</_ModPck>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(GodotExe)')" Text="Godot not found at '$(GodotExe)'. Set GodotExe in local.props." />
+    <Exec Command="&quot;$(GodotExe)&quot; --headless --path &quot;$(ModPackProject)&quot; -s res://pack_mod.gd -- &quot;$(ModAssetsDir.TrimEnd('\'))&quot; &quot;$(ModId)&quot; &quot;$(_ModPck)&quot;"
+          StandardOutputImportance="low" />
+  </Target>
+
+  <!-- 3. Assemble the mod folder. -->
+  <Target Name="Sts2AssembleMod" AfterTargets="Sts2PackAssets">
+    <PropertyGroup>
+      <_ManifestText>$([System.IO.File]::ReadAllText('$(ModManifestFile)').Replace('$version$', '$(Version)'))</_ManifestText>
+    </PropertyGroup>
+    <RemoveDir Directories="$(ModOutputDir)" />
+    <MakeDir Directories="$(ModOutputDir)" />
+    <WriteLinesToFile File="$(ModOutputDir)$(ModId).json" Lines="$(_ManifestText)" Overwrite="true" />
+    <Copy SourceFiles="$(ModMergeDir)$(ModId).dll;$(ModMergeDir)$(ModId).pck" DestinationFolder="$(ModOutputDir)" />
+    <Copy SourceFiles="$(ModMergeDir)$(ModId).pdb" DestinationFolder="$(ModOutputDir)" Condition="Exists('$(ModMergeDir)$(ModId).pdb') And '$(Configuration)' == 'Debug'" />
+    <Message Importance="high" Text="$(ModId) -> $(ModOutputDir)" />
+  </Target>
+
+  <!-- 4. Install into the game. Skipped while the game runs: it locks the DLL, and a partial copy would
+       leave a broken install. -->
+  <Target Name="Sts2DeployMod" AfterTargets="Sts2AssembleMod" Condition="'$(DeployMods)' == 'true'">
+    <Exec Command="tasklist /NH /FI &quot;IMAGENAME eq SlayTheSpire2.exe&quot;" ConsoleToMSBuild="true" StandardOutputImportance="low"
+          Condition="'$(OS)' == 'Windows_NT'">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_Sts2Processes" />
+    </Exec>
+    <PropertyGroup>
+      <_Sts2Running>$(_Sts2Processes.Contains('SlayTheSpire2.exe'))</_Sts2Running>
+    </PropertyGroup>
+    <Warning Condition="'$(_Sts2Running)' == 'True'"
+             Text="Slay the Spire 2 is running, so $(ModId) was not deployed. Close the game and build again." />
+    <ItemGroup Condition="'$(_Sts2Running)' != 'True'">
+      <_ModFiles Include="$(ModOutputDir)*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(Sts2ModsDir)\$(ModId)" Condition="'$(_Sts2Running)' != 'True'" />
+    <Copy SourceFiles="@(_ModFiles)" DestinationFolder="$(Sts2ModsDir)\$(ModId)" Condition="'$(_Sts2Running)' != 'True'" />
+    <Message Importance="high" Text="$(ModId) deployed -> $(Sts2ModsDir)\$(ModId)" Condition="'$(_Sts2Running)' != 'True'" />
+  </Target>
+</Project>

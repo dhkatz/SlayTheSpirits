@@ -1,0 +1,5 @@
+; Minimal Godot project used only to run pack_mod.gd headlessly.
+config_version=5
+
+[application]
+config/name="SpireKit PCK Packer"

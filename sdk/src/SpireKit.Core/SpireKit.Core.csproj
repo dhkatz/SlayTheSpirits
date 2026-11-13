@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    SpireKit.Core: engine-agnostic building blocks for STS2 mods.
+    MUST NOT reference sts2.dll, GodotSharp or Harmony, so everything here is unit-testable
+    and survives game updates untouched.
+  -->
+  <PropertyGroup>
+    <RootNamespace>SpireKit</RootNamespace>
+    <Description>Engine-agnostic core of the SpireKit modding SDK for Slay the Spire 2.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SpireKit.Core.Tests" />
+  </ItemGroup>
+</Project>

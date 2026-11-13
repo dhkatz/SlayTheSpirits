@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    SlayTheSpirits.Domain: the drinking-game rules engine. No game/Godot references; fully unit-tested.
+    The game-bound mod project translates game events into TriggerOccurrences and renders the results.
+  -->
+  <PropertyGroup>
+    <RootNamespace>SlayTheSpirits</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\sdk\src\SpireKit.Core\SpireKit.Core.csproj" />
+    <InternalsVisibleTo Include="SlayTheSpirits.Domain.Tests" />
+  </ItemGroup>
+</Project>

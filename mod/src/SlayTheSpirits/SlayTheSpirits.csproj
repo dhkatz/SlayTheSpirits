@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    SlayTheSpirits: the game-bound mod. Wires SpireKit game events into the Domain rules engine,
+    defines the Tavern cards, and presents penalties. Build output is a ready-to-install mod folder
+    (see build/Sts2.Mod.targets).
+  -->
+  <PropertyGroup>
+    <RootNamespace>SlayTheSpirits</RootNamespace>
+    <AssemblyName>SlayTheSpirits</AssemblyName>
+    <ModId>SlayTheSpirits</ModId>
+    <Version>0.1.0</Version>
+    <UsesSts2Game>true</UsesSts2Game>
+    <IsSts2Mod>true</IsSts2Mod>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SlayTheSpirits.Domain\SlayTheSpirits.Domain.csproj" />
+    <ProjectReference Include="..\..\..\sdk\src\SpireKit\SpireKit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mod.json" />
+    <None Include="Assets\**\*" />
+  </ItemGroup>
+</Project>

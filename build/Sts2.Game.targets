@@ -1,0 +1,24 @@
+<Project>
+  <!--
+    Compile-time references to the installed game. Never copied to output (Private=false):
+    at runtime the game supplies these assemblies itself.
+  -->
+  <Target Name="Sts2ValidateGameDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(Sts2GameDir)' == ''"
+           Text="Sts2GameDir is not set. Copy local.props.example to local.props (repo root) and point it at your Slay the Spire 2 install." />
+    <Error Condition="!Exists('$(Sts2DataDir)\sts2.dll')"
+           Text="sts2.dll not found under '$(Sts2DataDir)'. Check Sts2GameDir in local.props." />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="sts2" HintPath="$(Sts2DataDir)\sts2.dll" Private="false" />
+    <Reference Include="GodotSharp" HintPath="$(Sts2DataDir)\GodotSharp.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(Sts2DataDir)\0Harmony.dll" Private="false" />
+    <Reference Include="SmartFormat" HintPath="$(Sts2DataDir)\SmartFormat.dll" Private="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Game code is not annotated for our analyzers; keep strictness for our code without drowning in noise. -->
+    <NoWarn>$(NoWarn);CA1848;CA2007</NoWarn>
+  </PropertyGroup>
+</Project>

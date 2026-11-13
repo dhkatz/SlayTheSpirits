@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/mod/">
+    <Project Path="mod/src/SlayTheSpirits.Domain/SlayTheSpirits.Domain.csproj" />
+    <Project Path="mod/src/SlayTheSpirits/SlayTheSpirits.csproj" />
+    <Project Path="mod/tests/SlayTheSpirits.Domain.Tests/SlayTheSpirits.Domain.Tests.csproj" />
+  </Folder>
+  <Folder Name="/sdk/">
+    <Project Path="sdk/src/SpireKit.Core/SpireKit.Core.csproj" />
+    <Project Path="sdk/src/SpireKit/SpireKit.csproj" />
+    <Project Path="sdk/tests/SpireKit.Core.Tests/SpireKit.Core.Tests.csproj" />
+  </Folder>
+</Solution>
