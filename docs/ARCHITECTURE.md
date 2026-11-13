@@ -57,6 +57,8 @@ reference into the mod DLL with ILRepack. Consequences:
 | Net message types found by reflection, ≤256 total, 1-byte ids | One envelope type per mod and named channels on top (`NetHub`) |
 | Host broadcasts only reach fully joined peers | Clients request + retry; the host replies directly to the requester |
 | Run saves drop unknown JSON fields | Mod run data lives in sidecar files in the mod's storage folder |
+| Only the host (or solo player) saves; the save is snapshotted (`RunManager.ToSave`) before entering each room and after each victory | `RunData` captures mod state at that same moment |
+| A loaded multiplayer save reaches clients as a `SerializableRun` packet; mid-run rejoin isn't supported | `RunData` appends its bundle to that packet, so clients have it before the run starts |
 | Peers must match gameplay mods exactly (`id-version`) | Rule sync can assume both sides run the same code |
 
 ## SpireKit (SDK)
@@ -78,6 +80,7 @@ reference into the mod DLL with ILRepack. Consequences:
 | Localization | `LocInjector`, `SpireTips.Text(key, title, body, icon)` | runtime entries that survive language changes; keyword tooltips with computed text |
 | UI | `GameVfx.SpeechBubble`, `GameVfx.CombatBanner`, `ToastOverlay`, `GameFonts` | native speech bubbles and turn-style banners (queued, never overlapping); out-of-combat toasts in the game's font. Stock Godot controls only (the game doesn't register mod node scripts) |
 | Sharing | `ShareCode` | `PREFIX:base64url(deflate(json))` |
+| Run data | `ModContext.RunData.Register(slot, capture, restore)` | per-run state that survives save/quit: captured when the game snapshots the run, stored beside its save (`rundata/profile<N>/current_run[_mp].json`, stamped with seed + start time), sent to clients inside the loaded save, restored before `RunStarted` |
 
 ## The drinking game
 
@@ -117,6 +120,10 @@ everyone drinks (delayed past the game's own combat-start banners); elsewhere, a
 **Keyword tooltips** (`SpiritsTips`, text from `Glossary`): cards declare `PenaltyKeywords` and get one tip
 per penalty plus a Tipsy tip; the game doesn't cascade tooltips, so cards list them all.
 
+**Saving.** The engine's whole state (`RunPenaltyState`: Tipsy and tally, act caps, RNG position, pending
+redirects) is a `RunData` slot (`RunPenaltyStateCodec`, schema-versioned). A resumed run continues exactly
+where the save left off, on every peer.
+
 Rules (`RuleSet`) live in the host's profile (`profile.json` in the mod storage folder), sync through
 `RulesService` (host-authoritative), lock at run start, and are kept in `runs/<seed>.json` so a resumed
 run uses the rules it started with.
@@ -145,13 +152,17 @@ icon at `Assets/images/powers/<entry>.png` (`tools/icons.py` makes placeholders)
 **Add synced state.** `new AuthorityChannel<T>(context.Net.Channel("name"), encode, decode)` +
 `HostAuthoritativeState<T>`, mirroring `RulesService`.
 
+**Keep state across save/quit.** `context.RunData.Register("name", capture, restore)` in `OnInitialize`.
+`capture` returns text (or null) whenever the game snapshots the run; `restore` gets it back (or null) when a
+saved run is set up, before `RunStarted`. Keep it deterministic: every peer restores the same text.
+
 **Change the RuleSet shape.** Bump `RuleSetCodec.SchemaVersion` and register a `JsonMigration` from the
 previous version. Old profiles and share codes keep working.
 
 ## Known gaps (next milestones)
 
-- **Engine state isn't persisted across save/quit.** Caps and tally restart when a run is resumed (the
-  rules are restored). Fix: host sends `RunPenaltyState` with the lock, and persists it in the sidecar.
+- Locked rules still use their own `runs/<seed>.json` sidecar and reach clients over the rules channel; they
+  could move to `RunData` too, so clients get them in the same packet as the save.
 - **No settings UI yet.** Edit `profile.json`; presets and share codes exist in the domain. Next: a main-menu
   profile editor and a read-only lobby "Rules" panel.
 - Relic (Beer Stein) and potion (Mystery Brew), real card art, sounds.

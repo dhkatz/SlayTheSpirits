@@ -5,6 +5,7 @@ using SpireKit.Events;
 using SpireKit.Localization;
 using SpireKit.Logging;
 using SpireKit.Multiplayer;
+using SpireKit.Runs;
 using SpireKit.Storage;
 using SpireKit.UI;
 
@@ -28,6 +29,7 @@ public sealed class ModContext
         Content = new ContentRegistry(this);
         Toasts = new ToastOverlay(Log.WithScope("ui"));
         Loc = new LocInjector(Log.WithScope("loc"));
+        RunData = new RunDataRegistry(Log.WithScope("rundata"));
         _storage = new Lazy<IFileStore>(() => ModStorage.Create(mod.Id, Log));
     }
 
@@ -58,6 +60,12 @@ public sealed class ModContext
 
     /// <summary>Runtime localization entries (re-applied on language change).</summary>
     public LocInjector Loc { get; }
+
+    /// <summary>
+    /// Per-run state that must survive save/quit and reach clients when a saved multiplayer run is loaded.
+    /// Register slots in <c>OnInitialize</c>.
+    /// </summary>
+    public RunDataRegistry RunData { get; }
 
     /// <summary>The mod's private folder in the game's user data directory. Resolved on first use.</summary>
     public IFileStore Storage => _storage.Value;

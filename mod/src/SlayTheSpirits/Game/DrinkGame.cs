@@ -29,12 +29,16 @@ internal sealed class DrinkGame
     private string? _runKey;
     private PenaltyEngine? _engine;
 
+    /// <summary>State saved with the run, waiting for the engine to be created (see <see cref="EnsureEngine"/>).</summary>
+    private RunPenaltyState? _restored;
+
     public DrinkGame(ModContext context, RulesService rules, Announcer announcer)
     {
         _rules = rules;
         _announcer = announcer;
         _log = context.Log.WithScope("game");
         context.Events.SubscribeAsync<IGameEvent>(OnGameEventAsync);
+        context.RunData.Register("penalties", CaptureState, RestoreState);
     }
 
     /// <summary>The current run's tally, for tooltips and the Bar Tab. Null outside a run.</summary>
@@ -100,11 +104,32 @@ internal sealed class DrinkGame
         _run = e.Run;
         _runKey = e.Run.Rng.StringSeed;
         _engine = null;
+        if (e.Kind == RunStartKind.New)
+        {
+            _restored = null;
+        }
+        else
+        {
+            _log.Info(_restored is null
+                ? "Resumed run without saved drinking-game state: caps and tally start from zero."
+                : "Resumed run: restored Tipsy, caps and tally from the save.");
+        }
+
         _rules.LockForRun(_runKey, resumed: e.Kind == RunStartKind.Loaded);
         _announcer.AnnounceRunStart(_rules.Effective);
-        if (e.Kind == RunStartKind.Loaded)
+    }
+
+    /// <summary>The game is snapshotting the run (saving): the engine's state at that exact moment.</summary>
+    private string? CaptureState() =>
+        (_engine?.State ?? _restored) is { } state ? RunPenaltyStateCodec.ToJson(state) : null;
+
+    /// <summary>A saved run is being set up, before <see cref="RunStarted"/>: keep its state for the engine.</summary>
+    private void RestoreState(string? json)
+    {
+        _restored = json is null ? null : RunPenaltyStateCodec.FromJson(json);
+        if (json is not null && _restored is null)
         {
-            _log.Info("Resumed run: penalty caps and tally restart from zero (rules are restored).");
+            _log.Warn("Saved drinking-game state was unreadable; this run continues from zero.");
         }
     }
 
@@ -121,6 +146,7 @@ internal sealed class DrinkGame
         }
 
         _engine = null;
+        _restored = null;
         _run = null;
         _runKey = null;
     }
@@ -172,7 +198,9 @@ internal sealed class DrinkGame
             return null;
         }
 
-        _engine = new PenaltyEngine(rules, new RunPenaltyState { Act = run.CurrentActIndex + 1 }, run.Rng.Seed);
+        _engine = new PenaltyEngine(rules, _restored ?? new RunPenaltyState { Act = run.CurrentActIndex + 1 }, run.Rng.Seed);
+        _engine.EnterAct(run.CurrentActIndex + 1);
+        _restored = null;
         _log.Info($"Drinking game on: '{rules.Name}'.");
         return _engine;
     }

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using SlayTheSpirits.Engine;
 using SlayTheSpirits.Party;
 using SlayTheSpirits.Penalties;
@@ -196,9 +195,11 @@ public sealed class PenaltyEngineTests
             original.Handle(Request(PenaltyKind.Shot, TargetKind.RandomPlayer), Four);
         }
 
-        var json = JsonSerializer.Serialize(original.State, DomainJsonContext.Default.RunPenaltyState);
-        var restoredState = JsonSerializer.Deserialize(json, DomainJsonContext.Default.RunPenaltyState)!;
+        var restoredState = RunPenaltyStateCodec.FromJson(RunPenaltyStateCodec.ToJson(original.State))!;
         var restored = NewEngine(state: restoredState);
+
+        Assert.All(Four.Members, m => Assert.Equal(original.TipsyOf(m.Id), restored.TipsyOf(m.Id)));
+        Assert.Equal(original.State.Tally.WorstMoments, restored.State.Tally.WorstMoments);
 
         for (var i = 0; i < 10; i++)
         {
@@ -206,6 +207,12 @@ public sealed class PenaltyEngineTests
             Assert.Equal(original.Handle(request, Four), restored.Handle(request, Four), AssignmentComparer.Instance);
         }
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not json")]
+    [InlineData("{\"schema\": 99, \"data\": {}}")]
+    public void Unreadable_state_is_rejected(string json) => Assert.Null(RunPenaltyStateCodec.FromJson(json));
 
     private sealed class AssignmentComparer : IEqualityComparer<PenaltyAssignment>
     {
