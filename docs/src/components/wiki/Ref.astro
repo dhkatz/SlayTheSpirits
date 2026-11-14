@@ -1,0 +1,18 @@
+---
+// An inline reference to a card, relic, potion, keyword or character: icon, name, link and hover box.
+//   <Ref kind="card" id="down-the-hatch" />   <Ref kind="keyword" id="Tipsy" label="tipsiness" />
+// In Markdown, use the directives instead: :card[Down the Hatch] (src/lib/remark-refs.mjs).
+import { refs } from '../../lib/data';
+
+interface Props {
+	kind: 'card' | 'relic' | 'potion' | 'keyword' | 'character';
+	/** Slug, id or name. */
+	id: string;
+	label?: string;
+	icon?: boolean;
+}
+
+const { kind, id, label, icon = true } = Astro.props;
+---
+
+<Fragment set:html={refs.ref(kind, id, { label, icon })} />

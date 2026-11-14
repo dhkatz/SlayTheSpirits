@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "generate": "dotnet run --project ../mod/tools/SlayTheSpirits.DocsExport -- src/generated/rules.json && node scripts/extract-content.mjs",
+    "extract-game-art": "node scripts/extract-game-art.mjs",
     "predev": "npm run generate",
     "dev": "astro dev",
     "start": "astro dev",
@@ -14,7 +15,10 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "^0.4.10",
+    "@astrojs/sitemap": "^3.7.5",
     "@astrojs/starlight": "^0.43.1",
+    "@fontsource/kreon": "^5.3.0",
     "astro": "^7.3.6",
     "sharp": "^0.35.3"
   }

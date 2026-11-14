@@ -1,0 +1,26 @@
+---
+// An entry's tooltips, as the game shows them next to it: its drinks, Tipsy, then the game's own keywords. Each
+// title links to the keyword's page (here for the mod's, the community wiki for the game's).
+import { asset, refs, term } from '../../lib/data';
+
+interface Props {
+	/** Keyword slugs. */
+	tips: readonly string[];
+}
+
+const terms = Astro.props.tips.map(term);
+---
+
+<ul class="sts-tips not-content" role="list">
+	{
+		terms.map((t) => (
+			<li class="sts-tip">
+				{t.icon && <img src={asset(t.icon)} alt="" loading="lazy" />}
+				<div>
+					<span class="sts-tip__title" set:html={refs.ref('keyword', t.slug, { icon: false })} />
+					<p set:html={refs.terms(t.body, 'link')} />
+				</div>
+			</li>
+		))
+	}
+</ul>

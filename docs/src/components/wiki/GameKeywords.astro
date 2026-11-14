@@ -1,0 +1,18 @@
+---
+// The game's own keywords that Tavern content refers to (Strength, Block, Exhaust...), with the game's text. They
+// link to the community wiki, where it has a page for them.
+import { content, refs } from '../../lib/data';
+
+const terms = content.glossary.filter((term) => !term.local).sort((a, b) => a.title.localeCompare(b.title));
+---
+
+<dl class="sts-glossary not-content">
+	{
+		terms.map((term) => (
+			<div>
+				<dt set:html={refs.ref('keyword', term.slug)} />
+				<dd set:html={refs.terms(term.body, 'link')} />
+			</div>
+		))
+	}
+</dl>

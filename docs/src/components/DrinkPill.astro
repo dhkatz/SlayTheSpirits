@@ -1,0 +1,18 @@
+---
+// A drink as a pill: its icon and name, linked to its keyword page with a hover box, tinted by how heavy it is
+// (its place on the drink ladder), so a table of them reads at a glance.
+import { drinks, refs } from '../lib/data';
+
+interface Props {
+	/** The drink's kind in the rules engine: Water, Sip, Finish, Chug or Shot. */
+	kind: string;
+	/** What to call it, if not its default name (a rule set's own label, or "2 Sips"). */
+	label?: string;
+}
+
+const { kind, label } = Astro.props;
+const rung = drinks.findIndex((drink) => drink.id === `drink:${kind}`);
+if (rung < 0) throw new Error(`No drink "${kind}" on the ladder (${drinks.map((drink) => drink.id).join(', ')})`);
+---
+
+<span class={`sts-drink sts-drink--${rung}`} set:html={refs.ref('keyword', drinks[rung].slug, { label })} />

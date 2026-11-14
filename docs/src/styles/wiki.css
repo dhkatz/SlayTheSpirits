@@ -1,0 +1,1184 @@
+/* The wiki: card faces, relic and potion icons, full-width pages, compendiums, entry pages, inline references and
+   hover boxes. */
+
+/* --- Card faces ---------------------------------------------------------------------------------------------------
+   Layers and positions from the game's scenes/cards/card.tscn, whose card frame is 300×422 units centered on the
+   origin. Here (0, 0) is the frame's top-left, so the scene's (x, y) is (x + 150, y + 211). One unit is --u. */
+
+.sts-card {
+	--w: 14rem;
+	--u: calc(100cqw / 300);
+	--cream: #fff6e2;
+	position: relative;
+	container-type: inline-size;
+	inline-size: var(--w);
+	aspect-ratio: 300 / 422;
+	flex-shrink: 0;
+	font-family: 'Kreon', Georgia, serif;
+	line-height: 1;
+	color: var(--cream);
+	text-align: center;
+	user-select: none;
+}
+
+/* The energy orb and the banner reach outside the frame; these leave room for them. */
+.sts-card--sm {
+	--w: 100%;
+	max-inline-size: 13.5rem;
+}
+.sts-card--md {
+	--w: 13rem;
+}
+.sts-card--lg {
+	--w: min(16.5rem, 72vw);
+}
+
+.sts-card > * {
+	position: absolute;
+	margin: 0;
+}
+
+.sts-card > img {
+	display: block;
+	max-inline-size: none;
+	pointer-events: none;
+}
+
+/* Portrait: (-125, -168) to (125, 22), behind the frame. */
+.sts-card__portrait {
+	inset-inline-start: calc(25 * var(--u));
+	inset-block-start: calc(43 * var(--u));
+	inline-size: calc(250 * var(--u));
+	block-size: calc(190 * var(--u));
+	object-fit: cover;
+}
+
+/* Frame: the whole card, tinted for the pool. */
+.sts-card__frame {
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	filter: drop-shadow(0 calc(4 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.45));
+}
+
+/* Description: (-122, 37) to (121, 173), centered both ways, Kreon 21 (shrinks to 12). Godot's line height for
+   Kreon is 1.414 em, and the label takes 3 units off each line (line_separation = -3). */
+.sts-card__text {
+	inset-inline-start: calc(28 * var(--u));
+	inset-block-start: calc(248 * var(--u));
+	inline-size: calc(243 * var(--u));
+	block-size: calc(136 * var(--u));
+	display: grid;
+	place-items: center;
+	font-size: calc(var(--text-size, 21) * var(--u));
+	line-height: calc((var(--text-size, 21) * 1.414 - 3) * var(--u));
+	text-shadow: calc(2 * var(--u)) calc(2 * var(--u)) 0 rgb(0 0 0 / 0.25);
+}
+
+.sts-card__text p {
+	margin: 0;
+}
+
+/* Portrait border: (-137.5, -164) to (137.5, 46), tinted for the rarity. */
+.sts-card__border {
+	inset-inline-start: calc(12.5 * var(--u));
+	inset-block-start: calc(47 * var(--u));
+	inline-size: calc(275 * var(--u));
+	block-size: calc(210 * var(--u));
+	object-fit: contain;
+}
+
+/* Title banner: (-163, -207) to (164, -124), tinted for the rarity. */
+.sts-card__banner {
+	inset-inline-start: calc(-13 * var(--u));
+	inset-block-start: calc(4 * var(--u));
+	inline-size: calc(327 * var(--u));
+	block-size: calc(83 * var(--u));
+	object-fit: cover;
+}
+
+/* A round outline of radius --r in --outline: a ring of hard shadows. Godot outlines text with round joins;
+   -webkit-text-stroke has pointed ones, which look blocky on small text. */
+.sts-card__title,
+.sts-card__energy span {
+	--outline-ring:
+		calc(var(--r) * 1.000) calc(var(--r) * 0.000) 0 var(--outline),
+		calc(var(--r) * 0.966) calc(var(--r) * 0.259) 0 var(--outline),
+		calc(var(--r) * 0.866) calc(var(--r) * 0.500) 0 var(--outline),
+		calc(var(--r) * 0.707) calc(var(--r) * 0.707) 0 var(--outline),
+		calc(var(--r) * 0.500) calc(var(--r) * 0.866) 0 var(--outline),
+		calc(var(--r) * 0.259) calc(var(--r) * 0.966) 0 var(--outline),
+		calc(var(--r) * 0.000) calc(var(--r) * 1.000) 0 var(--outline),
+		calc(var(--r) * -0.259) calc(var(--r) * 0.966) 0 var(--outline),
+		calc(var(--r) * -0.500) calc(var(--r) * 0.866) 0 var(--outline),
+		calc(var(--r) * -0.707) calc(var(--r) * 0.707) 0 var(--outline),
+		calc(var(--r) * -0.866) calc(var(--r) * 0.500) 0 var(--outline),
+		calc(var(--r) * -0.966) calc(var(--r) * 0.259) 0 var(--outline),
+		calc(var(--r) * -1.000) calc(var(--r) * 0.000) 0 var(--outline),
+		calc(var(--r) * -0.966) calc(var(--r) * -0.259) 0 var(--outline),
+		calc(var(--r) * -0.866) calc(var(--r) * -0.500) 0 var(--outline),
+		calc(var(--r) * -0.707) calc(var(--r) * -0.707) 0 var(--outline),
+		calc(var(--r) * -0.500) calc(var(--r) * -0.866) 0 var(--outline),
+		calc(var(--r) * -0.259) calc(var(--r) * -0.966) 0 var(--outline),
+		calc(var(--r) * -0.000) calc(var(--r) * -1.000) 0 var(--outline),
+		calc(var(--r) * 0.259) calc(var(--r) * -0.966) 0 var(--outline),
+		calc(var(--r) * 0.500) calc(var(--r) * -0.866) 0 var(--outline),
+		calc(var(--r) * 0.707) calc(var(--r) * -0.707) 0 var(--outline),
+		calc(var(--r) * 0.866) calc(var(--r) * -0.500) 0 var(--outline),
+		calc(var(--r) * 0.966) calc(var(--r) * -0.259) 0 var(--outline);
+}
+
+/* Title: (-105, -204) to (105, -150), Kreon 26, 1 unit of letter spacing. Its outline_size is 12, which Godot draws
+   as a 3-unit outline (a quarter of the size), in the rarity's color, with a soft 2-unit shadow. */
+.sts-card__title {
+	--r: calc(3 * var(--u));
+	--outline: var(--title-outline);
+	inset-inline-start: calc(45 * var(--u));
+	inset-block-start: calc(5 * var(--u));
+	inline-size: calc(210 * var(--u));
+	block-size: calc(54 * var(--u));
+	display: grid;
+	place-items: center;
+	font-size: calc(var(--title-size, 26) * var(--u));
+	letter-spacing: calc(1 * var(--u));
+	white-space: nowrap;
+	color: var(--title-color);
+	text-shadow: var(--outline-ring);
+	filter: drop-shadow(calc(2 * var(--u)) calc(2 * var(--u)) 0 rgb(0 0 0 / 0.19));
+}
+
+/* Type plaque: a nine-patch (13 and 12 unit edges) at least 61 wide, centered, (−30.5, 1) to (30.5, 38). */
+.sts-card__type {
+	inset-inline-start: 50%;
+	inset-block-start: calc(212 * var(--u));
+	translate: -50% 0;
+	box-sizing: border-box;
+	min-inline-size: calc(61 * var(--u));
+	block-size: calc(37 * var(--u));
+	padding-inline: calc(8.5 * var(--u));
+	display: grid;
+	place-items: center;
+	border-style: solid;
+	border-width: 0 calc(12 * var(--u)) 0 calc(13 * var(--u));
+	border-image: var(--plaque) 0 12 0 13 fill / 0 calc(12 * var(--u)) 0 calc(13 * var(--u));
+	font-size: calc(16 * var(--u));
+	font-weight: 700;
+	color: rgb(0 0 0 / 0.75);
+}
+
+/* Energy orb: (-166, -227) to (-102, -163), Kreon bold 32, outline_size 16 (a 4-unit outline) in the pool's color. */
+.sts-card__energy {
+	inset-inline-start: calc(-16 * var(--u));
+	inset-block-start: calc(-16 * var(--u));
+	inline-size: calc(64 * var(--u));
+	block-size: calc(64 * var(--u));
+	display: grid;
+	place-items: center;
+}
+
+.sts-card__energy img {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: contain;
+}
+
+.sts-card__energy span {
+	--r: calc(4 * var(--u));
+	--outline: var(--energy-outline);
+	position: relative;
+	font-size: calc(32 * var(--u));
+	font-weight: 700;
+	color: var(--energy-color);
+	text-shadow: var(--outline-ring);
+	filter: drop-shadow(calc(2 * var(--u)) calc(2 * var(--u)) 0 rgb(0 0 0 / 0.19));
+}
+
+/* Text colors are the game's (StsColors), in either site theme; colored words keep the card's weight. */
+.sts-card__text span {
+	font-weight: inherit;
+}
+.sts-card .sts-gold {
+	color: #efc851;
+}
+.sts-card .sts-blue {
+	color: #87ceeb;
+}
+.sts-card .sts-green,
+.sts-card .sts-up {
+	color: #7fff00;
+}
+.sts-card .sts-red {
+	color: #ff5555;
+}
+.sts-card .sts-orange {
+	color: #ffa518;
+}
+.sts-card .sts-purple {
+	color: #ee82ee;
+}
+
+/* --- Relic and potion icons --------------------------------------------------------------------------------------- */
+
+.sts-icon-frame {
+	--rarity: #7d7a74;
+	--size: 3.25rem;
+	flex-shrink: 0;
+	display: inline-grid;
+	place-items: center;
+	inline-size: var(--size);
+	block-size: var(--size);
+	border-radius: 50%;
+	background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--rarity) 35%, #2b2622), #14110f 72%);
+	box-shadow:
+		inset 0 0 0 2px color-mix(in oklab, var(--rarity) 60%, #000),
+		0 0.25rem 0.8rem rgb(0 0 0 / 0.3);
+	color: var(--sl-color-gray-3);
+}
+
+.sts-icon-frame img {
+	inline-size: 78%;
+	block-size: 78%;
+	object-fit: contain;
+	filter: drop-shadow(0 0.2rem 0.3rem rgb(0 0 0 / 0.6));
+}
+
+.sts-icon-frame--lg {
+	--size: 9rem;
+}
+
+.sts-icon-frame[data-rarity='uncommon'] {
+	--rarity: #3c7fc4;
+}
+.sts-icon-frame[data-rarity='rare'] {
+	--rarity: #d6a92b;
+}
+.sts-icon-frame[data-rarity='event'] {
+	--rarity: #3fa38f;
+}
+
+/* --- Wide pages ---------------------------------------------------------------------------------------------------
+   A page with wiki content (.sts-wiki-page), or anything else that needs the room (.sts-wide-page, such as the rule
+   set comparison), uses the whole width beside the sidebars instead of Starlight's reading column. Its prose keeps
+   a readable line length. */
+
+html:has(.sts-wiki-page, .sts-wide-page) {
+	--sl-content-width: 104rem;
+}
+
+html:has(.sts-wiki-page, .sts-wide-page) .sl-markdown-content > :is(p, ul, ol, table),
+.sts-entry__main > p,
+.sts-entry__main > ul:not(.not-content),
+.sts-entry__main > ol:not(.not-content) {
+	max-inline-size: 80ch;
+}
+
+/* Wiki components opt out of Starlight's prose styles (.not-content), so their links need their color back. */
+:is(.sts-wiki-page .not-content, .sts-wiki-page.not-content) a:not(.sts-card-link, .sts-tile, .sts-gold) {
+	color: var(--sl-color-text-accent);
+}
+
+:is(.sts-wiki-page .not-content, .sts-wiki-page.not-content) a:not(.sts-card-link, .sts-tile):hover {
+	color: var(--sl-color-white);
+}
+
+.sts-muted {
+	color: var(--sl-color-gray-3);
+}
+
+/* --- Compendium --------------------------------------------------------------------------------------------------- */
+
+.sts-compendium__controls {
+	display: grid;
+	gap: 0.9rem;
+	margin-block: 1.25rem 1.5rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+}
+
+.sts-compendium__controls[hidden] {
+	display: none;
+}
+
+.sts-compendium__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1.5rem;
+}
+
+.sts-compendium__search {
+	flex: 1 1 14rem;
+	max-inline-size: 32rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--sl-color-gray-4);
+	border-radius: 0.5rem;
+	background: var(--sl-color-gray-6);
+	color: var(--sl-color-white);
+	font: inherit;
+}
+
+.sts-compendium__sort,
+.sts-compendium__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-2);
+}
+
+.sts-compendium__toggle {
+	cursor: pointer;
+}
+
+.sts-compendium__sort select {
+	padding: 0.35rem 0.5rem;
+	border: 1px solid var(--sl-color-gray-4);
+	border-radius: 0.4rem;
+	background: var(--sl-color-gray-6);
+	color: var(--sl-color-white);
+	font: inherit;
+}
+
+.sts-compendium__toggle input {
+	accent-color: var(--sl-color-accent);
+	inline-size: 1rem;
+	block-size: 1rem;
+}
+
+/* The filters fold away on narrow screens (the script opens them on wide ones); there, the summary is hidden. */
+.sts-compendium__filters > summary {
+	inline-size: fit-content;
+	margin-block-end: 0.75rem;
+	padding: 0.2rem 0.8rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 999px;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-2);
+	cursor: pointer;
+}
+
+.sts-compendium__filters:not([open]) > summary {
+	margin-block-end: 0;
+}
+
+@media (min-width: 50rem) {
+	.sts-compendium__filters > summary {
+		display: none;
+	}
+}
+
+/* Facets sit side by side when there's room for two. */
+.sts-compendium__facets {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+	gap: 0.6rem 2.5rem;
+}
+
+.sts-compendium__facet {
+	display: block;
+	min-inline-size: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.sts-compendium__options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	overflow: hidden; /* keeps wrapped chips beside the legend, not under it */
+	padding: 2px;
+}
+
+.sts-compendium__facet legend {
+	float: left;
+	min-inline-size: 4.75rem;
+	margin-inline-end: 0.25rem;
+	padding: 0.35rem 0 0;
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--sl-color-gray-3);
+}
+
+.sts-chip {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.2rem 0.7rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 999px;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-2);
+	cursor: pointer;
+	user-select: none;
+	transition:
+		border-color 0.1s ease,
+		opacity 0.1s ease;
+}
+
+.sts-chip input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.sts-chip small {
+	color: var(--sl-color-gray-3);
+	font-size: 0.75em;
+	font-variant-numeric: tabular-nums;
+}
+
+.sts-chip:hover {
+	border-color: var(--sl-color-gray-3);
+}
+
+.sts-chip:has(input:checked) {
+	border-color: var(--sl-color-accent);
+	background: var(--sl-color-accent-low);
+	color: var(--sl-color-accent-high);
+}
+
+.sts-chip:has(input:focus-visible) {
+	outline: 2px solid var(--sl-color-accent);
+	outline-offset: 2px;
+}
+
+/* An option that would leave nothing, given the other filters. */
+.sts-chip[data-empty] {
+	opacity: 0.4;
+}
+
+.sts-chip__swatch {
+	inline-size: 0.7rem;
+	block-size: 0.7rem;
+	border-radius: 50%;
+	background: var(--swatch);
+	box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4);
+}
+
+.sts-chip__icon {
+	inline-size: auto;
+	block-size: 1.25em;
+	margin-inline-start: -0.2rem;
+}
+
+.sts-compendium__status {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin: 0;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+}
+
+.sts-compendium__status button {
+	padding: 0.15rem 0.7rem;
+	border: 1px solid var(--sl-color-gray-4);
+	border-radius: 999px;
+	background: none;
+	color: var(--sl-color-gray-2);
+	font: inherit;
+	cursor: pointer;
+}
+
+.sts-compendium__status button:hover {
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-white);
+}
+
+.sts-compendium__status button[hidden] {
+	display: none;
+}
+
+.sts-compendium__items {
+	display: grid;
+	gap: 1.5rem 1.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sts-compendium__items > li {
+	margin: 0;
+}
+
+.sts-compendium__items > li[hidden] {
+	display: none;
+}
+
+.sts-compendium__items--cards {
+	grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+}
+
+.sts-compendium__items--cards > li {
+	display: flex;
+	justify-content: center;
+}
+
+.sts-compendium__items--tiles {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+}
+
+.sts-compendium__empty {
+	padding: 2rem;
+	border: 1px dashed var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	text-align: center;
+	color: var(--sl-color-gray-3);
+}
+
+/* Cards in a compendium link to their pages; "Show upgrades" swaps every face. */
+.sts-card-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+	inline-size: 100%;
+	max-inline-size: 14.6rem;
+	/* room for the energy orb and banner, which reach outside the frame */
+	padding: 0.6rem 0.5rem 0 0.6rem;
+	border-radius: 0.8rem;
+	transition: transform 0.15s ease;
+}
+
+.sts-card-link:hover,
+.sts-card-link:focus-visible {
+	transform: translateY(-0.3rem) scale(1.03);
+}
+
+.sts-card-link:focus-visible {
+	outline: 2px solid var(--sl-color-accent);
+	outline-offset: 4px;
+}
+
+.sts-card-link .sts-face-up,
+[data-t-upgraded] .sts-card-link .sts-face-base {
+	display: none;
+}
+
+[data-t-upgraded] .sts-card-link .sts-face-up {
+	display: block;
+}
+
+.sts-tile--link {
+	block-size: 100%;
+	color: inherit;
+	text-decoration: none;
+	transition: border-color 0.15s ease;
+}
+
+.sts-tile--link:hover,
+.sts-tile--link:focus-visible {
+	border-color: var(--sl-color-accent);
+}
+
+.sts-tile--link h3 {
+	color: var(--sl-color-white);
+}
+
+/* --- Entry pages --------------------------------------------------------------------------------------------------
+   Laid out like a wiki article: text on the left, the infobox on the right (it comes first in the page, so it's on
+   top when there's only room for one column), the navigation box underneath. */
+
+.sts-crumbs ol {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+}
+
+.sts-crumbs li + li::before {
+	content: '›';
+	margin-inline-end: 0.45rem;
+}
+
+.sts-entry {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 21rem;
+	align-items: start;
+	gap: 1.5rem 3rem;
+}
+
+.sts-entry > .sts-infobox {
+	grid-column: 2;
+	grid-row: 1;
+	position: sticky;
+	inset-block-start: calc(var(--sl-nav-height) + 1.5rem);
+	max-block-size: calc(100vh - var(--sl-nav-height) - 3rem);
+	overflow-y: auto;
+}
+
+.sts-entry__main {
+	grid-column: 1;
+	grid-row: 1;
+	min-inline-size: 0;
+}
+
+.sts-entry__main > :first-child {
+	margin-block-start: 0;
+}
+
+@media (max-width: 72rem) {
+	.sts-entry {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.sts-entry > .sts-infobox {
+		grid-column: 1;
+		position: static;
+		max-block-size: none;
+		inline-size: min(100%, 24rem);
+		margin-inline: auto;
+	}
+
+	.sts-entry__main {
+		grid-row: 2;
+	}
+}
+
+.sts-lead {
+	font-size: var(--sl-text-lg);
+}
+
+.sts-infobox {
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+}
+
+.sts-infobox header {
+	padding: 0.7rem 1rem 0.8rem;
+	border-radius: 0.75rem 0.75rem 0 0;
+	background: var(--sl-color-accent-low);
+	text-align: center;
+}
+
+.sts-infobox p {
+	margin: 0;
+}
+
+.sts-infobox__title {
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-2xl);
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--sl-color-accent-high);
+}
+
+.sts-infobox__tagline {
+	margin-block-start: 0.15rem !important;
+	font-size: var(--sl-text-sm);
+}
+
+.sts-art {
+	display: grid;
+	justify-items: center;
+	gap: 0.9rem;
+	padding: 1.25rem 1rem;
+	text-align: center;
+}
+
+.sts-art--card {
+	padding-block-end: 1.5rem;
+}
+
+/* The energy orb and the banner reach outside the frame. */
+.sts-art__face {
+	padding: 0.7rem 0.6rem 0 0.7rem;
+}
+
+.sts-art__face--upgraded,
+.sts-art--card:has(input[value='upgraded']:checked) .sts-art__face--base {
+	display: none;
+}
+
+.sts-art--card:has(input[value='upgraded']:checked) .sts-art__face--upgraded {
+	display: block;
+}
+
+.sts-art .sts-flavor {
+	font-style: italic;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+}
+
+/* Base / Upgraded: radio buttons drawn as a two-part switch. */
+.sts-tabs {
+	display: inline-flex;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 999px;
+	overflow: hidden;
+	font-size: var(--sl-text-sm);
+}
+
+.sts-tabs label {
+	position: relative;
+	padding: 0.2rem 1.1rem;
+	color: var(--sl-color-gray-2);
+	cursor: pointer;
+	user-select: none;
+}
+
+.sts-tabs input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.sts-tabs label:has(input:checked) {
+	background: var(--sl-color-accent-low);
+	color: var(--sl-color-accent-high);
+}
+
+.sts-tabs label:has(input:focus-visible) {
+	outline: 2px solid var(--sl-color-accent);
+	outline-offset: -2px;
+}
+
+.sts-infobox dl {
+	margin: 0;
+	border-block-start: 1px solid var(--sl-color-gray-5);
+	font-size: var(--sl-text-sm);
+}
+
+.sts-infobox dl > div {
+	display: grid;
+	grid-template-columns: 6.25rem 1fr;
+	gap: 0.75rem;
+	padding: 0.45rem 1rem;
+	border-block-end: 1px solid var(--sl-color-gray-6);
+}
+
+.sts-infobox dl > div:last-child {
+	border-block-end: 0;
+}
+
+.sts-infobox dt {
+	padding-block-start: 0.15rem;
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--sl-color-gray-3);
+}
+
+.sts-infobox dd {
+	margin: 0;
+}
+
+/* Tooltips, styled after the game's dark hover tips. */
+.sts-tips {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+	gap: 0.75rem;
+	margin: 1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sts-tip {
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid #4a3f2c;
+	border-radius: 0.5rem;
+	background: linear-gradient(180deg, #2b241b, #1a1612);
+	color: #e9e0cb;
+}
+
+.sts-tip img {
+	inline-size: 2.25rem;
+	block-size: 2.25rem;
+	flex-shrink: 0;
+	object-fit: contain;
+}
+
+.sts-tip p {
+	margin: 0.15rem 0 0;
+	font-size: var(--sl-text-sm);
+	line-height: 1.45;
+}
+
+.sts-wiki-page .sts-tips .sts-tip a {
+	color: #efc851;
+	text-decoration: none;
+}
+
+.sts-wiki-page .sts-tips .sts-tip a:hover {
+	color: #efc851;
+	text-decoration: underline;
+}
+
+.sts-tip__title {
+	font-family: Kreon, Georgia, serif;
+	font-weight: 700;
+}
+
+/* What uses a keyword: names in one column, their text in the other. */
+.sts-used-by {
+	display: grid;
+	grid-template-columns: minmax(11rem, max-content) minmax(0, 1fr);
+	margin: 0.75rem 0 0;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	overflow: hidden;
+}
+
+.sts-used-by > div {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+	gap: 1.5rem;
+	padding: 0.45rem 1rem;
+	border-block-end: 1px solid var(--sl-color-gray-6);
+}
+
+.sts-used-by > div:last-child {
+	border-block-end: 0;
+}
+
+.sts-used-by > div:nth-child(even) {
+	background: var(--sl-color-black);
+}
+
+.sts-used-by dt {
+	font-weight: 600;
+}
+
+.sts-used-by dd {
+	margin: 0;
+	color: var(--sl-color-gray-2);
+}
+
+h3 small {
+	font-size: 0.6em;
+	font-weight: 400;
+	color: var(--sl-color-gray-3);
+}
+
+@media (max-width: 50rem) {
+	.sts-used-by,
+	.sts-used-by > div {
+		display: block;
+	}
+}
+
+.sts-navbox {
+	margin-block-start: 3.5rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+	font-size: var(--sl-text-sm);
+	overflow: hidden;
+}
+
+.sts-navbox__title {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 1rem;
+	margin: 0;
+	padding: 0.6rem 1rem;
+	background: var(--sl-color-accent-low);
+	color: var(--sl-color-accent-high);
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-lg);
+	font-weight: 700;
+	text-transform: capitalize;
+}
+
+.sts-navbox__title a {
+	font-family: var(--__sl-font);
+	font-size: var(--sl-text-sm);
+	font-weight: 400;
+	text-transform: none;
+}
+
+.sts-navbox dl {
+	margin: 0;
+}
+
+.sts-navbox dl > div {
+	display: grid;
+	grid-template-columns: 9rem 1fr;
+	gap: 1rem;
+	padding: 0.5rem 1rem;
+	border-block-start: 1px solid var(--sl-color-gray-6);
+}
+
+.sts-navbox dt {
+	font-weight: 600;
+}
+
+.sts-navbox dd {
+	margin: 0;
+}
+
+.sts-navbox ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem 1.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sts-navbox__current {
+	font-weight: 700;
+	color: var(--sl-color-white);
+}
+
+@media (max-width: 40rem) {
+	.sts-navbox dl > div {
+		grid-template-columns: 1fr;
+		gap: 0.2rem;
+	}
+}
+
+/* --- The wiki's front page ---------------------------------------------------------------------------------------- */
+
+.sts-hub {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+	gap: 1.25rem;
+	margin-block-start: 1.5rem;
+}
+
+.sts-hub__panel {
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+	padding: 1.1rem 1.25rem 1.25rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+}
+
+.sts-hub__panel header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.sts-hub__panel h2 {
+	margin: 0;
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-2xl);
+}
+
+.sts-hub__panel h2 a {
+	color: var(--sl-color-white) !important;
+	text-decoration: none;
+}
+
+.sts-hub__panel p {
+	margin: 0;
+	color: var(--sl-color-gray-2);
+}
+
+.sts-hub__count {
+	padding: 0.05rem 0.7rem;
+	border-radius: 999px;
+	background: var(--sl-color-accent-low);
+	color: var(--sl-color-accent-high);
+	font-size: var(--sl-text-sm);
+	font-weight: 600;
+}
+
+.sts-hub__panel ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem 1.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: var(--sl-text-sm);
+}
+
+/* A few of the kind's entries, as pictures. */
+.sts-hub__preview {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.9rem;
+	padding: 0.75rem 0.5rem 0.25rem 0.75rem;
+}
+
+.sts-hub__preview .sts-card {
+	--w: 6.25rem;
+}
+
+.sts-hub__preview .sts-icon-frame {
+	--size: 4rem;
+}
+
+.sts-hub__more {
+	margin-block-start: auto;
+	padding-block-start: 0.4rem;
+	font-size: var(--sl-text-sm);
+}
+
+/* The game's keywords on the keywords page. */
+.sts-glossary {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+	gap: 0.25rem 2.5rem;
+}
+
+.sts-glossary > div {
+	margin-block: 0.6rem;
+}
+
+.sts-glossary dt {
+	font-weight: 700;
+}
+
+.sts-glossary dd {
+	margin-inline-start: 0;
+	color: var(--sl-color-gray-2);
+}
+
+/* --- Inline references ---------------------------------------------------------------------------------------------
+   A card, relic, potion, keyword or character named in text: its icon and name (src/lib/refs.mjs). */
+
+.sts-ref {
+	white-space: nowrap;
+}
+
+.sts-ref__icon {
+	display: inline-block !important;
+	inline-size: auto;
+	block-size: 1.35em;
+	margin: -0.3em 0.25em -0.2em 0 !important;
+	vertical-align: middle;
+	filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.7));
+}
+
+.sts-ref--character .sts-ref__icon {
+	block-size: 1.5em;
+}
+
+.sts-ref__icon--energy {
+	margin-inline: 0.05em !important;
+}
+
+/* Words with a hover box but no link (on card faces, and inside tiles that are links themselves). */
+span.sts-ref[data-tip] {
+	cursor: help;
+}
+
+.sts-card span.sts-ref,
+.sts-tooltip span.sts-ref {
+	white-space: normal;
+}
+
+a.sts-ref.sts-gold {
+	color: var(--sts-gold);
+}
+
+/* --- Hover boxes ---------------------------------------------------------------------------------------------------
+   One box, moved to whatever is hovered (src/scripts/tooltips.ts), styled after the game's hover tips. */
+
+.sts-tooltip {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 0;
+	z-index: 1000;
+	max-inline-size: min(26rem, calc(100vw - 1.5rem));
+	padding: 0.75rem 0.9rem;
+	border: 1px solid #4a3f2c;
+	border-radius: 0.5rem;
+	background: linear-gradient(180deg, #2b241b, #1a1612);
+	box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.5);
+	color: #e9e0cb;
+	font-size: var(--sl-text-sm);
+	line-height: 1.45;
+	pointer-events: none;
+	animation: sts-tooltip-in 0.12s ease-out;
+}
+
+@keyframes sts-tooltip-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sts-tooltip {
+		animation: none;
+	}
+}
+
+.sts-tooltip[hidden] {
+	display: none;
+}
+
+.sts-tooltip p {
+	margin: 0;
+}
+
+.sts-tooltip__entry {
+	display: flex;
+	gap: 0.75rem;
+	max-inline-size: 20rem;
+}
+
+.sts-tooltip__entry > img {
+	inline-size: 2.75rem;
+	block-size: 2.75rem;
+	flex-shrink: 0;
+	object-fit: contain;
+}
+
+.sts-tooltip__title {
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-lg);
+	font-weight: 700;
+	color: #efc851;
+}
+
+.sts-tooltip__meta {
+	margin-block-end: 0.25rem !important;
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #a89c84;
+}
+
+.sts-tooltip .sts-flavor {
+	margin-block-start: 0.4rem;
+	font-style: italic;
+	color: #a89c84;
+}
+
+/* Text in a hover box is always on its dark background, whatever the site's theme. */
+.sts-tooltip .sts-gold {
+	color: #efc851;
+}
+.sts-tooltip .sts-blue {
+	color: #87ceeb;
+}
+.sts-tooltip .sts-green {
+	color: #7fff00;
+}
+.sts-tooltip .sts-red {
+	color: #ff5555;
+}
+
+.sts-tooltip__cards {
+	display: flex;
+	gap: 1.4rem;
+	padding: 0.9rem 0.4rem 0.2rem 0.9rem;
+}
+
+.sts-tooltip__cards .sts-card {
+	--w: min(11rem, 38vw);
+}

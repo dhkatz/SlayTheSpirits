@@ -1,33 +1,18 @@
 ---
-// The drink ladder, lightest first, with the default names and Tipsy from the rules engine.
-import { rules, asset } from '../lib/data';
+// The drink ladder, lightest first: one rung per drink, with its default name, what to do and the Tipsy it adds, all
+// from the rules engine. Each links to its keyword page.
+import { asset, drinks, refs } from '../lib/data';
 ---
 
-<div class="sts-table-wrap">
-	<table>
-		<thead>
-			<tr>
-				<th></th>
-				<th>Drink</th>
-				<th>What to do</th>
-				<th>Tipsy</th>
-			</tr>
-		</thead>
-		<tbody>
-			{
-				rules.ladder.map((step) => (
-					<tr>
-						<td>
-							<img class="sts-icon" style="width:2.2rem;height:2.2rem" src={asset(`generated/images/powers/spirits_${step.kind.toLowerCase()}_tab_power.png`)} alt="" />
-						</td>
-						<td>
-							<strong>{step.singular}</strong>
-						</td>
-						<td>{step.description.replace(/ Gain \d+ Tipsy\.$/, '')}</td>
-						<td>{step.tipsy}</td>
-					</tr>
-				))
-			}
-		</tbody>
-	</table>
-</div>
+<ol class="sts-ladder not-content">
+	{
+		drinks.map((drink, rung) => (
+			<li class={`sts-ladder__rung sts-drink--${rung}`}>
+				{drink.icon && <img src={asset(drink.icon)} alt="" loading="lazy" />}
+				<p class="sts-ladder__name" set:html={refs.ref('keyword', drink.slug, { icon: false })} />
+				<p class="sts-ladder__what">{drink.searchText.replace(/ Gain \d+ Tipsy\.$/, '')}</p>
+				<p class="sts-ladder__tipsy">{(drink.tipsy ?? 0) > 0 ? `+${drink.tipsy} Tipsy` : 'No Tipsy'}</p>
+			</li>
+		))
+	}
+</ol>

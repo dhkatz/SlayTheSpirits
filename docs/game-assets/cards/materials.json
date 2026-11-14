@@ -1,0 +1,77 @@
+{
+	"card_banner_ancient": {
+		"h": 0.0,
+		"s": 0.2,
+		"v": 0.9
+	},
+	"card_banner_common": {
+		"h": 1.0,
+		"s": 0.0,
+		"v": 0.85
+	},
+	"card_banner_curse": {
+		"h": 0.27,
+		"s": 1.1,
+		"v": 0.9
+	},
+	"card_banner_event": {
+		"h": 0.875,
+		"s": 0.85,
+		"v": 0.9
+	},
+	"card_banner_rare": {
+		"h": 0.563,
+		"s": 1.198,
+		"v": 1.14
+	},
+	"card_banner_status": {
+		"h": 0.634,
+		"s": 0.35,
+		"v": 0.8
+	},
+	"card_banner_uncommon": {
+		"h": 1.0,
+		"s": 1.0,
+		"v": 1.0
+	},
+	"card_frame_blue": {
+		"h": 0.55,
+		"s": 0.9,
+		"v": 1.0
+	},
+	"card_frame_colorless": {
+		"h": 1.0,
+		"s": 0.0,
+		"v": 1.2
+	},
+	"card_frame_curse": {
+		"h": 0.85,
+		"s": 0.05,
+		"v": 0.55
+	},
+	"card_frame_green": {
+		"h": 0.32,
+		"s": 0.45,
+		"v": 1.2
+	},
+	"card_frame_orange": {
+		"h": 0.12,
+		"s": 1.5,
+		"v": 1.2
+	},
+	"card_frame_pink": {
+		"h": 0.965,
+		"s": 0.55,
+		"v": 1.2
+	},
+	"card_frame_red": {
+		"h": 0.025,
+		"s": 0.85,
+		"v": 1.0
+	},
+	"card_frame_yellow": {
+		"h": 0.1600000076,
+		"s": 0.400000019,
+		"v": 1.3
+	}
+}

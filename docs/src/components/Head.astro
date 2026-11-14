@@ -1,0 +1,9 @@
+---
+// Starlight's <head>, plus the hover boxes script, so every page has it (inline references can be on any page).
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default><slot /></Default>
+<script>
+	import '../scripts/tooltips';
+</script>

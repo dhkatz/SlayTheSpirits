@@ -1,0 +1,54 @@
+---
+// The wiki's front page: one panel per kind of entry, with how many there are, a few of them as pictures, and every
+// entry's name to jump to.
+import CardFace from './CardFace.astro';
+import ItemIcon from './ItemIcon.astro';
+import { href, refs, type Card } from '../../lib/data';
+import { entryHref, kinds, type Entry, type Kind } from '../../lib/wiki';
+
+const all = Object.values(kinds) as unknown as Kind<Entry>[];
+const heading = (plural: string) => plural.charAt(0).toUpperCase() + plural.slice(1);
+
+/** Up to `count` entries spread evenly through a kind's list, so the pictures show its variety. */
+function sample<T>(items: readonly T[], count: number): T[] {
+	if (items.length <= count) return [...items];
+	return Array.from({ length: count }, (_, i) => items[Math.round((i * (items.length - 1)) / (count - 1))]);
+}
+
+type Pictured = Entry & { image?: string | null; icon?: string | null; rarity?: string };
+---
+
+<div class="sts-wiki-page sts-hub not-content">
+	{
+		all.map((kind) => (
+			<section class="sts-hub__panel">
+				<header>
+					<h2>
+						<a href={href(kind.page)}>{heading(kind.plural)}</a>
+					</h2>
+					<span class="sts-hub__count">{kind.items.length}</span>
+				</header>
+				<p>{kind.blurb}</p>
+				<div class="sts-hub__preview">
+					{sample(kind.items, kind.key === 'cards' ? 4 : 6).map((item: Pictured) => (
+						<a href={entryHref(kind.key, item.slug)} data-tip={`${kind.key}/${item.slug}`} aria-label={item.title}>
+							{kind.key === 'cards' ? (
+								<CardFace card={item as unknown as Card} />
+							) : (
+								<ItemIcon image={item.image ?? item.icon ?? null} title={item.title} rarity={item.rarity} />
+							)}
+						</a>
+					))}
+				</div>
+				<ul role="list">
+					{kind.items.map((item) => (
+						<li set:html={refs.ref(kind.ref, item.slug)} />
+					))}
+				</ul>
+				<a class="sts-hub__more" href={href(kind.page)}>
+					Browse and filter {kind.plural}
+				</a>
+			</section>
+		))
+	}
+</div>

@@ -1,0 +1,36 @@
+---
+// The compendium for one kind of entry (cards, relics, potions or keywords), built from its description in
+// src/lib/wiki.ts.
+import Compendium from './Compendium.astro';
+import EntryTile from './EntryTile.astro';
+import { compendium } from '../../lib/compendium';
+import { kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	/** Prefix for URL parameters, if a page has more than one compendium. */
+	id?: string;
+}
+
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const model = compendium(kind.items, kind.dimensions, (item) => `${item.title} ${item.searchText}`);
+---
+
+<div class="sts-wiki-page">
+	<Compendium
+		facets={model.facets}
+		sorts={model.sorts}
+		toggles={kind.toggles}
+		noun={{ one: kind.singular, many: kind.plural }}
+		id={Astro.props.id}
+		layout={kind.layout}
+	>
+		{
+			kind.items.map((item) => (
+				<li {...model.attributes(item)}>
+					<EntryTile kind={kind.key} item={item} />
+				</li>
+			))
+		}
+	</Compendium>
+</div>

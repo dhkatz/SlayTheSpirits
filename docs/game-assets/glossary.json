@@ -1,0 +1,136 @@
+{
+	"terms": [
+		{
+			"id": "keyword:EXHAUST",
+			"kind": "keyword",
+			"title": "Exhaust",
+			"description": "Removed until the end of combat.",
+			"icon": null,
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Exhaust"
+		},
+		{
+			"id": "keyword:RETAIN",
+			"kind": "keyword",
+			"title": "Retain",
+			"description": "Retained cards are not discarded at the end of turn.",
+			"icon": null,
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Retain"
+		},
+		{
+			"id": "keyword:UNPLAYABLE",
+			"kind": "keyword",
+			"title": "Unplayable",
+			"description": "Unplayable cards cannot be played.",
+			"icon": null,
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Unplayable"
+		},
+		{
+			"id": "orb:FROST_ORB",
+			"kind": "orb",
+			"title": "Frost",
+			"description": "Orb: Gains [gold]Block[/gold].",
+			"icon": "icons/frost_orb.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Frost"
+		},
+		{
+			"id": "power:DEXTERITY_POWER",
+			"kind": "power",
+			"title": "Dexterity",
+			"description": "Dexterity improves [gold]Block[/gold] gained from cards.",
+			"icon": "icons/dexterity_power.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Dexterity"
+		},
+		{
+			"id": "power:STRENGTH_POWER",
+			"kind": "power",
+			"title": "Strength",
+			"description": "Strength adds additional damage to Attacks.",
+			"icon": "icons/strength_power.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Strength"
+		},
+		{
+			"id": "static:BLOCK",
+			"kind": "static",
+			"title": "Block",
+			"description": "Until next turn, prevents damage.",
+			"icon": null,
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Block"
+		},
+		{
+			"id": "static:CHANNELING",
+			"kind": "static",
+			"title": "Channel",
+			"description": "Channeling an Orb puts it into your first empty slot. If you have no empty slots, your first Orb is automatically [gold]Evoked[/gold] to make room.",
+			"icon": null,
+			"wiki": null
+		},
+		{
+			"id": "static:ENERGY",
+			"kind": "static",
+			"title": "Energy",
+			"description": "Energy is used to play cards from your [gold]Hand[/gold].",
+			"icon": null,
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Energy"
+		},
+		{
+			"id": "static:MONEY_POUCH",
+			"kind": "static",
+			"title": "Gold",
+			"description": "How much Gold you have. Gold is the currency within the Spire.",
+			"icon": null,
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Gold"
+		},
+		{
+			"id": "static:SUMMON_STATIC",
+			"kind": "static",
+			"title": "Summon",
+			"description": "Summon [gold]Osty[/gold].\nIf already summoned, raise his Max HP for this combat.",
+			"icon": null,
+			"wiki": null
+		}
+	],
+	"characters": [
+		{
+			"key": "ironclad",
+			"title": "The Ironclad",
+			"shortTitle": "Ironclad",
+			"icon": "characters/ironclad.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Ironclad"
+		},
+		{
+			"key": "silent",
+			"title": "The Silent",
+			"shortTitle": "Silent",
+			"icon": "characters/silent.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Silent"
+		},
+		{
+			"key": "defect",
+			"title": "The Defect",
+			"shortTitle": "Defect",
+			"icon": "characters/defect.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Defect"
+		},
+		{
+			"key": "regent",
+			"title": "The Regent",
+			"shortTitle": "Regent",
+			"icon": "characters/regent.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Regent"
+		},
+		{
+			"key": "necrobinder",
+			"title": "The Necrobinder",
+			"shortTitle": "Necrobinder",
+			"icon": "characters/necrobinder.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Necrobinder"
+		},
+		{
+			"key": "fool",
+			"title": "The Fool",
+			"shortTitle": "Fool",
+			"icon": "characters/fool.png",
+			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Fool"
+		}
+	]
+}

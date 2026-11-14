@@ -1,0 +1,115 @@
+---
+// The page for one card, relic, potion or keyword, laid out like a wiki article: the text on the left (opening
+// sentence, how to get it, its keywords, what uses it, notes, source), its infobox on the right, and the navigation
+// box for its kind underneath. Notes live in src/content/notes/<kind>/<slug>.md; a page without them links to GitHub
+// to add some.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getCollection, render } from 'astro:content';
+import Breadcrumbs from './Breadcrumbs.astro';
+import Infobox from './Infobox.astro';
+import KeywordTips from './KeywordTips.astro';
+import Navbox from './Navbox.astro';
+import UsedBy from './UsedBy.astro';
+import { href } from '../../lib/data';
+import { editUrl, newFileUrl, sourceUrl } from '../../lib/site.mjs';
+import { entryHref, kinds, neighbors, wikiPage, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	item: Entry;
+}
+
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const { item } = Astro.props;
+const { prev, next } = neighbors(kind, item);
+const link = (entry?: Entry) => (entry ? { link: entryHref(kind.key, entry.slug), label: entry.title } : false);
+
+const notesFolder = `docs/src/content/notes/${kind.key}`;
+const note = (await getCollection('notes')).find((entry) => entry.id === `${kind.key}/${item.slug}`);
+const Notes = note ? (await render(note)).Content : null;
+const addNotes = newFileUrl(notesFolder, `${item.slug}.md`);
+
+const isKeyword = kind.key === 'keywords';
+const obtain = kind.obtain(item);
+const plural = kind.plural.charAt(0).toUpperCase() + kind.plural.slice(1);
+---
+
+<StarlightPage
+	frontmatter={{
+		title: item.title,
+		description: kind.summary(item),
+		editUrl: note?.filePath ? editUrl(`docs/${note.filePath}`) : addNotes,
+		prev: link(prev),
+		next: link(next),
+		tableOfContents: false,
+	}}
+>
+	<div class="sts-wiki-page">
+		<Breadcrumbs
+			trail={[
+				{ label: 'Wiki', href: href(wikiPage) },
+				{ label: plural, href: href(kind.page) },
+				{ label: item.title },
+			]}
+		/>
+		<div class="sts-entry">
+			<Infobox kind={kind.key} item={item} />
+
+			<div class="sts-entry__main">
+				<p class="sts-lead" set:html={kind.lead(item)} />
+
+				{
+					obtain && (
+						<>
+							<h2 id="obtaining">Obtaining</h2>
+							<p set:html={obtain} />
+						</>
+					)
+				}
+
+				{
+					item.tips.length > 0 && (
+						<>
+							<h2 id="keywords">{isKeyword ? 'Related Keywords' : 'Keywords'}</h2>
+							<KeywordTips tips={item.tips} />
+						</>
+					)
+				}
+
+				{
+					isKeyword && (
+						<>
+							<h2 id="used-by">Used By</h2>
+							<UsedBy keyword={item.slug} />
+						</>
+					)
+				}
+
+				<h2 id="notes">Notes</h2>
+				{
+					Notes ? (
+						<Notes />
+					) : (
+						<p class="sts-muted">
+							No notes yet. Know a combo, a trick or a story? <a href={addNotes}>Add some on GitHub</a>.
+						</p>
+					)
+				}
+
+				{
+					item.source && (
+						<>
+							<h2 id="source">Source</h2>
+							<p>
+								Defined in <a href={sourceUrl(item.source.path, item.source.line)}>{item.source.path.split('/').pop()}</a>.
+								Its game id is <code>{item.id.split(':').pop()}</code>, which is also its localization key.
+							</p>
+						</>
+					)
+				}
+			</div>
+		</div>
+
+		<Navbox kind={kind.key} current={item.slug} />
+	</div>
+</StarlightPage>

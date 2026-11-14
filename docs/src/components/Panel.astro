@@ -1,0 +1,21 @@
+---
+// A titled panel with an optional picture, for laying a few things side by side (wrap them in <PanelGrid>).
+// The content is ordinary Markdown: leave a blank line after the opening tag.
+import { asset } from '../lib/data';
+
+interface Props {
+	title: string;
+	/** A picture under public/, such as generated/images/rest_site/spirits_chug.png. */
+	image?: string;
+}
+
+const { title, image } = Astro.props;
+---
+
+<section class="sts-panel">
+	<header>
+		{image && <img src={asset(image)} alt="" loading="lazy" />}
+		<h3>{title}</h3>
+	</header>
+	<slot />
+</section>

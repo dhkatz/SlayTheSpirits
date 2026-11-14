@@ -56,27 +56,6 @@
 	color: var(--sl-color-white);
 }
 
-.sts-tile .sts-icon {
-	width: 3rem;
-	height: 3rem;
-	image-rendering: auto;
-	flex-shrink: 0;
-}
-
-.sts-tile .sts-cost {
-	display: inline-grid;
-	place-items: center;
-	min-width: 1.9rem;
-	height: 1.9rem;
-	padding: 0 0.3rem;
-	border-radius: 999px;
-	background: var(--sl-color-accent-low);
-	color: var(--sl-color-accent-high);
-	font-weight: 700;
-	font-size: var(--sl-text-sm);
-	flex-shrink: 0;
-}
-
 .sts-tile .sts-meta {
 	font-size: var(--sl-text-xs);
 	color: var(--sl-color-gray-3);
@@ -97,10 +76,348 @@
 	font-size: var(--sl-text-sm);
 }
 
-.sts-table-wrap {
+/* --- Tables ---------------------------------------------------------------------------------------------------------
+   Every table in the docs: a bordered box with a header band and separated rows, instead of Starlight's bare rules. */
+
+.sl-markdown-content table:not(:where(.not-content *)) {
+	display: table;
+	inline-size: 100%;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+	font-size: var(--sl-text-sm);
+}
+
+.sl-markdown-content table:not(:where(.not-content *)) :is(th, td) {
+	padding: 0.6rem 1rem;
+	border-block-end: 1px solid var(--sl-color-gray-6);
+	vertical-align: top;
+}
+
+.sl-markdown-content table:not(:where(.not-content *)) thead th {
+	border-block-end: 1px solid var(--sl-color-gray-5);
+	background: var(--sl-color-gray-6);
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--sl-color-gray-2);
+}
+
+.sl-markdown-content table:not(:where(.not-content *)) tbody tr:last-child :is(th, td) {
+	border-block-end: 0;
+}
+
+.sl-markdown-content table:not(:where(.not-content *)) td:first-child {
+	white-space: nowrap;
+}
+
+/* --- Drinks ---------------------------------------------------------------------------------------------------------
+   Each rung of the drink ladder has a color, lightest to heaviest, used by drink pills and the ladder itself. */
+
+.sts-drink--0 {
+	--drink: #4a90c8;
+}
+.sts-drink--1 {
+	--drink: #5fa052;
+}
+.sts-drink--2 {
+	--drink: #c9982e;
+}
+.sts-drink--3 {
+	--drink: #d9742a;
+}
+.sts-drink--4 {
+	--drink: #cf4638;
+}
+
+.sts-drink {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.6rem 0.1rem 0.45rem;
+	border: 1px solid color-mix(in oklab, var(--drink) 55%, transparent);
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--drink) 18%, transparent);
+	font-size: var(--sl-text-sm);
+	font-weight: 600;
+	line-height: 1.5;
+}
+
+.sts-drink a.sts-ref,
+.sts-drink span.sts-ref {
+	color: var(--sl-color-white);
+	text-decoration: none;
+}
+
+.sts-drink a.sts-ref:hover {
+	text-decoration: underline;
+}
+
+.sts-drink .sts-ref__icon {
+	block-size: 1.2em;
+}
+
+/* The drink ladder: one rung per drink, side by side. */
+.sts-ladder {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(8.25rem, 1fr));
+	gap: 0.75rem;
+	margin: 1.25rem 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sts-ladder__rung {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 1rem 0.75rem 0.9rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-block-start: 3px solid var(--drink);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+	text-align: center;
+}
+
+.sts-ladder__rung img {
+	inline-size: 3.25rem;
+	block-size: 3.25rem;
+}
+
+.sts-ladder__rung p {
+	margin: 0;
+}
+
+.sts-ladder__name a {
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-lg);
+	font-weight: 700;
+	color: var(--sl-color-white);
+	text-decoration: none;
+}
+
+.sts-ladder__name .sts-ref {
+	white-space: normal;
+	text-wrap: balance;
+}
+
+.sts-ladder__name a:hover {
+	text-decoration: underline;
+}
+
+.sts-ladder__what {
+	flex: 1;
+	font-size: var(--sl-text-sm);
+	line-height: 1.4;
+	color: var(--sl-color-gray-2);
+}
+
+.sts-ladder__tipsy {
+	margin-block-start: 0.3rem !important;
+	padding: 0.05rem 0.6rem;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--drink) 22%, transparent);
+	font-size: var(--sl-text-xs);
+	font-weight: 600;
+	color: var(--sl-color-white);
+}
+
+/* --- Rule sets ------------------------------------------------------------------------------------------------------ */
+
+/* The built-in rule sets at a glance. */
+.sts-rulesets {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+	gap: 1rem;
+	margin-block: 1.25rem;
+}
+
+.sts-rulesets section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+}
+
+.sts-rulesets h3 {
+	margin: 0;
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-xl);
+	color: var(--sl-color-white);
+}
+
+.sts-rulesets p {
+	flex: 1;
+	margin: 0;
+	font-size: var(--sl-text-sm);
+	line-height: 1.5;
+	color: var(--sl-color-gray-2);
+}
+
+.sts-rulesets dl {
+	display: grid;
+	gap: 0.35rem;
+	margin: 0;
+	padding-block-start: 0.6rem;
+	border-block-start: 1px solid var(--sl-color-gray-6);
+	font-size: var(--sl-text-sm);
+}
+
+.sts-rulesets dl > div {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.2rem 0.75rem;
+}
+
+.sts-rulesets dt {
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--sl-color-gray-3);
+}
+
+.sts-rulesets dd {
+	margin: 0;
+	text-align: end;
+}
+
+/* The comparison table. Below the width where it fits, it scrolls sideways with the first column pinned. */
+.sts-rules {
+	margin-block: 1.25rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
 	overflow-x: auto;
 }
 
-.sts-off {
+.sts-rules table {
+	inline-size: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: var(--sl-text-sm);
+}
+
+.sts-rules :is(th, td) {
+	padding: 0.55rem 0.75rem;
+	border-block-end: 1px solid var(--sl-color-gray-6);
+	text-align: start;
+	vertical-align: middle;
+}
+
+.sts-rules thead th {
+	border-block-end: 1px solid var(--sl-color-gray-5);
+	background: var(--sl-color-gray-6);
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-lg);
+	color: var(--sl-color-white);
+	white-space: nowrap;
+}
+
+.sts-rules thead th:first-child {
+	font-family: inherit;
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--sl-color-gray-3);
+}
+
+.sts-rules tbody th {
+	font-weight: 600;
+	color: var(--sl-color-white);
+	white-space: nowrap;
+}
+
+/* The first column stays put when the table scrolls sideways. */
+.sts-rules :is(thead, tbody) tr > :first-child {
+	position: sticky;
+	inset-inline-start: 0;
+	background: var(--sl-color-bg);
+}
+
+.sts-rules thead tr > :first-child {
+	background: var(--sl-color-gray-6);
+}
+
+.sts-rules small {
+	display: block;
+	margin-block-start: 0.15rem;
+	font-size: var(--sl-text-xs);
+	font-weight: 400;
+	color: var(--sl-color-gray-3);
+}
+
+.sts-rules :is(th, td):first-child {
+	padding-inline-start: 1rem;
+}
+
+.sts-rules__group th {
+	padding-block: 0.35rem !important;
+	background: var(--sl-color-accent-low) !important;
+	font-size: var(--sl-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--sl-color-accent-high) !important;
+}
+
+.sts-rules tbody th > a {
+	color: var(--sl-color-text-accent);
+}
+
+.sts-rules__off {
 	color: var(--sl-color-gray-4);
+}
+
+.sts-rules tbody:last-child tr:last-child :is(th, td) {
+	border-block-end: 0;
+}
+
+.sts-rules tbody tr:not(.sts-rules__group):hover > * {
+	background: var(--sl-color-gray-6);
+}
+
+/* --- Panels --------------------------------------------------------------------------------------------------------- */
+
+.sts-panels {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+	gap: 1rem;
+	margin-block: 1.25rem;
+}
+
+.sts-panel {
+	margin: 0 !important;
+	padding: 1rem 1.2rem 1.1rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-black);
+}
+
+.sts-panel header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-block-end: 0.5rem;
+}
+
+.sts-panel header img {
+	inline-size: 3.25rem;
+	block-size: 3.25rem;
+	object-fit: contain;
+}
+
+.sts-panel header h3 {
+	margin: 0;
+	font-family: Kreon, Georgia, serif;
+	font-size: var(--sl-text-2xl);
+}
+
+.sts-panel p {
+	font-size: var(--sl-text-sm);
+	line-height: 1.6;
 }
