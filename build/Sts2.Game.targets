@@ -17,6 +17,21 @@
     <Reference Include="SmartFormat" HintPath="$(Sts2DataDir)\SmartFormat.dll" Private="false" />
   </ItemGroup>
 
+  <!--
+    Godot's C# source generators, so SDK and mod code can define Godot node classes (custom controls).
+    Godot discovers a class's methods, signals and properties through generated code; without it, overrides
+    such as _Ready never run. Mod classes are created with `new` and get a path-less script, so:
+      ScriptPathAttribute      off: no res:// script files exist for mod code (and it needs a Godot project dir).
+      GodotPluginsInitializer  off: that is the game's own entry point, not ours.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Godot.SourceGenerators" PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GodotDisabledSourceGenerators>ScriptPathAttribute;GodotPluginsInitializer</GodotDisabledSourceGenerators>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Game code is not annotated for our analyzers; keep strictness for our code without drowning in noise. -->
     <NoWarn>$(NoWarn);CA1848;CA2007</NoWarn>

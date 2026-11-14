@@ -33,6 +33,7 @@ public sealed class SlayTheSpiritsMod : SpireMod
         Rules = new RulesService(context);
         DrinkGame = new DrinkGame(context, Rules, new Announcer(context.Toasts, () => Rules.Effective));
         Rules.Initialize();
+        RulesSettingsTab.Register(context, Rules);
 
         context.Content
             // Colorless Tavern set: shops, colorless rewards, card generators.

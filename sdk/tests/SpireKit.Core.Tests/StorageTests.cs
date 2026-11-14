@@ -7,7 +7,29 @@ namespace SpireKit.Tests;
 
 public sealed record Settings(string Name, int Volume);
 
+/// <summary>Init-only settings with non-trivial defaults, the shape that loses defaults without filling.</summary>
+public sealed record Prefs
+{
+    public string Name { get; init; } = "default";
+
+    public bool Enabled { get; init; } = true;
+
+    public int Volume { get; init; } = 7;
+
+    public PrefsSection Section { get; init; } = new();
+
+    public IReadOnlyDictionary<string, int> Weights { get; init; } = new Dictionary<string, int> { ["a"] = 1, ["b"] = 2 };
+}
+
+public sealed record PrefsSection
+{
+    public bool Loud { get; init; } = true;
+
+    public string Mode { get; init; } = "normal";
+}
+
 [JsonSerializable(typeof(Settings))]
+[JsonSerializable(typeof(Prefs))]
 internal sealed partial class TestJsonContext : JsonSerializerContext;
 
 public sealed class StorageTests
@@ -66,6 +88,49 @@ public sealed class StorageTests
 
         Assert.Equal(DecodeStatus.Invalid, result.Status);
         Assert.Contains("too loud", result.Error, StringComparison.Ordinal);
+    }
+
+    private static VersionedJsonDocument<Prefs> PrefsFormat() =>
+        new(1, TestJsonContext.Default.Prefs, defaults: static () => new Prefs());
+
+    [Fact]
+    public void Missing_properties_take_the_defaults_instead_of_null_or_false()
+    {
+        const string json = """{"schema":1,"data":{"Name":"mine","Section":{"Mode":"quiet"}}}""";
+
+        var result = PrefsFormat().Decode(json, static () => throw new InvalidOperationException("no fallback"));
+
+        Assert.Equal(DecodeStatus.Ok, result.Status);
+        Assert.Equal("mine", result.Value.Name);
+        Assert.True(result.Value.Enabled);
+        Assert.Equal(7, result.Value.Volume);
+        Assert.True(result.Value.Section.Loud);
+        Assert.Equal("quiet", result.Value.Section.Mode);
+        Assert.Equal(new Prefs().Weights, result.Value.Weights);
+    }
+
+    [Fact]
+    public void Present_values_win_and_dictionaries_are_not_merged()
+    {
+        const string json = """{"schema":1,"data":{"Enabled":false,"Volume":0,"Weights":{"c":3},"Section":null}}""";
+
+        var result = PrefsFormat().Decode(json, static () => throw new InvalidOperationException("no fallback"));
+
+        Assert.False(result.Value.Enabled);
+        Assert.Equal(0, result.Value.Volume);
+        Assert.Equal(new Dictionary<string, int> { ["c"] = 3 }, result.Value.Weights);
+        Assert.Equal(new PrefsSection(), result.Value.Section); // Null counts as missing.
+    }
+
+    [Fact]
+    public void A_throwing_validator_falls_back_instead_of_crashing()
+    {
+        var format = Format(_ => throw new KeyNotFoundException("bug in validator"));
+
+        var result = format.Decode(format.Encode(new Settings("a", 3)), () => new Settings("default", 0));
+
+        Assert.Equal(DecodeStatus.Invalid, result.Status);
+        Assert.Equal("default", result.Value.Name);
     }
 
     [Fact]

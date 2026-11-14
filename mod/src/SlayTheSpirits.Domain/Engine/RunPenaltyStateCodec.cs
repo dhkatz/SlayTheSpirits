@@ -12,7 +12,8 @@ public static class RunPenaltyStateCodec
     public static VersionedJsonDocument<RunPenaltyState> Format { get; } = new(
         SchemaVersion,
         DomainJsonContext.Default.RunPenaltyState,
-        migrations: []);
+        migrations: [],
+        defaults: static () => new RunPenaltyState());
 
     public static string ToJson(RunPenaltyState state) => Format.Encode(state);
 

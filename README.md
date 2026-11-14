@@ -25,6 +25,17 @@ The game log (`%AppData%\SlayTheSpire2\logs`) shows a health line after startup,
 
 Every player needs the same mod version (the game enforces this for gameplay mods).
 
+### Running the game
+
+```powershell
+./tools/launch.ps1 -Build                  # rebuild (closes the game first), then launch on test profile 1
+./tools/launch.ps1 -OpenSettings Spirits   # straight to the mod's Settings tab
+./tools/launch.ps1 -Gallery                # SpireKit controls gallery (F8 toggles)
+./tools/launch.ps1 -Steam                  # your real Steam profile
+```
+
+Rules are edited in game under **Settings → Spirits** (main menu; read-only during a run or as a client).
+
 ### Local Multiplayer Testing
 
 ```powershell

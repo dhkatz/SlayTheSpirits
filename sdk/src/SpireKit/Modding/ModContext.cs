@@ -8,6 +8,7 @@ using SpireKit.Multiplayer;
 using SpireKit.Runs;
 using SpireKit.Storage;
 using SpireKit.UI;
+using SpireKit.UI.Settings;
 
 namespace SpireKit.Modding;
 
@@ -66,6 +67,9 @@ public sealed class ModContext
     /// Register slots in <c>OnInitialize</c>.
     /// </summary>
     public RunDataRegistry RunData { get; }
+
+    /// <summary>Tabs this mod adds to the game's Settings screen (main menu and pause menu).</summary>
+    public SettingsTabRegistry SettingsTabs { get; } = new();
 
     /// <summary>The mod's private folder in the game's user data directory. Resolved on first use.</summary>
     public IFileStore Storage => _storage.Value;

@@ -60,6 +60,9 @@ reference into the mod DLL with ILRepack. Consequences:
 | Only the host (or solo player) saves; the save is snapshotted (`RunManager.ToSave`) before entering each room and after each victory | `RunData` captures mod state at that same moment |
 | A loaded multiplayer save reaches clients as a `SerializableRun` packet; mid-run rejoin isn't supported | `RunData` appends its bundle to that packet, so clients have it before the run starts |
 | Peers must match gameplay mods exactly (`id-version`) | Rule sync can assume both sides run the same code |
+| Settings tabs are hardcoded in `NSettingsTabManager._Ready` (`_tabs` dictionary); the same screen serves the main menu and the pause menu | A postfix adds mod tabs to `_tabs`, so tab switching, bumpers and fades work unchanged |
+| Game widgets like `NSettingsTickbox`/`NPaginator` refuse to run as-is (`_Ready` throws unless subclassed) and find their parts by `%UniqueName` | `GameScenes.Graft` moves a scene's parts onto a mod subclass and re-owns them |
+| Mod assemblies aren't registered with Godot's script system (only the game's is) | Mod node classes get a path-less script on first `new` and Godot learns their methods/signals from source-generated code; they can't be referenced from `.tscn` files |
 
 ## SpireKit (SDK)
 
@@ -73,12 +76,15 @@ reference into the mod DLL with ILRepack. Consequences:
 | Session | `SessionTracker`, `SessionChanged`, `PeerConnected`, `ConnectedToHost` | Offline / Solo / Host / Client |
 | Networking | `NetHub.Channel(name)` → `IMessageChannel` | bytes over `SpireNetEnvelope` |
 | Shared settings | `HostAuthoritativeState<T>` + `AuthorityChannel<T>` | host owns, clients mirror, run lock, retries; pure and tested |
-| Storage | `IFileStore`, `JsonDocumentFile<T>`, `VersionedJsonDocument<T>` | schema-versioned envelopes, migrations, corrupt-file backups |
+| Storage | `IFileStore`, `JsonDocumentFile<T>`, `VersionedJsonDocument<T>` | schema-versioned envelopes, migrations, corrupt-file backups; `defaults:` fills properties missing from older files (source-generated JSON would otherwise make them null/false) |
 | Determinism | `DeterministicRandom`, `StableHash` | never draw from the game's RNG; derive a stream from the run seed |
 | Content | `ContentRegistry`, `SpireCard`, `SpirePower`, `ModArt` | pool registration, run filter, name validation, raw-PNG card art and power icons (`res://<ModId>/images/{cards,powers}/<entry>.png`) |
 | Async hooks | `IEventBus.SubscribeAsync` / `PublishAsync` | hook-driven game events are awaited by the game, so handlers can issue game commands (apply power, gain block) in lockstep |
 | Localization | `LocInjector`, `SpireTips.Text(key, title, body, icon)` | runtime entries that survive language changes; keyword tooltips with computed text |
-| UI | `GameVfx.SpeechBubble`, `GameVfx.CombatBanner`, `ToastOverlay`, `GameFonts` | native speech bubbles and turn-style banners (queued, never overlapping); out-of-combat toasts in the game's font. Stock Godot controls only (the game doesn't register mod node scripts) |
+| UI | `GameVfx.SpeechBubble`, `GameVfx.CombatBanner`, `ToastOverlay`, `GameFonts`, `GameStyle` | native speech bubbles and turn-style banners (queued, never overlapping); out-of-combat toasts; the game's palette, font and outlined text for code-built UI |
+| Custom controls | `SpireKit.UI.Controls` (`NumberStepper`, `ChoiceStepper`, `ControlsGallery`) | real Godot node classes in SDK/mod code (see "Write a custom control"); a startup probe reports feature `ui.controls` |
+| Settings tabs | `ModContext.SettingsTabs.Add(title, page => …)`, `SettingsPage`, `SettingsToggle`, `SettingsChoice` | a tab on the game's Settings screen (main menu and pause menu) built from the game's own tab, tickbox, picker, row and divider; page rebuilt on each show; `handle.Refresh()` for outside changes |
+| Game scenes | `GameScenes.Graft`, `GameScenes.CopyProperties`, `SceneDump` | subclass a game widget whose parts live in a `.tscn`; dump any scene's node tree (`launch.ps1 -DumpScenes`) |
 | Sharing | `ShareCode` | `PREFIX:base64url(deflate(json))` |
 | Run data | `ModContext.RunData.Register(slot, capture, restore)` | per-run state that survives save/quit: captured when the game snapshots the run, stored beside its save (`rundata/profile<N>/current_run[_mp].json`, stamped with seed + start time), sent to clients inside the loaded save, restored before `RunStarted` |
 
@@ -156,14 +162,31 @@ icon at `Assets/images/powers/<entry>.png` (`tools/icons.py` makes placeholders)
 `capture` returns text (or null) whenever the game snapshots the run; `restore` gets it back (or null) when a
 saved run is set up, before `RunStarted`. Keep it deterministic: every peer restores the same text.
 
-**Change the RuleSet shape.** Bump `RuleSetCodec.SchemaVersion` and register a `JsonMigration` from the
-previous version. Old profiles and share codes keep working.
+**Write a custom control.** Any project importing `Sts2.Game.targets` runs Godot's C# source generators. Declare a
+`partial` class deriving from a Godot node (`public partial class MyPicker : HBoxContainer`), override `_Ready`,
+`_GuiInput`, `_Draw` etc., and declare signals with `[Signal] public delegate void ChangedEventHandler(int v);`.
+Create it with `new` (never from a `.tscn`), build its parts in the constructor, and add them as internal
+children (`AddChild(part, @internal: InternalMode.Front)`) so callers' `GetChildren()` and `Duplicate()` ignore
+them. Style text with `GameStyle`. Handle `MegaInput.left`/`right`/`confirm` in `_GuiInput` so controllers work.
+
+**Add a Settings tab.** `context.SettingsTabs.Add("Title", page => { page.Header(...); page.Toggle(...); ... })`.
+The callback runs every time the tab is shown, so read current state and write changes straight back. Show
+read-only state with `editable: false`. Call `page.Refresh()` when an edit changes which rows exist, and keep the
+returned handle to `Refresh()` when state changes elsewhere. Check it with `tools/launch.ps1 -OpenSettings Title
+-Scroll 20`.
+
+**Add a setting to the RuleSet.** Add the property with its default, then a row in `RulesSettingsTab`. Files and share codes
+without it read as the default (`defaults:` on `RuleSetCodec.Format`).
+
+**Change the RuleSet shape** (rename, change meaning). Bump `RuleSetCodec.SchemaVersion` and register a
+`JsonMigration` from the previous version. Old profiles and share codes keep working.
 
 ## Known gaps (next milestones)
 
 - Locked rules still use their own `runs/<seed>.json` sidecar and reach clients over the rules channel; they
   could move to `RunData` too, so clients get them in the same packet as the save.
-- **No settings UI yet.** Edit `profile.json`; presets and share codes exist in the domain. Next: a main-menu
-  profile editor and a read-only lobby "Rules" panel.
+- **Settings tab covers the basics** (rule set, switches, every trigger, share codes). Still `profile.json` only:
+  drink caps, Tipsy weights, drink names, per-enemy rules, disabling single cards. No lobby "Rules" panel yet
+  (clients see the host's rules under Settings → Spirits).
 - Relic (Beer Stein) and potion (Mystery Brew), real card art, sounds.
 - Combat banners reuse the game's "Player Turn" banner scene, so they also play its turn sound.
