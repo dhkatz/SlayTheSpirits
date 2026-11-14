@@ -1,0 +1,60 @@
+---
+// Every built-in rule set side by side, straight from the rules engine's presets.
+import { rules, restSiteLimitNames, type Preset } from '../lib/data';
+
+const presets = rules.presets;
+const triggers = presets[0].triggers.map((t) => ({ id: t.id, name: t.name }));
+const rule = (preset: Preset, id: string) => preset.triggers.find((t) => t.id === id)!;
+const kinds = ['Finish', 'Chug', 'Shot'];
+const cap = (preset: Preset, kind: string) => (preset.caps as Record<string, number>)[kind];
+---
+
+<div class="sts-table-wrap">
+	<table>
+		<thead>
+			<tr>
+				<th>When</th>
+				{presets.map((p) => <th>{p.name}</th>)}
+			</tr>
+		</thead>
+		<tbody>
+			{
+				triggers.map((t) => (
+					<tr>
+						<td>{t.name}</td>
+						{presets.map((p) => {
+							const r = rule(p, t.id);
+							const threshold = r.threshold !== null ? ` (${r.threshold}+ ${r.thresholdUnit})` : '';
+							return r.enabled ? (
+								<td>
+									<strong>{r.drink}</strong>
+									<br />
+									<small>
+										{r.target}
+										{threshold}
+									</small>
+								</td>
+							) : (
+								<td class="sts-off">Off</td>
+							);
+						})}
+					</tr>
+				))
+			}
+			<tr>
+				<td>Rest site drinks</td>
+				{presets.map((p) => <td>{restSiteLimitNames[p.restSiteDrinks] ?? p.restSiteDrinks}</td>)}
+			</tr>
+			{
+				kinds.map((kind) => (
+					<tr>
+						<td>Max {kind} per act</td>
+						{presets.map((p) => (
+							<td>{cap(p, kind) ?? 'No limit'}</td>
+						))}
+					</tr>
+				))
+			}
+		</tbody>
+	</table>
+</div>

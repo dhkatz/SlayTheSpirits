@@ -1,0 +1,106 @@
+/* Slay the Spire's palette: gold headings and keywords on dark parchment-brown. */
+:root {
+	--sl-color-accent-low: #3b2a12;
+	--sl-color-accent: #c9a24a;
+	--sl-color-accent-high: #f2dca0;
+	--sts-gold: #efc851;
+	--sts-blue: #87ceeb;
+	--sts-green: #7fff00;
+	--sts-red: #ff5555;
+	--sts-orange: #ffa518;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #f3e6c4;
+	--sl-color-accent: #8a6514;
+	--sl-color-accent-high: #3d2c08;
+	--sts-gold: #9a6f00;
+	--sts-blue: #1f6f99;
+	--sts-green: #2f7d00;
+	--sts-red: #b3261e;
+	--sts-orange: #a85d00;
+}
+
+.sts-gold { color: var(--sts-gold); font-weight: 600; }
+.sts-blue { color: var(--sts-blue); font-weight: 600; }
+.sts-green { color: var(--sts-green); font-weight: 600; }
+.sts-red { color: var(--sts-red); font-weight: 600; }
+.sts-orange { color: var(--sts-orange); font-weight: 600; }
+
+.sts-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.sts-tile {
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	padding: 0.9rem 1rem;
+	background: var(--sl-color-black);
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.sts-tile header {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.sts-tile h3 {
+	margin: 0;
+	font-size: var(--sl-text-lg);
+	color: var(--sl-color-white);
+}
+
+.sts-tile .sts-icon {
+	width: 3rem;
+	height: 3rem;
+	image-rendering: auto;
+	flex-shrink: 0;
+}
+
+.sts-tile .sts-cost {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.9rem;
+	height: 1.9rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	background: var(--sl-color-accent-low);
+	color: var(--sl-color-accent-high);
+	font-weight: 700;
+	font-size: var(--sl-text-sm);
+	flex-shrink: 0;
+}
+
+.sts-tile .sts-meta {
+	font-size: var(--sl-text-xs);
+	color: var(--sl-color-gray-3);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin: 0;
+}
+
+.sts-tile .sts-text {
+	margin: 0;
+	line-height: 1.5;
+}
+
+.sts-tile .sts-flavor {
+	margin: 0;
+	font-style: italic;
+	color: var(--sl-color-gray-3);
+	font-size: var(--sl-text-sm);
+}
+
+.sts-table-wrap {
+	overflow-x: auto;
+}
+
+.sts-off {
+	color: var(--sl-color-gray-4);
+}

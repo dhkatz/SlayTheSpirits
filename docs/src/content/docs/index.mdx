@@ -1,0 +1,40 @@
+---
+title: Slay the Spirits
+description: A multiplayer drinking game for Slay the Spire 2.
+template: splash
+hero:
+  tagline: A multiplayer drinking game for Slay the Spire 2. Bosses, deaths and bad luck hand out drinks, and Tavern cards, relics and potions make your friends drink with you.
+  actions:
+    - text: Get started
+      link: play/getting-started/
+      icon: right-arrow
+    - text: Browse the cards
+      link: wiki/cards/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<CardGrid stagger>
+	<Card title="Drinks for game moments" icon="star">
+		Everyone Chugs when a boss shows up, dying means finishing your drink, and losing the run costs a Shot. Every
+		rule can be changed.
+	</Card>
+	<Card title="The host's rules" icon="setting">
+		The host picks the rule set and everyone plays by it, locked for the run. Share your house rules with a code.
+	</Card>
+	<Card title="Tavern cards, relics and potions" icon="puzzle">
+		Make a teammate Sip for card draw, Chug at a rest site for better cards, or take a Shot for a relic you can't
+		find anywhere else.
+	</Card>
+	<Card title="Built on SpireKit" icon="seti:c-sharp">
+		The mod runs on SpireKit, a reusable SDK for Slay the Spire 2 mods that lives in the same repo.
+	</Card>
+</CardGrid>
+
+<LinkCard
+	title="Drink responsibly"
+	description="Nobody has to drink: the Sober rule set swaps in soda, and water always counts."
+	href="play/drink-responsibly/"
+/>

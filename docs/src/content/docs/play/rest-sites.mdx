@@ -1,0 +1,29 @@
+---
+title: Rest sites
+description: Chug or take a Shot at a rest site for a permanent reward.
+---
+
+import { rules, restSiteLimitNames } from '../../../lib/data';
+
+Next to Rest and Smith, rest sites offer two drinks you can choose to take. Taking one uses your action at that rest
+site, like Rest or Smith.
+
+| Option | The drink | The reward |
+|---|---|---|
+| **Chug** | Chug a whole drink. | Choose 2 of 5 Tavern cards (the colorless set plus your character's own) to add to your deck. |
+| **Take a Shot** | Take a shot of liquor. | Choose 1 of 3 [Tavern relics](../../wiki/relics/) you don't have yet. They can't be found anywhere else. Once you own them all, you get a normal relic instead. |
+
+The reward comes first. If you back out of the card or relic choice, you don't drink and can still Rest or Smith.
+Backing out and choosing again shows the same cards or relics, so there's no rerolling.
+
+## How often
+
+The **Rest Site Drinks** setting decides:
+
+- **Off**: rest sites only have the game's own options.
+- **Once per Act**: each player can Chug once and take a Shot once per act. Drinks from other sources, like dying,
+  don't use these up.
+- **Every Rest Site**: no limit.
+
+In the built-in rule sets:
+{rules.presets.map((p) => `${p.name}: ${restSiteLimitNames[p.restSiteDrinks]}`).join(' · ')}.

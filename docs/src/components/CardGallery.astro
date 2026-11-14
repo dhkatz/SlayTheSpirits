@@ -1,0 +1,36 @@
+---
+// Tavern cards from the mod's source. `pool` limits it to one pool ("Colorless", "Ironclad", "Curse"...);
+// `characters` shows every character pool instead.
+import { content, asset, rarityOrder, type Card } from '../lib/data';
+
+interface Props {
+	pool?: string;
+	characters?: boolean;
+}
+
+const { pool, characters = false } = Astro.props;
+const cards = content.cards
+	.filter((c: Card) => (characters ? c.character : pool ? c.pool === pool : true))
+	.sort(
+		(a: Card, b: Card) =>
+			rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity) || (a.cost ?? 99) - (b.cost ?? 99) || a.title.localeCompare(b.title)
+	);
+const cost = (c: Card) => (c.cost === null ? '–' : c.upgradedCost !== null ? `${c.cost} (${c.upgradedCost})` : `${c.cost}`);
+---
+
+<div class="sts-grid">
+	{
+		cards.map((card: Card) => (
+			<article class="sts-tile" id={card.id.toLowerCase()}>
+				<header>
+					{card.image ? <img class="sts-icon" src={asset(card.image)} alt="" /> : <span class="sts-cost" title="Energy cost (upgraded)">{cost(card)}</span>}
+					<h3>{card.title}</h3>
+				</header>
+				<p class="sts-meta">
+					{[card.rarity, card.type, characters ? card.pool : null, ...card.keywords].filter(Boolean).join(' · ')}
+				</p>
+				<p class="sts-text" set:html={card.description} />
+			</article>
+		))
+	}
+</div>
