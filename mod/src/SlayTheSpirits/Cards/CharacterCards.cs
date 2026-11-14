@@ -12,17 +12,20 @@ namespace SlayTheSpirits.Cards;
 // Character-specific Tavern cards, one per character, each leaning on that character's mechanic.
 // Registered into the character's pool, so they appear in that character's normal rewards (multiplayer only).
 
-/// <summary>Ironclad. 2: Take a Chug. Deal 5 (9) + your Tipsy damage.</summary>
+/// <summary>
+/// "Down the Hatch" (Ironclad). 2: Finish your drink. Deal 8 (12) + your Tipsy damage. Keeps Keg Stand's id so
+/// saved runs load; Chugs come from boss fights and rest sites rather than a card played every combat.
+/// </summary>
 public sealed class SpiritsKegStand() : SpiritsCard(2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy), ISpiritsCharacterCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(5m, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(8m, ValueProp.Move)];
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Chug];
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Finish];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Chug);
+        await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Finish);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue + OwnerTipsy)
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
@@ -68,29 +71,29 @@ public sealed class SpiritsLiquidCooling() : SpiritsCard(1, CardType.Skill, Card
     protected override void OnUpgrade() => DynamicVars[Frost].UpgradeValueBy(1m);
 }
 
-/// <summary>Regent. 1: Gain 2 (3) Stars. Choose a teammate; they Drink.</summary>
+/// <summary>Regent. 1: Gain 2 (3) Stars. Choose a teammate; they Sip.</summary>
 public sealed class SpiritsRoyalDecree() : SpiritsCard(1, CardType.Skill, CardRarity.Uncommon, TargetType.AnyAlly), ISpiritsCharacterCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new StarsVar(2)];
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Drink];
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target?.Player);
         await PlayerCmd.GainStars(DynamicVars.Stars.BaseValue, Owner);
-        await GiveDrinkAsync(choiceContext, cardPlay.Target.Player, PenaltyKind.Drink);
+        await GiveDrinkAsync(choiceContext, cardPlay.Target.Player, PenaltyKind.Sip);
     }
 
     protected override void OnUpgrade() => DynamicVars.Stars.UpgradeValueBy(1m);
 }
 
-/// <summary>Necrobinder. 0: Only playable if a teammate has died. Summon 6 (9). Everyone Drinks.</summary>
+/// <summary>Necrobinder. 0: Only playable if a teammate has died. Summon 6 (9). Everyone Sips.</summary>
 public sealed class SpiritsPourOneOut() : SpiritsCard(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self), ISpiritsCharacterCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new SummonVar(6m)];
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Drink];
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
     protected override bool IsPlayable => IsMutable && CombatState?.PlayerCreatures.Any(c => c != Owner.Creature && c.IsDead) == true;
 
@@ -99,7 +102,7 @@ public sealed class SpiritsPourOneOut() : SpiritsCard(0, CardType.Skill, CardRar
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await OstyCmd.Summon(choiceContext, Owner, DynamicVars["Summon"].BaseValue, this);
-        await GiveEveryoneAsync(choiceContext, PenaltyKind.Drink);
+        await GiveEveryoneAsync(choiceContext, PenaltyKind.Sip);
     }
 
     protected override void OnUpgrade() => DynamicVars["Summon"].UpgradeValueBy(3m);

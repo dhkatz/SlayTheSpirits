@@ -3,9 +3,13 @@
 A configurable multiplayer drinking game for **Slay the Spire 2**, built on **SpireKit**, a small,
 test-first modding SDK that lives in this repo (and is designed to be split out later).
 
+**Docs and wiki: https://dhkatz.github.io/SlayTheSpirits/** (how to play, rule sets, every card, relic and potion).
+
 - Penalties for game moments: boss/elite fights, specific enemies, deaths, big hits, curses, potions, wasted energy, rest-site water breaks, winning and losing.
 - **Tavern cards** (colorless, plus one per character) that make your friends drink: *Cheers!*, *Round on Me*, *Bottoms Up*, *Last Call* (6 cost).
 - Drinks are **status cards** (Sip, Shot, Finish Your Drink…) that play automatically, with speech-bubble banter.
+- **Rest site drinks**: Chug to pick 2 of 5 Tavern cards, or take a Shot to choose one of the **Tavern relics**, found nowhere else (Hip Flask, Beer Belly, Tip Jar, Drinking Buddy, Pint Glass). Off, once per act, or at every rest site.
+- **Tavern potions** that you drink for real: *Light Beer* (Sip), *Tallboy* (Chug), *Firewater* (Shot).
 - **Tipsy**: a run-long buff that some cards scale with. A per-combat **bar tab** under each player shows what they owe.
 - **Host-authoritative rules**: the host's profile is sent to everyone and locked for the run. Clients never use local settings.
 - Presets (Casual / Standard / Degenerate / Sober), per-act caps that downgrade penalties, custom labels, share codes.
@@ -25,6 +29,17 @@ The game log (`%AppData%\SlayTheSpire2\logs`) shows a health line after startup,
 
 Every player needs the same mod version (the game enforces this for gameplay mods).
 
+### Running the game
+
+```powershell
+./tools/launch.ps1 -Build                  # rebuild (closes the game first), then launch on test profile 1
+./tools/launch.ps1 -OpenSettings Spirits   # straight to the mod's Settings tab
+./tools/launch.ps1 -Gallery                # SpireKit controls gallery (F8 toggles)
+./tools/launch.ps1 -Steam                  # your real Steam profile
+```
+
+Rules are edited in game under **Settings → Spirits** (main menu; read-only during a run or as a client).
+
 ### Local Multiplayer Testing
 
 ```powershell
@@ -43,8 +58,10 @@ mod/
   src/SlayTheSpirits.Domain/ the drinking-game engine: rules, triggers, targeting, policies, tally. Unit-tested.
   src/SlayTheSpirits/        game-bound mod: wiring, cards, presentation, assets, manifest
   tests/SlayTheSpirits.Domain.Tests/
+  tools/SlayTheSpirits.DocsExport/ exports the rules engine's data (presets, drinks) for the docs site
 build/                       MSBuild targets (game refs, merge/pack/deploy) and the Godot PCK packer
-docs/ARCHITECTURE.md         design, conventions, and how to extend
+docs/                        docs site and wiki (Astro Starlight), published to GitHub Pages
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before adding features.
+See the [architecture guide](docs/src/content/docs/development/architecture.md) before adding features
+([on the site](https://dhkatz.github.io/SlayTheSpirits/development/architecture/)).

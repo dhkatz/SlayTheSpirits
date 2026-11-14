@@ -40,8 +40,17 @@ public sealed record DecodeResult<T>(T Value, DecodeStatus Status, string? Error
 /// Old payloads are upgraded through registered <see cref="IJsonMigration"/>s before deserialization.
 /// </summary>
 /// <remarks>
+/// <para>
+/// Pass <c>defaults</c> whenever <typeparamref name="T"/> has init-only properties with initializers. System.Text.Json's
+/// source generator sets every init-only property on construction, so a property missing from the JSON becomes
+/// null/false/0 instead of keeping its initializer. With <c>defaults</c>, missing (or null) properties are filled
+/// from the serialized default instance first, recursing into nested objects but not into dictionaries or lists,
+/// which are taken whole. That makes adding a setting a non-breaking change that needs no migration.
+/// </para>
+/// <para>
 /// Pure and stateless apart from configuration, so it serves both on-disk files
 /// (<see cref="JsonDocumentFile{T}"/>) and network payloads.
+/// </para>
 /// </remarks>
 public sealed class VersionedJsonDocument<T>
     where T : class
@@ -52,14 +61,21 @@ public sealed class VersionedJsonDocument<T>
     private readonly JsonTypeInfo<T> _typeInfo;
     private readonly SortedDictionary<int, IJsonMigration> _migrations = [];
     private readonly Func<T, IReadOnlyList<string>>? _validate;
+    private readonly Func<T>? _defaults;
 
-    public VersionedJsonDocument(int currentVersion, JsonTypeInfo<T> typeInfo, IEnumerable<IJsonMigration>? migrations = null, Func<T, IReadOnlyList<string>>? validate = null)
+    public VersionedJsonDocument(
+        int currentVersion,
+        JsonTypeInfo<T> typeInfo,
+        IEnumerable<IJsonMigration>? migrations = null,
+        Func<T, IReadOnlyList<string>>? validate = null,
+        Func<T>? defaults = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(currentVersion, 1);
         ArgumentNullException.ThrowIfNull(typeInfo);
         CurrentVersion = currentVersion;
         _typeInfo = typeInfo;
         _validate = validate;
+        _defaults = defaults;
         foreach (var migration in migrations ?? [])
         {
             if (migration.FromVersion < 1 || migration.FromVersion >= currentVersion)
@@ -116,13 +132,29 @@ public sealed class VersionedJsonDocument<T>
                 data = migration.Migrate(data);
             }
 
+            if (_defaults is not null)
+            {
+                JsonDefaults.Fill(data, JsonSerializer.SerializeToNode(_defaults(), _typeInfo), _typeInfo);
+            }
+
             var value = data.Deserialize(_typeInfo);
             if (value is null)
             {
                 return new(fallback(), DecodeStatus.Invalid, "Payload deserialized to null.");
             }
 
-            var problems = _validate?.Invoke(value) ?? [];
+            IReadOnlyList<string> problems;
+            try
+            {
+                problems = _validate?.Invoke(value) ?? [];
+            }
+#pragma warning disable CA1031 // A buggy validator must not take the caller down with it; treat as invalid.
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                return new(fallback(), DecodeStatus.Invalid, $"Validation threw {ex.GetType().Name}: {ex.Message}");
+            }
+
             if (problems.Count > 0)
             {
                 return new(fallback(), DecodeStatus.Invalid, "Validation failed: " + string.Join("; ", problems));
@@ -133,6 +165,35 @@ public sealed class VersionedJsonDocument<T>
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException or NotSupportedException)
         {
             return new(fallback(), DecodeStatus.Invalid, ex.Message);
+        }
+    }
+}
+
+/// <summary>Fills properties missing from a JSON payload with those of a default instance.</summary>
+internal static class JsonDefaults
+{
+    public static void Fill(JsonNode? data, JsonNode? defaults, JsonTypeInfo typeInfo)
+    {
+        if (typeInfo.Kind != JsonTypeInfoKind.Object || data is not JsonObject target || defaults is not JsonObject source)
+        {
+            return;
+        }
+
+        foreach (var property in typeInfo.Properties)
+        {
+            if (!source.TryGetPropertyValue(property.Name, out var fallback) || fallback is null)
+            {
+                continue;
+            }
+
+            if (!target.TryGetPropertyValue(property.Name, out var current) || current is null)
+            {
+                target[property.Name] = fallback.DeepClone();
+            }
+            else
+            {
+                Fill(current, fallback, typeInfo.Options.GetTypeInfo(property.PropertyType));
+            }
         }
     }
 }

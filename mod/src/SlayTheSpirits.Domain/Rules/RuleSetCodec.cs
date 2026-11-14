@@ -9,8 +9,11 @@ namespace SlayTheSpirits.Rules;
 /// <summary>Serialization of <see cref="RuleSet"/> for disk, network and share codes.</summary>
 public static class RuleSetCodec
 {
-    /// <summary>Bump when the RuleSet JSON shape changes, and register a migration in <see cref="Format"/>.</summary>
-    public const int SchemaVersion = 1;
+    /// <summary>
+    /// Bump when the RuleSet JSON shape changes incompatibly (renames, meaning changes), and register a migration in
+    /// <see cref="Format"/>. Adding a setting needs neither: files without it get the <see cref="RuleSet"/> default.
+    /// </summary>
+    public const int SchemaVersion = 3;
 
     /// <summary>Prefix for share codes. Bump the digit only if old codes can no longer be read.</summary>
     public const string ShareCodePrefix = "SPIRITS1";
@@ -18,8 +21,13 @@ public static class RuleSetCodec
     public static VersionedJsonDocument<RuleSet> Format { get; } = new(
         SchemaVersion,
         DomainJsonContext.Default.RuleSet,
-        migrations: [],
-        validate: RuleSetValidator.Validate);
+        migrations:
+        [
+            new JsonMigration(1, DrinkStepMigration.MigrateRuleSet),
+            new JsonMigration(2, RestSiteLimitMigration.MigrateRuleSet),
+        ],
+        validate: RuleSetValidator.Validate,
+        defaults: static () => new RuleSet());
 
     public static string ToJson(RuleSet rules) => Format.Encode(rules);
 

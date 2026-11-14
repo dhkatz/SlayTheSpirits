@@ -1,0 +1,20 @@
+---
+import { content, asset, rarityOrder, type Potion } from '../lib/data';
+
+const potions = [...content.potions].sort((a: Potion, b: Potion) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
+---
+
+<div class="sts-grid">
+	{
+		potions.map((potion: Potion) => (
+			<article class="sts-tile" id={potion.id.toLowerCase()}>
+				<header>
+					{potion.image && <img class="sts-icon" src={asset(potion.image)} alt="" />}
+					<h3>{potion.title}</h3>
+				</header>
+				<p class="sts-meta">{potion.rarity} · Drink: {potion.drink}</p>
+				<p class="sts-text" set:html={potion.description} />
+			</article>
+		))
+	}
+</div>

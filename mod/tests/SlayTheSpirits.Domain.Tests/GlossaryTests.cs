@@ -13,7 +13,7 @@ public sealed class GlossaryTests
         var shot = Glossary.For(rules, PenaltyKind.Shot);
 
         Assert.Equal("Shot", shot.Title);
-        Assert.Equal("Take a shot. Gain 7 Tipsy.", shot.Body);
+        Assert.Equal("Take a shot of liquor. Gain 7 Tipsy.", shot.Body);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class GlossaryTests
         var shot = Glossary.For(Presets.Sober, PenaltyKind.Shot);
 
         Assert.Equal("Shot of pickle juice", shot.Title);
-        Assert.Equal("Shot of pickle juice. Gain 3 Tipsy.", shot.Body);
+        Assert.Equal("Shot of pickle juice. Gain 10 Tipsy.", shot.Body);
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class GlossaryTests
     {
         var body = Glossary.Tipsy(Presets.Standard).Body;
 
-        Assert.Contains("Sip 1, Drink 2, Shot 3, Chug 4, Finish Your Drink 5", body, StringComparison.Ordinal);
+        Assert.Contains("Sip 1, Finish Your Drink 3, Chug 5, Shot 10", body, StringComparison.Ordinal);
         Assert.DoesNotContain("Water", body, StringComparison.Ordinal);
     }
 

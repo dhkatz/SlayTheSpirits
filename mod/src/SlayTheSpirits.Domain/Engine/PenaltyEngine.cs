@@ -1,4 +1,5 @@
 using SlayTheSpirits.Party;
+using SlayTheSpirits.Penalties;
 using SlayTheSpirits.Rules;
 using SlayTheSpirits.Triggers;
 using SpireKit.Determinism;
@@ -52,7 +53,7 @@ public sealed class PenaltyEngine
         foreach (var player in TargetResolver.Resolve(request, party, _rng))
         {
             IEnumerable<PenaltyAssignment> pending = [PenaltyAssignment.Plain(player, request.Penalty, request.Cause)];
-            foreach (var policy in _policies)
+            foreach (var policy in request.Voluntary ? Array.Empty<IPenaltyPolicy>() : _policies)
             {
                 pending = [.. pending.SelectMany(a => policy.Apply(a, context))];
             }
@@ -70,7 +71,17 @@ public sealed class PenaltyEngine
         return results;
     }
 
-    /// <summary>Moves to a new act, resetting per-act caps.</summary>
+    /// <summary>
+    /// A player takes a rest site drink (<see cref="RestSiteDrinks"/>): uses up that option for the act and hands out
+    /// the drink as a <see cref="PenaltyRequest.Voluntary"/> penalty.
+    /// </summary>
+    public IReadOnlyList<PenaltyAssignment> TakeRestSiteDrink(PlayerId player, PenaltyKind kind, PenaltyCause cause, IPartyView party)
+    {
+        State.RecordRestSiteDrink(player, kind);
+        return Handle(new PenaltyRequest(new Penalty(kind), TargetKind.Subject, player, player, cause, Voluntary: true), party);
+    }
+
+    /// <summary>Moves to a new act, resetting per-act caps and rest site drinks.</summary>
     public void EnterAct(int act)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(act, 1);
@@ -81,6 +92,7 @@ public sealed class PenaltyEngine
 
         State.Act = act;
         State.ActCounts.Clear();
+        State.RestSiteDrinksThisAct.Clear();
     }
 
     /// <summary>Run-long Tipsy for a player (what their Tipsy buff should show).</summary>

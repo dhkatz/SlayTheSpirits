@@ -1,0 +1,19 @@
+---
+import { content, asset, type Relic } from '../lib/data';
+---
+
+<div class="sts-grid">
+	{
+		content.relics.map((relic: Relic) => (
+			<article class="sts-tile" id={relic.id.toLowerCase()}>
+				<header>
+					{relic.image && <img class="sts-icon" src={asset(relic.image)} alt="" />}
+					<h3>{relic.title}</h3>
+				</header>
+				<p class="sts-meta">{relic.source}</p>
+				<p class="sts-text" set:html={relic.description} />
+				{relic.flavor && <p class="sts-flavor">{relic.flavor}</p>}
+			</article>
+		))
+	}
+</div>

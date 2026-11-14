@@ -40,6 +40,74 @@ public static class ModArt
         Cache[path] = texture;
         return texture;
     }
+
+    /// <summary>
+    /// A white silhouette of the art at <paramref name="path"/>, grown by <paramref name="width"/> pixels, for the
+    /// outline the game draws behind relic and potion icons (it tints it). Null if the art doesn't exist.
+    /// </summary>
+    public static Texture2D? Outline(string path, int width = 3)
+    {
+        var key = $"{path}#outline{width}";
+        if (Cache.TryGetValue(key, out var cached))
+        {
+            return cached;
+        }
+
+        Texture2D? texture = null;
+        if (Godot.FileAccess.FileExists(path) && Image.LoadFromFile(path) is { } image && !image.IsEmpty())
+        {
+            texture = ImageTexture.CreateFromImage(Silhouette(image, width));
+        }
+
+        Cache[key] = texture;
+        return texture;
+    }
+
+    private static Image Silhouette(Image source, int width)
+    {
+        source.Convert(Image.Format.Rgba8);
+        int w = source.GetWidth(), h = source.GetHeight();
+        var solid = new bool[w * h];
+        for (var y = 0; y < h; y++)
+        {
+            for (var x = 0; x < w; x++)
+            {
+                solid[(y * w) + x] = source.GetPixel(x, y).A > 0.4f;
+            }
+        }
+
+        var outline = Image.CreateEmpty(w, h, false, Image.Format.Rgba8);
+        var radius2 = width * width;
+        for (var y = 0; y < h; y++)
+        {
+            for (var x = 0; x < w; x++)
+            {
+                if (Near(solid, w, h, x, y, width, radius2))
+                {
+                    outline.SetPixel(x, y, Colors.White);
+                }
+            }
+        }
+
+        return outline;
+    }
+
+    private static bool Near(bool[] solid, int w, int h, int x, int y, int width, int radius2)
+    {
+        for (var dy = -width; dy <= width; dy++)
+        {
+            for (var dx = -width; dx <= width; dx++)
+            {
+                int nx = x + dx, ny = y + dy;
+                if ((dx * dx) + (dy * dy) <= radius2 && nx >= 0 && ny >= 0 && nx < w && ny < h && solid[(ny * w) + nx])
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 /// <summary>Serves custom art for <see cref="SpireCard"/>s (the game would try to load it as an imported resource).</summary>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Writes the rules engine's data (drink ladder, presets, trigger names) as JSON for the docs site. Reads the real
+    Presets/Glossary/RuleEditing code, so the site can never disagree with the game. No game references, so it runs
+    in CI. Run by the docs build (docs/package.json, "generate").
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SlayTheSpirits.DocsExport</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SlayTheSpirits.Domain\SlayTheSpirits.Domain.csproj" />
+  </ItemGroup>
+</Project>

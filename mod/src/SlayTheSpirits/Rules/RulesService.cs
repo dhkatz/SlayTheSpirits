@@ -19,13 +19,16 @@ namespace SlayTheSpirits.Rules;
 internal sealed class RulesService
 {
     private const string ProfilePath = "profile.json";
+    private const string CustomPath = "custom.json";
     private const string LockedRunsDir = "runs";
     private const int MaxClientRetries = 30;
 
     private readonly ModContext _context;
     private readonly IModLog _log;
     private JsonDocumentFile<RuleSet>? _profileFile;
+    private JsonDocumentFile<RuleSet>? _customFile;
     private RuleSet _profile = Presets.Standard;
+    private RuleSet? _custom;
     private AuthorityChannel<RuleSet>? _channel;
     private int _retries;
 
@@ -48,6 +51,18 @@ internal sealed class RulesService
     /// <summary>This machine's saved profile (what it uses when hosting).</summary>
     public RuleSet Profile => _profile;
 
+    /// <summary>
+    /// The last non-preset rules this machine used, kept so trying out presets in the editor doesn't lose them.
+    /// Null until the profile has been customized once.
+    /// </summary>
+    public RuleSet? LastCustom => _custom;
+
+    /// <summary>
+    /// Whether this machine's profile decides the rules right now: not while a run is locked, and never as a
+    /// client (the host's rules apply; editing would change nothing).
+    /// </summary>
+    public bool CanEditProfile => !State.IsLocked && State.Role != SessionRole.Client;
+
     /// <summary>Call from <c>OnInitialize</c>: wires sync to session changes.</summary>
     public void Initialize()
     {
@@ -61,6 +76,16 @@ internal sealed class RulesService
     {
         _profileFile = new JsonDocumentFile<RuleSet>(_context.Storage, ProfilePath, RuleSetCodec.Format, static () => Presets.Standard, _log);
         _profile = _profileFile.Load();
+        _customFile = new JsonDocumentFile<RuleSet>(_context.Storage, CustomPath, RuleSetCodec.Format, () => _profile, _log);
+        if (_context.Storage.ReadText(CustomPath) is not null)
+        {
+            _custom = _customFile.Load();
+        }
+        else if (RuleEditing.PresetIndex(_profile) < 0)
+        {
+            RememberCustom(_profile);
+        }
+
         _log.Info($"Loaded profile '{_profile.Name}'.");
     }
 
@@ -69,7 +94,18 @@ internal sealed class RulesService
     {
         _profile = rules ?? throw new ArgumentNullException(nameof(rules));
         _profileFile?.Save(rules);
+        if (RuleEditing.PresetIndex(rules) < 0)
+        {
+            RememberCustom(rules);
+        }
+
         State.NotifyLocalChanged();
+    }
+
+    private void RememberCustom(RuleSet rules)
+    {
+        _custom = rules;
+        _customFile?.Save(rules);
     }
 
     /// <summary>
@@ -122,6 +158,9 @@ internal sealed class RulesService
 
         return card is ISpiritsCharacterCard ? content.CharacterCards : content.TavernCards;
     }
+
+    /// <summary>Whether Tavern potions may drop under the rules in effect (host-synced, so identical on every peer).</summary>
+    public bool IsPotionAllowed(PotionModel potion) => Effective?.Content.TavernPotions == true;
 
     private static string RunFile(string runKey) => $"{LockedRunsDir}/{runKey}.json";
 

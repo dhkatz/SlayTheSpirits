@@ -3,6 +3,9 @@ using SpireKit.Diagnostics;
 using SpireKit.GameEvents;
 using SpireKit.Logging;
 using SpireKit.Patching;
+using SpireKit.UI;
+using SpireKit.UI.Controls;
+using SpireKit.UI.Settings;
 
 namespace SpireKit.Modding;
 
@@ -69,6 +72,10 @@ public static class SpireBootstrap
             context.Loc.Attach();
             context.Session.AttachToRunManager();
             GameEventBridge.Instance?.AttachToRunManager();
+            CustomControlsCheck.Run(context);
+            ControlsGallery.ShowIfRequested(context);
+            SceneDump.RunIfRequested(context);
+            SettingsDevTools.RunIfRequested(context);
             context.Mod.OnGameReady(context);
         }
 #pragma warning disable CA1031

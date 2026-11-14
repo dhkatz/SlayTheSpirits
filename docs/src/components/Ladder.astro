@@ -1,0 +1,33 @@
+---
+// The drink ladder, lightest first, with the default names and Tipsy from the rules engine.
+import { rules, asset } from '../lib/data';
+---
+
+<div class="sts-table-wrap">
+	<table>
+		<thead>
+			<tr>
+				<th></th>
+				<th>Drink</th>
+				<th>What to do</th>
+				<th>Tipsy</th>
+			</tr>
+		</thead>
+		<tbody>
+			{
+				rules.ladder.map((step) => (
+					<tr>
+						<td>
+							<img class="sts-icon" style="width:2.2rem;height:2.2rem" src={asset(`generated/images/powers/spirits_${step.kind.toLowerCase()}_tab_power.png`)} alt="" />
+						</td>
+						<td>
+							<strong>{step.singular}</strong>
+						</td>
+						<td>{step.description.replace(/ Gain \d+ Tipsy\.$/, '')}</td>
+						<td>{step.tipsy}</td>
+					</tr>
+				))
+			}
+		</tbody>
+	</table>
+</div>

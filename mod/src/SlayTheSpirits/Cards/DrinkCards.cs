@@ -72,7 +72,6 @@ public abstract class SpiritsDrinkCard(PenaltyKind kind) : SpiritsCard(-1, CardT
 
 public sealed class SpiritsSip() : SpiritsDrinkCard(PenaltyKind.Sip);
 
-public sealed class SpiritsDrink() : SpiritsDrinkCard(PenaltyKind.Drink);
 
 public sealed class SpiritsShot() : SpiritsDrinkCard(PenaltyKind.Shot);
 
@@ -87,7 +86,7 @@ internal static class DrinkCards
     public static RuleSet Rules => SlayTheSpiritsMod.Instance?.Rules.Effective ?? Presets.Standard;
 
     public static IReadOnlyList<Type> All { get; } =
-        [typeof(SpiritsSip), typeof(SpiritsDrink), typeof(SpiritsShot), typeof(SpiritsChug), typeof(SpiritsFinishYourDrink)];
+        [typeof(SpiritsSip), typeof(SpiritsFinishYourDrink), typeof(SpiritsChug), typeof(SpiritsShot)];
 
     /// <summary>Creates a drink card owned by <paramref name="drinker"/>, its text reflecting the current rules.</summary>
     public static SpiritsDrinkCard Create(ICombatState combat, Player drinker, PenaltyKind kind, PenaltyCause cause, Player? giver)
@@ -95,7 +94,6 @@ internal static class DrinkCards
         var type = kind switch
         {
             PenaltyKind.Sip => typeof(SpiritsSip),
-            PenaltyKind.Drink => typeof(SpiritsDrink),
             PenaltyKind.Shot => typeof(SpiritsShot),
             PenaltyKind.Chug => typeof(SpiritsChug),
             PenaltyKind.Finish => typeof(SpiritsFinishYourDrink),

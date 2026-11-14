@@ -1,8 +1,11 @@
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Runs;
 using SlayTheSpirits.Engine;
 using SlayTheSpirits.Party;
+using SlayTheSpirits.Penalties;
 using SlayTheSpirits.Presentation;
+using SlayTheSpirits.Relics;
 using SlayTheSpirits.Rules;
 using SlayTheSpirits.Triggers;
 using SpireKit.GameEvents;
@@ -47,11 +50,42 @@ internal sealed class DrinkGame
     /// <summary>A player's Tipsy this run (0 outside a run).</summary>
     public int TipsyOf(PlayerId player) => _engine?.TipsyOf(player) ?? 0;
 
+    /// <summary>A player's Tipsy this run (0 outside a run).</summary>
+    public int TipsyOf(Player player) => TipsyOf(GameTriggers.Id(player));
+
+    /// <summary>Whether the current run has more than one player (Tavern content is multiplayer-only).</summary>
+    public bool IsMultiplayerRun => _run?.Players.Count > 1;
+
     /// <summary>Hands out an explicit penalty (cards, relics, potions) and updates Tipsy. Await it from <c>OnPlay</c>.</summary>
     public Task PenalizeAsync(PenaltyRequest request, PlayerChoiceContext? choiceContext) =>
         EnsureEngine() is { } engine && _run is { } run
             ? DeliverAsync(run, engine.Handle(request, Party(run)), choiceContext, CombatPhase.Ongoing)
             : Task.CompletedTask;
+
+    /// <summary>
+    /// A drink <paramref name="player"/> chose in exchange for something (a Tavern potion): never redirected, skipped
+    /// or downgraded (<see cref="PenaltyRequest.Voluntary"/>).
+    /// </summary>
+    public Task DrinkAsync(Player player, PenaltyKind kind, PenaltyCause cause, PlayerChoiceContext? choiceContext)
+    {
+        var id = GameTriggers.Id(player);
+        return PenalizeAsync(new PenaltyRequest(new Penalty(kind), TargetKind.Subject, id, id, cause, Voluntary: true), choiceContext);
+    }
+
+    /// <summary>Takes a rest site drink: uses up the option for this act and hands out the drink.</summary>
+    public Task TakeRestSiteDrinkAsync(Player player, PenaltyKind kind, PenaltyCause cause) =>
+        EnsureEngine() is { } engine && _run is { } run
+            ? DeliverAsync(run, engine.TakeRestSiteDrink(GameTriggers.Id(player), kind, cause, Party(run)), null, CombatPhase.None)
+            : Task.CompletedTask;
+
+    /// <summary>Whether rest sites offer drinks under the rules in effect.</summary>
+    public bool IsRestSiteDrinkOffered => _rules.Effective is { } rules && RestSiteDrinks.IsOffered(rules);
+
+    /// <summary>Whether <paramref name="player"/> can still take this drink at a rest site this act.</summary>
+    public bool IsRestSiteDrinkAvailable(Player player, PenaltyKind kind) =>
+        EnsureEngine() is { } engine
+        && _rules.Effective is { } rules
+        && RestSiteDrinks.IsAvailable(rules, engine.State, GameTriggers.Id(player), kind);
 
     /// <summary>Grants immunity until the end of combat (Designated Driver).</summary>
     public void GrantImmunity(PlayerId player) => EnsureEngine()?.GrantImmunity(player);
@@ -179,6 +213,7 @@ internal sealed class DrinkGame
         _announcer.Announce(run, assignments, Party(run), phase);
         await BarTab.AddAsync(run, assignments, choiceContext).ConfigureAwait(true);
         await TipsyBuff.AddAsync(run, assignments, choiceContext).ConfigureAwait(true);
+        await SpiritsRelic.AfterDrinksAsync(run, assignments, choiceContext).ConfigureAwait(true);
     }
 
     /// <summary>

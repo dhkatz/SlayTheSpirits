@@ -15,12 +15,18 @@ public sealed record PenaltyCause(string SourceId, string? Label = null);
 /// <param name="Subject">The player the request is about (the victim, or the card's chosen player).</param>
 /// <param name="Instigator">The player who caused it (e.g. who played the card), if any. Used for "Others" from a card.</param>
 /// <param name="Cause">Why.</param>
+/// <param name="Voluntary">
+/// The drinker chose it in exchange for a reward (a rest site drink, a Tavern potion). Policies never touch it: it
+/// isn't redirected, skipped for immunity or downgraded by caps, since that would change the price of what they
+/// chose. It still counts toward the caps for drinks they didn't choose.
+/// </param>
 public sealed record PenaltyRequest(
     Penalty Penalty,
     TargetKind Target,
     PlayerId? Subject,
     PlayerId? Instigator,
-    PenaltyCause Cause);
+    PenaltyCause Cause,
+    bool Voluntary = false);
 
 /// <summary>Annotations explaining how policies changed an assignment, for announcements and the bar tab.</summary>
 public enum AssignmentNote

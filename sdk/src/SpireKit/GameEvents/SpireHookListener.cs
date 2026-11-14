@@ -1,6 +1,8 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Entities.RestSite;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
@@ -68,6 +70,10 @@ public abstract class SpireHookListener : AbstractModel
 
     public override Task BeforeSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants) =>
         Forward(IsCombatScope, (b, run) => b.OnSideTurnEnding(run, choiceContext, side, participants));
+
+    /// <summary>Adds the mod's rest site options (<see cref="Modding.ModContext.RestSite"/>).</summary>
+    public override bool TryModifyRestSiteOptions(Player player, ICollection<RestSiteOption> options) =>
+        IsRunScope && Modding.SpireRuntime.Current is { } context && context.RestSite.AddTo(player, options, context.Log);
 
     /// <summary>
     /// Returns the bridge's task so the game awaits mod handlers inside its own hook dispatch, which keeps

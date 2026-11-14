@@ -1,0 +1,40 @@
+---
+title: Rule sets
+description: The built-in rule sets, and how to make and share your own.
+---
+
+import PresetTable from '../../../components/PresetTable.astro';
+
+The host picks a rule set under **Settings → Spirits → Rule Set**. Change any rule and it becomes **Custom**. Your
+last custom rules are remembered next to the built-in ones.
+
+## Built-in rule sets
+
+- **Casual**: Sips and the odd finished drink. Never a Chug or a Shot.
+- **Standard**: the default. Everyone Chugs when a boss shows up, and a Shot only when the run is lost.
+- **Degenerate**: elites and curses empty glasses, dying costs a Shot, and the run ends with a Shot either way.
+- **Sober**: Standard, with soda instead of beer and pickle juice instead of liquor.
+
+<PresetTable />
+
+"That Player" means whoever the moment is about: who died, who got hit, who drew the curse.
+
+## Settings
+
+| Setting | What it does |
+|---|---|
+| Drinking Game On | Master switch. When off, no drinks are handed out, but Tavern content can still appear. |
+| Confirm Each Drink | A player handed a drink by someone else's card accepts it before it plays. |
+| Tavern Cards | Colorless Tavern cards appear in rewards and shops. |
+| Character Cards | Each character's own Tavern card appears in their rewards. |
+| Tavern Potions | Light Beer, Tallboy and Firewater drop like other potions. |
+| Rest Site Drinks | Off, Once per Act or Every Rest Site. See [Rest sites](../rest-sites/). |
+| Who Drinks When | For each moment: on or off, who drinks, how many, and which drink. |
+
+Per-act caps, Tipsy amounts, drink names and per-enemy rules aren't in the Settings tab yet. They can be edited in
+`profile.json`, in the mod's storage folder.
+
+## Sharing rules
+
+**Copy Share Code** puts your rule set on the clipboard as a short code. Anyone can load it with **Paste Share Code**
+to play by the same house rules.

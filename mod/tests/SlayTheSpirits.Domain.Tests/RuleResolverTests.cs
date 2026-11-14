@@ -9,12 +9,12 @@ namespace SlayTheSpirits.Tests;
 public sealed class RuleResolverTests
 {
     [Fact]
-    public void Boss_start_maps_to_everyone_shot_in_standard()
+    public void Boss_start_maps_to_everyone_chugging_in_standard()
     {
         var request = RuleResolver.Resolve(Presets.Standard, new TriggerOccurrence(BuiltInTriggers.BossEncounterStarted.Id, Label: "The Guardian"));
 
         Assert.NotNull(request);
-        Assert.Equal(Penalty.Of(PenaltyKind.Shot), request.Penalty);
+        Assert.Equal(Penalty.Of(PenaltyKind.Chug), request.Penalty);
         Assert.Equal(TargetKind.Everyone, request.Target);
         Assert.Equal("The Guardian", request.Cause.Label);
     }
@@ -45,7 +45,7 @@ public sealed class RuleResolverTests
     {
         var rules = Presets.Standard with
         {
-            Enemies = new Dictionary<string, TriggerRule> { ["MONSTER.GREMLIN_NOB"] = TriggerRule.On(PenaltyKind.Drink, TargetKind.Everyone) },
+            Enemies = new Dictionary<string, TriggerRule> { ["MONSTER.GREMLIN_NOB"] = TriggerRule.On(PenaltyKind.Finish, TargetKind.Everyone) },
         };
 
         Assert.NotNull(RuleResolver.Resolve(rules, new TriggerOccurrence(BuiltInTriggers.EnemyEncountered.Id, Detail: "MONSTER.GREMLIN_NOB")));

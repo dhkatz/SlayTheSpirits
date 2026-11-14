@@ -13,19 +13,15 @@ public sealed record Toast(string Title, string? Body = null, Color? Accent = nu
 /// <summary>
 /// Stacked, non-interactive notifications drawn above everything (including menus and combat).
 /// </summary>
-/// <remarks>
-/// Built from stock Godot controls rather than custom <see cref="Node"/> subclasses: the game only registers
-/// Godot scripts from its own assembly, so mod-defined node types are best avoided.
-/// Must be called on the main thread (all game hooks are).
-/// </remarks>
+/// <remarks>Must be called on the main thread (all game hooks are).</remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA1001", Justification = "Godot nodes are owned and freed by the scene tree.")]
 public sealed class ToastOverlay(IModLog log)
 {
     /// <summary>The game's gold (<c>StsColors.gold</c>).</summary>
-    public static readonly Color Gold = new("EFC851");
+    public static readonly Color Gold = GameStyle.Gold;
 
     /// <summary>The game's cream text color.</summary>
-    public static readonly Color Cream = new("FFF6E2");
+    public static readonly Color Cream = GameStyle.Cream;
 
     private const int MaxVisible = 6;
     private const int Layer = 120;
@@ -93,23 +89,8 @@ public sealed class ToastOverlay(IModLog log)
 
     private static Label MakeLabel(string text, int size, Color color)
     {
-        var label = new Label
-        {
-            Text = text,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-        };
-        if (GameFonts.Default is { } font)
-        {
-            label.AddThemeFontOverride("font", font);
-        }
-
-        label.AddThemeFontSizeOverride("font_size", size);
-        label.AddThemeColorOverride("font_color", color);
-        label.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.9f));
+        var label = GameStyle.Label(text, size, color, HorizontalAlignment.Center);
         label.AddThemeConstantOverride("outline_size", 10);
-        label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.5f));
-        label.AddThemeConstantOverride("shadow_offset_y", 3);
         return label;
     }
 

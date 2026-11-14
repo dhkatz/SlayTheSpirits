@@ -17,11 +17,10 @@ public static class Glossary
     private static readonly Dictionary<PenaltyKind, string> Actions = new()
     {
         [PenaltyKind.Water] = "Drink some water.",
-        [PenaltyKind.Sip] = "Take a sip.",
-        [PenaltyKind.Drink] = "Take a proper drink.",
-        [PenaltyKind.Shot] = "Take a shot.",
-        [PenaltyKind.Chug] = "Chug for 3 seconds.",
-        [PenaltyKind.Finish] = "Finish whatever is in your glass.",
+        [PenaltyKind.Sip] = "Take a sip of your drink.",
+        [PenaltyKind.Finish] = "Finish whatever is left in your drink.",
+        [PenaltyKind.Chug] = "Chug a whole drink (a beer, seltzer, any can or bottle).",
+        [PenaltyKind.Shot] = "Take a shot of liquor.",
     };
 
     /// <summary>E.g. Title "Shot", Body "Take a shot. Gain 3 Tipsy."</summary>

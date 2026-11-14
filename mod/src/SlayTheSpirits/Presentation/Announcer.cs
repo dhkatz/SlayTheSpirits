@@ -153,8 +153,8 @@ internal sealed class Announcer(ToastOverlay toasts, Func<RuleSet?> rules)
     {
         PenaltyKind.Water => new Color("87CEEB"),
         PenaltyKind.Sip => ToastOverlay.Cream,
-        PenaltyKind.Drink => ToastOverlay.Gold,
-        PenaltyKind.Shot => new Color("FFA518"),
+        PenaltyKind.Finish => ToastOverlay.Gold,
+        PenaltyKind.Chug => new Color("FFA518"),
         _ => new Color("FF5555"),
     };
 }

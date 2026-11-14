@@ -33,6 +33,43 @@ public sealed class RuleSetTests
     }
 
     [Fact]
+    public void Older_files_missing_newer_settings_get_the_defaults()
+    {
+        // A file saved before Tipsy, drink confirmation and per-enemy rules existed: only a few settings.
+        const string json = """{"schema":3,"data":{"name":"Old","triggers":{},"content":{}}}""";
+
+        var result = RuleSetCodec.FromJson(json);
+
+        Assert.Equal(DecodeStatus.Ok, result.Status);
+        var defaults = new RuleSet();
+        Assert.Equal("Old", result.Value.Name);
+        Assert.Equal(defaults.Enabled, result.Value.Enabled);
+        Assert.Equal(defaults.Tipsy, result.Value.Tipsy);
+        Assert.NotNull(result.Value.Enemies);
+        Assert.NotNull(result.Value.CapsPerAct);
+        Assert.NotNull(result.Value.Labels);
+        Assert.Equal(defaults.Content.TavernCards, result.Value.Content.TavernCards);
+        Assert.Equal(defaults.Content.CharacterCards, result.Value.Content.CharacterCards);
+        Assert.Equal(defaults.Content.TavernPotions, result.Value.Content.TavernPotions);
+        Assert.Equal(defaults.RestSiteDrinks, result.Value.RestSiteDrinks);
+        Assert.NotNull(result.Value.Content.DisabledCards);
+    }
+
+    [Fact]
+    public void Explicit_nulls_are_treated_as_missing()
+    {
+        const string json = """{"schema":3,"data":{"name":"Nulls","triggers":null,"tipsy":null,"labels":null,"content":null}}""";
+
+        var result = RuleSetCodec.FromJson(json);
+
+        Assert.Equal(DecodeStatus.Ok, result.Status);
+        Assert.NotNull(result.Value.Triggers);
+        Assert.Equal(new RuleSet().Tipsy, result.Value.Tipsy);
+        Assert.NotNull(result.Value.Labels);
+        Assert.NotNull(result.Value.Content);
+    }
+
+    [Fact]
     public void Share_codes_are_short_enough_to_paste()
     {
         Assert.InRange(RuleSetCodec.ToShareCode(Presets.Standard).Length, 1, 1500);
@@ -43,9 +80,9 @@ public sealed class RuleSetTests
     {
         var json = RuleSetCodec.ToJson(Presets.Standard);
 
-        Assert.Contains("\"schema\": 1", json, StringComparison.Ordinal);
+        Assert.Contains($"\"schema\": {RuleSetCodec.SchemaVersion}", json, StringComparison.Ordinal);
         Assert.Contains("\"encounter.boss.start\"", json, StringComparison.Ordinal);
-        Assert.Contains("\"Shot\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"Chug\"", json, StringComparison.Ordinal);
         Assert.Contains("\"Everyone\"", json, StringComparison.Ordinal);
     }
 

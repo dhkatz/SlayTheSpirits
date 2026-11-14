@@ -3,6 +3,7 @@
     <Project Path="mod/src/SlayTheSpirits.Domain/SlayTheSpirits.Domain.csproj" />
     <Project Path="mod/src/SlayTheSpirits/SlayTheSpirits.csproj" />
     <Project Path="mod/tests/SlayTheSpirits.Domain.Tests/SlayTheSpirits.Domain.Tests.csproj" />
+    <Project Path="mod/tools/SlayTheSpirits.DocsExport/SlayTheSpirits.DocsExport.csproj" />
   </Folder>
   <Folder Name="/sdk/">
     <Project Path="sdk/src/SpireKit.Core/SpireKit.Core.csproj" />
