@@ -1,0 +1,189 @@
+---
+// A searchable, filterable, sortable list, like the game's compendium. Build its facets and sorts with
+// compendium() from src/lib/compendium.ts, and give every item in the slot that model's attributes(item).
+//
+// Without JavaScript every item shows and the controls stay hidden. Filters live in the URL (?pool=ironclad&sort=cost),
+// so a filtered view can be linked to. Each option shows how many items picking it would leave, given the other
+// filters, and options that would leave none are dimmed. On narrow screens the filters fold away. Toggles set
+// data-t-<key> on the root for CSS to use.
+import { asset } from '../../lib/data';
+import type { Facet, Sort, Toggle } from '../../lib/compendium';
+
+interface Props {
+	facets: Facet[];
+	sorts: Sort[];
+	toggles?: Toggle[];
+	/** "card" / "cards", for the count and the empty message. */
+	noun: { one: string; many: string };
+	/** Prefix for URL parameters, if a page has more than one compendium. */
+	id?: string;
+	layout?: 'cards' | 'tiles';
+}
+
+const { facets, sorts, toggles = [], noun, id = '', layout = 'tiles' } = Astro.props;
+---
+
+<div class="sts-compendium not-content" data-compendium data-id={id} data-one={noun.one} data-many={noun.many}>
+	<form class="sts-compendium__controls" hidden>
+		<div class="sts-compendium__row">
+			<input class="sts-compendium__search" type="search" name="q" placeholder={`Search ${noun.many}`} aria-label={`Search ${noun.many}`} />
+			{
+				sorts.length > 1 && (
+					<label class="sts-compendium__sort">
+						Sort by
+						<select name="sort">
+							<option value="">Default</option>
+							{sorts.map((sort) => (
+								<option value={sort.key}>{sort.label}</option>
+							))}
+						</select>
+					</label>
+				)
+			}
+			{
+				toggles.map((toggle) => (
+					<label class="sts-compendium__toggle">
+						<input type="checkbox" name={toggle.key} value="1" />
+						{toggle.label}
+					</label>
+				))
+			}
+		</div>
+		<details class="sts-compendium__filters" open>
+			<summary>
+				Filters <span data-active></span>
+			</summary>
+			<div class="sts-compendium__facets">
+			{
+				facets.map((facet) => (
+					<fieldset class="sts-compendium__facet" data-facet={facet.key}>
+						<legend>{facet.label}</legend>
+						<div class="sts-compendium__options">
+							<label class="sts-chip">
+								<input type="radio" name={facet.key} value="" checked />
+								All
+							</label>
+							{facet.options.map((option) => (
+								<label class="sts-chip" style={option.color ? `--swatch: ${option.color}` : undefined}>
+									<input type="radio" name={facet.key} value={option.value} />
+									{option.icon ? (
+										<img class="sts-chip__icon" src={asset(option.icon)} alt="" loading="lazy" />
+									) : (
+										option.color && <span class="sts-chip__swatch" aria-hidden="true" />
+									)}
+									{option.label}
+									<small data-count>{option.count}</small>
+								</label>
+							))}
+						</div>
+					</fieldset>
+				))
+			}
+			</div>
+		</details>
+		<p class="sts-compendium__status">
+			<span aria-live="polite" data-status></span>
+			<button type="button" data-reset hidden>Clear filters</button>
+		</p>
+	</form>
+	<ul class:list={['sts-compendium__items', `sts-compendium__items--${layout}`]} role="list">
+		<slot />
+	</ul>
+	<p class="sts-compendium__empty" hidden>No {noun.many} match these filters.</p>
+</div>
+
+<script>
+	function setup(root: HTMLElement) {
+		const form = root.querySelector('form')!;
+		const list = root.querySelector('ul')!;
+		const status = root.querySelector<HTMLElement>('[data-status]')!;
+		const reset = root.querySelector<HTMLButtonElement>('[data-reset]')!;
+		const empty = root.querySelector<HTMLElement>('.sts-compendium__empty')!;
+		const prefix = root.dataset.id ? `${root.dataset.id}-` : '';
+		const items = [...list.querySelectorAll<HTMLElement>('[data-item]')];
+		items.forEach((item, index) => (item.dataset.index = String(index)));
+		const facets = [...form.querySelectorAll<HTMLElement>('[data-facet]')].map((el) => el.dataset.facet!);
+		const options = [...form.querySelectorAll<HTMLInputElement>('.sts-chip input[type=radio]')].filter((input) => input.value);
+		const toggles = [...form.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
+		const sort = form.querySelector<HTMLSelectElement>('select[name=sort]');
+		const search = form.querySelector<HTMLInputElement>('input[name=q]')!;
+		const filters = form.querySelector<HTMLDetailsElement>('.sts-compendium__filters')!;
+		const active = filters.querySelector<HTMLElement>('[data-active]')!;
+
+		// Restore from the URL.
+		const params = new URLSearchParams(location.search);
+		search.value = params.get(`${prefix}q`) ?? '';
+		for (const facet of facets) {
+			const value = params.get(`${prefix}${facet}`);
+			const input = form.querySelector<HTMLInputElement>(`input[name="${facet}"][value="${CSS.escape(value ?? '')}"]`);
+			if (input) input.checked = true;
+		}
+		if (sort && params.has(`${prefix}sort`)) sort.value = params.get(`${prefix}sort`)!;
+		for (const toggle of toggles) toggle.checked = params.get(`${prefix}${toggle.name}`) === '1';
+
+		// Sort by a data-s-<key> value (numbers as numbers); ties, and the default sort, keep the page's order.
+		const compare = (key: string) => (a: HTMLElement, b: HTMLElement) => {
+			const x = a.getAttribute(`data-s-${key}`) ?? '';
+			const y = b.getAttribute(`data-s-${key}`) ?? '';
+			const byValue = x !== '' && y !== '' && !isNaN(+x) && !isNaN(+y) ? +x - +y : x.localeCompare(y);
+			return byValue || +a.dataset.index! - +b.dataset.index!;
+		};
+
+		const has = (item: HTMLElement, facet: string, value: string) => (item.getAttribute(`data-f-${facet}`) ?? '').split(' ').includes(value);
+
+		function apply() {
+			const data = new FormData(form);
+			const query = search.value.trim().toLowerCase();
+			const chosen = facets.map((facet) => [facet, String(data.get(facet) ?? '')] as const).filter(([, value]) => value);
+			const found = (item: HTMLElement) => !query || item.dataset.search!.includes(query) || item.textContent!.toLowerCase().includes(query);
+			const passes = (item: HTMLElement, except?: string) => chosen.every(([facet, value]) => facet === except || has(item, facet, value));
+
+			let shown = 0;
+			for (const item of items) {
+				const match = found(item) && passes(item);
+				item.hidden = !match;
+				if (match) shown++;
+			}
+			list.append(...[...items].sort(compare(sort?.value ?? '')));
+			for (const toggle of toggles) root.toggleAttribute(`data-t-${toggle.name}`, toggle.checked);
+
+			// What picking each option would leave, with the search and the other facets as they are.
+			for (const option of options) {
+				const count = items.filter((item) => found(item) && passes(item, option.name) && has(item, option.name, option.value)).length;
+				const chip = option.closest('.sts-chip')!;
+				chip.querySelector('[data-count]')!.textContent = String(count);
+				chip.toggleAttribute('data-empty', count === 0 && !option.checked);
+			}
+
+			const noun = items.length === 1 ? root.dataset.one : root.dataset.many;
+			status.textContent = shown === items.length ? `${items.length} ${noun}` : `${shown} of ${items.length} ${noun}`;
+			reset.hidden = !query && chosen.length === 0;
+			active.textContent = chosen.length ? `(${chosen.length})` : '';
+			empty.hidden = shown > 0;
+
+			// Mirror the state in the URL, leaving defaults out.
+			const url = new URL(location.href);
+			const set = (key: string, value: string) => (value ? url.searchParams.set(`${prefix}${key}`, value) : url.searchParams.delete(`${prefix}${key}`));
+			set('q', search.value.trim());
+			for (const facet of facets) set(facet, String(data.get(facet) ?? ''));
+			if (sort) set('sort', sort.value);
+			for (const toggle of toggles) set(toggle.name, toggle.checked ? '1' : '');
+			history.replaceState(history.state, '', url);
+		}
+
+		form.addEventListener('input', apply);
+		form.addEventListener('submit', (event) => event.preventDefault());
+		// Clearing the filters keeps the sort and the toggles, which aren't filters.
+		reset.addEventListener('click', () => {
+			search.value = '';
+			for (const facet of facets) form.querySelector<HTMLInputElement>(`input[name="${facet}"][value=""]`)!.checked = true;
+			apply();
+		});
+		// On a narrow screen the filters start folded away, so the list isn't a screen below them, unless one is set.
+		filters.open = matchMedia('(min-width: 50rem)').matches || facets.some((facet) => params.get(`${prefix}${facet}`));
+		form.hidden = false;
+		apply();
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-compendium]').forEach(setup);
+</script>

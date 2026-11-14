@@ -1,0 +1,39 @@
+---
+// The hover box for a reference: a card's face (and its upgrade), or a relic, potion or keyword's icon and text.
+// Served on its own at /tips/<kind>/<slug>/ and fetched when a reference is hovered (src/scripts/tooltips.ts).
+import CardFace from './CardFace.astro';
+import { asset, refs, type Card } from '../../lib/data';
+import { kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	item: Entry;
+}
+
+const { item } = Astro.props;
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const card = item as unknown as Card;
+const other = item as Entry & { image?: string | null; icon?: string | null; flavor?: string };
+const icon = other.image ?? other.icon;
+// One fact short enough for a hover box: the first the kind lists (rarity, or what kind of keyword it is).
+const meta = kind.facts(item)[0]?.value;
+---
+
+{
+	kind.key === 'cards' ? (
+		<div class="sts-tooltip__cards">
+			<CardFace card={card} size="md" />
+			{card.upgradable && <CardFace card={card} size="md" upgraded />}
+		</div>
+	) : (
+		<div class="sts-tooltip__entry">
+			{icon && <img src={asset(icon)} alt="" />}
+			<div>
+				<p class="sts-tooltip__title">{item.title}</p>
+				{meta && <p class="sts-tooltip__meta">{meta}</p>}
+				<p set:html={refs.terms(kind.text(item), 'hover')} />
+				{other.flavor && <p class="sts-flavor">{other.flavor}</p>}
+			</div>
+		</div>
+	)
+}

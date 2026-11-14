@@ -1,0 +1,14 @@
+---
+// Where a wiki page sits: Wiki › Cards › Cheers! The last step is the page itself.
+interface Props {
+	trail: { label: string; href?: string }[];
+}
+
+const { trail } = Astro.props;
+---
+
+<nav class="sts-crumbs not-content" aria-label="Breadcrumbs">
+	<ol>
+		{trail.map((step) => <li>{step.href ? <a href={step.href}>{step.label}</a> : <span aria-current="page">{step.label}</span>}</li>)}
+	</ol>
+</nav>

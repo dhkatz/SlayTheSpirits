@@ -1,25 +1,15 @@
 ---
 title: Cards
-description: Every Tavern card, with upgraded values in brackets.
+description: Every Tavern card, searchable and filterable like the game's card library.
+tableOfContents: false
 ---
 
-import CardGallery from '../../../components/CardGallery.astro';
+import WikiCompendium from '../../../components/wiki/WikiCompendium.astro';
 
-Tavern cards only appear in multiplayer runs. Numbers in brackets are the upgraded values. This page is generated
-from the mod's source, so it always matches the game.
+Tavern cards only appear in multiplayer runs. The colorless set turns up in colorless rewards, shops and the rest site
+Chug, and each character has one card of their own. Pick a card to see its upgrade, keywords and notes, or turn on
+**Show upgrades** to see every card upgraded.
 
-## Colorless
+This page is generated from the mod's source, so it always matches the game.
 
-The Tavern set. They turn up in colorless card rewards and shops, and in the rest site Chug.
-
-<CardGallery pool="Colorless" />
-
-## Character cards
-
-Each character has one Tavern card in their own rewards (switch them off with **Character Cards**).
-
-<CardGallery characters />
-
-## Curses
-
-<CardGallery pool="Curse" />
+<WikiCompendium kind="cards" />

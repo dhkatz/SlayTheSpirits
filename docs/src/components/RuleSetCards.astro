@@ -1,0 +1,57 @@
+---
+// The built-in rule sets at a glance: one card each, with a line about it and the numbers that set it apart, read
+// from the rules engine's presets. The line is the page's to write, by rule set name; a rule set without one fails
+// the build, so a new preset can't go undescribed.
+import DrinkPill from './DrinkPill.astro';
+import { drinks, restSiteLimitNames, rules } from '../lib/data';
+
+interface Props {
+	/** One line about each rule set, by its name. */
+	about: Record<string, string>;
+}
+
+const { about } = Astro.props;
+const rung = (kind: string) => drinks.findIndex((drink) => drink.id === `drink:${kind}`);
+
+const cards = rules.presets.map((preset) => {
+	if (!about[preset.name]) throw new Error(`RuleSetCards: no line about the "${preset.name}" rule set; add it to the about prop`);
+	const on = preset.triggers.filter((trigger) => trigger.enabled);
+	// The heaviest drink a rule hands out, with the rule set's own name for it.
+	const heaviest = [...on].sort((a, b) => rung(b.kind) - rung(a.kind))[0];
+	return {
+		name: preset.name,
+		line: about[preset.name],
+		on: on.length,
+		total: preset.triggers.length,
+		heaviest: heaviest && { kind: heaviest.kind, label: (preset.labels as Record<string, { singular: string }>)[heaviest.kind].singular },
+		restSites: restSiteLimitNames[preset.restSiteDrinks] ?? preset.restSiteDrinks,
+	};
+});
+---
+
+<div class="sts-rulesets not-content">
+	{
+		cards.map((card) => (
+			<section>
+				<h3>{card.name}</h3>
+				<p>{card.line}</p>
+				<dl>
+					<div>
+						<dt>Rules On</dt>
+						<dd>
+							{card.on} of {card.total}
+						</dd>
+					</div>
+					<div>
+						<dt>Heaviest Drink</dt>
+						<dd>{card.heaviest ? <DrinkPill kind={card.heaviest.kind} label={card.heaviest.label} /> : 'None'}</dd>
+					</div>
+					<div>
+						<dt>Rest Site Drinks</dt>
+						<dd>{card.restSites}</dd>
+					</div>
+				</dl>
+			</section>
+		))
+	}
+</div>

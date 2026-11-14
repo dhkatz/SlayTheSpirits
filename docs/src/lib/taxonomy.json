@@ -1,0 +1,206 @@
+{
+	"$comment": "How the wiki names, colors and orders the game's categories. Pools are keyed by the C# pool class the mod registers content into (SlayTheSpiritsMod.cs); scripts/extract-content.mjs fails the build on a pool missing here. Card colors are the game's CardPoolModel.DeckEntryCardColor, except the Fool, whose DeckEntryCardColor is the Ironclad's red; it uses its frame's yellow (card_frame_yellow). frame, energy and energyOutline are the pool's CardFrameMaterialPath, EnergyColorName and EnergyOutlineColor (default 5C5440). found sentences use the Markdown pages' shorthand: :kw[Shot], :char[Ironclad], [links](play/rest-sites/) and **bold** (refs.inline in src/lib/refs.mjs).",
+	"cardPools": {
+		"ColorlessCardPool": {
+			"key": "colorless",
+			"name": "Colorless",
+			"color": "#a3a3a3",
+			"found": "Found in colorless card rewards and shops while **Tavern Cards** is on, and offered by the :kw[Chug] at a [rest site](play/rest-sites/).",
+			"frame": "card_frame_colorless",
+			"energy": "colorless",
+			"energyOutline": "#5c5440"
+		},
+		"IroncladCardPool": {
+			"key": "ironclad",
+			"name": "Ironclad",
+			"color": "#d62000",
+			"character": true,
+			"frame": "card_frame_red",
+			"energy": "ironclad",
+			"energyOutline": "#802020"
+		},
+		"SilentCardPool": {
+			"key": "silent",
+			"name": "Silent",
+			"color": "#5ebd00",
+			"character": true,
+			"frame": "card_frame_green",
+			"energy": "silent",
+			"energyOutline": "#1a6625"
+		},
+		"DefectCardPool": {
+			"key": "defect",
+			"name": "Defect",
+			"color": "#3eb3ed",
+			"character": true,
+			"frame": "card_frame_blue",
+			"energy": "defect",
+			"energyOutline": "#1d5673"
+		},
+		"RegentCardPool": {
+			"key": "regent",
+			"name": "Regent",
+			"color": "#e36600",
+			"character": true,
+			"frame": "card_frame_orange",
+			"energy": "regent",
+			"energyOutline": "#803d0e"
+		},
+		"NecrobinderCardPool": {
+			"key": "necrobinder",
+			"name": "Necrobinder",
+			"color": "#cd4eed",
+			"character": true,
+			"frame": "card_frame_pink",
+			"energy": "necrobinder",
+			"energyOutline": "#803367"
+		},
+		"FoolCardPool": {
+			"key": "fool",
+			"name": "Fool",
+			"color": "#d9b21c",
+			"character": true,
+			"frame": "card_frame_yellow",
+			"energy": "fool",
+			"energyOutline": "#5a4411"
+		},
+		"CurseCardPool": {
+			"key": "curse",
+			"name": "Curse",
+			"color": "#585b61",
+			"found": "Anything that adds a random curse to your deck can add it.",
+			"frame": "card_frame_curse",
+			"energy": "colorless",
+			"energyOutline": "#5c5440"
+		},
+		"StatusCardPool": {
+			"key": "status",
+			"name": "Status",
+			"color": "#585b61",
+			"hidden": true,
+			"$comment": "The drink cards. The drinking game hands them out, and the drink ladder page covers them.",
+			"frame": "card_frame_colorless",
+			"energy": "colorless",
+			"energyOutline": "#5c5440"
+		}
+	},
+	"characterFound": "Found in the :char[{name}]'s card rewards while **Character Cards** is on, and offered by the :kw[Chug] at a [rest site](play/rest-sites/) when playing the {name}.",
+	"relicPools": {
+		"EventRelicPool": {
+			"key": "tavern",
+			"name": "Tavern",
+			"found": "Only from taking a :kw[Shot] at a [rest site](play/rest-sites/), which offers 3 you don't have yet."
+		}
+	},
+	"potionPools": {
+		"SharedPotionPool": {
+			"key": "shared",
+			"name": "Any character",
+			"found": "Found in potion rewards and shops in multiplayer runs, while **Tavern Potions** is on."
+		}
+	},
+	"rarities": [
+		"Basic",
+		"Starter",
+		"Common",
+		"Uncommon",
+		"Rare",
+		"Shop",
+		"Event",
+		"Ancient",
+		"Curse",
+		"Status"
+	],
+	"$cardStyleComment": "How the game draws a card (CardModel, NCard, StsColors). frameType: which frame and portrait border a type uses. rarityStyles: each rarity's banner material (tints the banner, portrait border and type plaque) and title outline color. cardColors: StsColors used on every card.",
+	"cardFrameType": {
+		"Attack": "attack",
+		"Skill": "skill",
+		"Power": "power",
+		"Status": "skill",
+		"Curse": "skill",
+		"Quest": "skill"
+	},
+	"rarityStyles": {
+		"Basic": {
+			"banner": "card_banner_common",
+			"titleOutline": "#4d4b40"
+		},
+		"Common": {
+			"banner": "card_banner_common",
+			"titleOutline": "#4d4b40"
+		},
+		"Uncommon": {
+			"banner": "card_banner_uncommon",
+			"titleOutline": "#005c75"
+		},
+		"Rare": {
+			"banner": "card_banner_rare",
+			"titleOutline": "#6b4b00"
+		},
+		"Curse": {
+			"banner": "card_banner_curse",
+			"titleOutline": "#550b9e"
+		},
+		"Status": {
+			"banner": "card_banner_status",
+			"titleOutline": "#4f522f"
+		},
+		"Event": {
+			"banner": "card_banner_event",
+			"titleOutline": "#1b6131"
+		},
+		"Ancient": {
+			"banner": "card_banner_ancient",
+			"titleOutline": "#4d4b40"
+		}
+	},
+	"cardColors": {
+		"cream": "#fff6e2",
+		"gold": "#efc851",
+		"red": "#ff5555",
+		"green": "#7fff00",
+		"blue": "#87ceeb",
+		"orange": "#ffa518",
+		"purple": "#ee82ee",
+		"upgradedTitleOutline": "#1b6131",
+		"upgradedEnergyOutline": "#1f5923"
+	},
+	"cardTypes": [
+		"Attack",
+		"Skill",
+		"Power",
+		"Status",
+		"Curse"
+	],
+	"targets": {
+		"None": "None",
+		"Self": "Yourself",
+		"AnyEnemy": "An enemy",
+		"AllEnemies": "All enemies",
+		"RandomEnemy": "A random enemy",
+		"AnyPlayer": "Any player",
+		"AnyAlly": "A teammate",
+		"AllAllies": "All teammates",
+		"TargetedNoCreature": "Something other than a creature",
+		"Osty": "Your Osty"
+	},
+	"potionUsage": {
+		"CombatOnly": "In combat",
+		"AnyTime": "Any time",
+		"Automatic": "Automatically"
+	},
+	"$keywordsComment": "Where the game prints card keywords: CardKeywordOrder. Each 'before' keyword is inserted at the top in this order, so the last one listed ends up first.",
+	"cardKeywords": {
+		"before": [
+			"Ethereal",
+			"Sly",
+			"Retain",
+			"Innate",
+			"Unplayable"
+		],
+		"after": [
+			"Exhaust",
+			"Eternal"
+		]
+	}
+}

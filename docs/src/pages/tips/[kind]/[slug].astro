@@ -1,0 +1,21 @@
+---
+// The hover box for every card, relic, potion and keyword, as a bare piece of HTML: /tips/cards/cheers/,
+// /tips/keywords/strength/... src/scripts/tooltips.ts fetches one when a reference to it is hovered. Keywords include
+// the game's (Strength, Block...), which have a hover box but no page here.
+import Tooltip from '../../../components/wiki/Tooltip.astro';
+import { content } from '../../../lib/data';
+import { kinds, type Entry, type KindKey } from '../../../lib/wiki';
+
+export const partial = true;
+
+export function getStaticPaths() {
+	const entries = (kind: KindKey): readonly Entry[] => (kind === 'keywords' ? content.glossary : kinds[kind].items);
+	return (Object.keys(kinds) as KindKey[]).flatMap((kind) =>
+		entries(kind).map((item) => ({ params: { kind, slug: item.slug }, props: { kind, item } }))
+	);
+}
+
+const { kind, item } = Astro.props as { kind: KindKey; item: Entry };
+---
+
+<Tooltip kind={kind} item={item} />

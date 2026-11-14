@@ -1,0 +1,33 @@
+---
+// Everything that has a keyword among its tooltips, by kind: each entry beside its text, like the "Sources" section
+// of a keyword page on the community wiki.
+import { href, refs } from '../../lib/data';
+import { usedBy } from '../../lib/wiki';
+
+interface Props {
+	/** The keyword's slug. */
+	keyword: string;
+}
+
+const groups = usedBy(Astro.props.keyword);
+const heading = (plural: string) => plural.charAt(0).toUpperCase() + plural.slice(1);
+---
+
+{
+	groups.map(({ kind, items }) => (
+		<>
+			<h3 id={`used-by-${kind.key}`}>
+				<a href={href(kind.page)}>{heading(kind.plural)}</a> <small>{items.length}</small>
+			</h3>
+			<dl class="sts-used-by not-content">
+				{items.map((item) => (
+					<div>
+						<dt set:html={refs.ref(kind.ref, item.slug)} />
+						<dd set:html={refs.terms(kind.text(item).replace(/<br>/g, ' '), 'link')} />
+					</div>
+				))}
+			</dl>
+		</>
+	))
+}
+{groups.length === 0 && <p class="sts-muted">Nothing uses it yet.</p>}

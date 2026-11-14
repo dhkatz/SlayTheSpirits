@@ -1,0 +1,32 @@
+---
+// An entry's infobox, like a wiki's: its name and what it is, its picture, then its facts.
+import EntryArt from './EntryArt.astro';
+import { kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	item: Entry;
+}
+
+const { item } = Astro.props;
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const facts = kind.facts(item).filter((fact) => fact.value);
+---
+
+<aside class="sts-infobox not-content" aria-label={`${item.title} facts`}>
+	<header>
+		<p class="sts-infobox__title">{item.title}</p>
+		<p class="sts-infobox__tagline" set:html={kind.tagline(item)} />
+	</header>
+	<EntryArt kind={kind.key} item={item} />
+	<dl>
+		{
+			facts.map((fact) => (
+				<div>
+					<dt>{fact.label}</dt>
+					{fact.html ? <dd set:html={fact.html} /> : <dd>{fact.href ? <a href={fact.href}>{fact.value}</a> : fact.value}</dd>}
+				</div>
+			))
+		}
+	</dl>
+</aside>

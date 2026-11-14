@@ -1,0 +1,17 @@
+---
+// A relic or potion icon on a round pedestal, like the game's inspect screen.
+import { asset } from '../../lib/data';
+
+interface Props {
+	image: string | null;
+	title: string;
+	rarity?: string;
+	size?: 'sm' | 'lg';
+}
+
+const { image, title, rarity, size = 'sm' } = Astro.props;
+---
+
+<span class:list={['sts-icon-frame', `sts-icon-frame--${size}`]} data-rarity={rarity?.toLowerCase()}>
+	{image ? <img src={asset(image)} alt={size === 'lg' ? title : ''} loading="lazy" /> : <span aria-hidden="true">?</span>}
+</span>

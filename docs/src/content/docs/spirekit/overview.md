@@ -18,7 +18,7 @@ SpireKit isn't published yet. Until it is, the best reference is the source and 
 - **Test without the game.** Anything that isn't a direct call into the game is plain C# with unit tests.
 - **One DLL per mod.** SpireKit is merged into each mod's DLL, so every mod pins its own version.
 
-## What it gives a mod
+## What It Gives a Mod
 
 | Area | Highlights |
 |---|---|

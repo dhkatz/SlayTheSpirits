@@ -1,0 +1,15 @@
+---
+// A page for every card, relic and potion: /wiki/cards/cheers/, /wiki/relics/hip-flask/...
+import WikiEntry from '../../../components/wiki/WikiEntry.astro';
+import { kinds, type Entry, type KindKey } from '../../../lib/wiki';
+
+export function getStaticPaths() {
+	return Object.values(kinds).flatMap((kind) =>
+		kind.items.map((item: Entry) => ({ params: { kind: kind.key, slug: item.slug }, props: { kind: kind.key, item } }))
+	);
+}
+
+const { kind, item } = Astro.props as { kind: KindKey; item: Entry };
+---
+
+<WikiEntry kind={kind} item={item} />

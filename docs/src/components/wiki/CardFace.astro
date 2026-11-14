@@ -1,0 +1,67 @@
+---
+// A card as the game draws it: the game's own pieces (portrait, frame, portrait border, title banner, type plaque,
+// energy orb), tinted for the card's pool and rarity (scripts/card-art.mjs), stacked at the positions in the game's
+// scenes/cards/card.tscn, with its text on top. `upgraded` shows the upgraded card: green title, and green numbers
+// and cost where the upgrade changed them, as the game shows them. Keywords in the text have hover boxes.
+//
+// Every position and size in wiki.css is in the scene's units: the frame is 300×422, and 1 unit is 100cqw / 300 of
+// this card's width, so a card can be drawn at any size.
+import { asset, refs, taxonomy, type Card } from '../../lib/data';
+
+interface Props {
+	card: Card;
+	upgraded?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	class?: string;
+}
+
+const { card, upgraded = false, size = 'md', class: className } = Astro.props;
+const look = card.look;
+const showUpgrade = upgraded && card.upgradable;
+const cost = showUpgrade && card.upgradedCost !== null ? card.upgradedCost : card.cost;
+const costChanged = showUpgrade && card.upgradedCost !== null;
+const text = (showUpgrade ? card.face.upgraded : card.face.base) ?? '';
+const title = `${card.title}${showUpgrade ? '+' : ''}`;
+const colors = taxonomy.cardColors;
+
+// The game shrinks text to fit (MegaLabel, MegaRichTextLabel); estimate the same from the text's length. Boxes and
+// line heights are the ones in wiki.css; the widths are Kreon's average character, in ems.
+const titleSize = Math.max(14, Math.min(26, Math.floor(210 / (title.length * 0.5))));
+function descriptionSize(html: string) {
+	const lines = html.split('<br>').map((line) => line.replace(/<[^>]+>/g, '').trim());
+	for (let size = 21; size > 12; size--) {
+		const perLine = Math.floor(243 / (size * 0.43));
+		const needed = lines.reduce((n, line) => n + Math.max(1, Math.ceil(line.length / perLine)), 0);
+		if (needed * (size * 1.414 - 3) <= 136) return size;
+	}
+	return 12;
+}
+
+const vars = [
+	`--title-outline: ${showUpgrade ? colors.upgradedTitleOutline : look.titleOutline}`,
+	`--title-color: ${showUpgrade ? colors.green : colors.cream}`,
+	`--energy-outline: ${costChanged ? colors.upgradedEnergyOutline : look.energyOutline}`,
+	`--energy-color: ${costChanged ? colors.green : colors.cream}`,
+	`--title-size: ${titleSize}`,
+	`--text-size: ${descriptionSize(text)}`,
+	`--plaque: url(${asset(look.plaque)})`,
+].join('; ');
+---
+
+<div class:list={['sts-card', `sts-card--${size}`, className]} data-type={card.type.toLowerCase()} style={vars}>
+	<img class="sts-card__portrait" src={asset(look.portrait)} alt="" loading="lazy" />
+	<img class="sts-card__frame" src={asset(look.frame)} alt="" loading="lazy" />
+	<div class="sts-card__text"><p set:html={refs.terms(text, 'hover')} /></div>
+	<img class="sts-card__border" src={asset(look.border)} alt="" loading="lazy" />
+	<img class="sts-card__banner" src={asset(look.banner)} alt="" loading="lazy" />
+	<span class="sts-card__title">{title}</span>
+	<span class="sts-card__type">{card.type}</span>
+	{
+		look.energy && cost !== null && (
+			<span class="sts-card__energy" title="Energy cost">
+				<img src={asset(look.energy)} alt="" loading="lazy" />
+				<span>{cost}</span>
+			</span>
+		)
+	}
+</div>

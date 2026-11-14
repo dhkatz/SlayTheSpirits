@@ -5,11 +5,11 @@ template: splash
 hero:
   tagline: A multiplayer drinking game for Slay the Spire 2. Bosses, deaths and bad luck hand out drinks, and Tavern cards, relics and potions make your friends drink with you.
   actions:
-    - text: Get started
+    - text: Get Started
       link: play/getting-started/
       icon: right-arrow
-    - text: Browse the cards
-      link: wiki/cards/
+    - text: Browse the Wiki
+      link: wiki/
       icon: open-book
       variant: minimal
 ---
@@ -17,14 +17,14 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 <CardGrid stagger>
-	<Card title="Drinks for game moments" icon="star">
+	<Card title="Drinks for Game Moments" icon="star">
 		Everyone Chugs when a boss shows up, dying means finishing your drink, and losing the run costs a Shot. Every
 		rule can be changed.
 	</Card>
-	<Card title="The host's rules" icon="setting">
+	<Card title="The Host's Rules" icon="setting">
 		The host picks the rule set and everyone plays by it, locked for the run. Share your house rules with a code.
 	</Card>
-	<Card title="Tavern cards, relics and potions" icon="puzzle">
+	<Card title="Tavern Cards, Relics and Potions" icon="puzzle">
 		Make a teammate Sip for card draw, Chug at a rest site for better cards, or take a Shot for a relic you can't
 		find anywhere else.
 	</Card>
@@ -34,7 +34,7 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 </CardGrid>
 
 <LinkCard
-	title="Drink responsibly"
+	title="Drink Responsibly"
 	description="Nobody has to drink: the Sober rule set swaps in soda, and water always counts."
 	href="play/drink-responsibly/"
 />

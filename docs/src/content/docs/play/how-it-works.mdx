@@ -1,35 +1,35 @@
 ---
-title: How it works
+title: How It Works
 description: Drinks, Tipsy, the bar tab and per-act caps.
 ---
 
 import Ladder from '../../../components/Ladder.astro';
 
 Game moments, such as a boss fight starting, a player dying or a big hit, hand out drinks according to the host's
-[rule set](../rule-sets/). Tavern cards, relics and potions hand out more. The game announces each one, and your job
-is to actually drink it.
+[rule set](../rule-sets/). Tavern [cards](../../wiki/cards/), [relics](../../wiki/relics/) and
+[potions](../../wiki/potions/) hand out more. The game announces each one, and your job is to actually drink it.
 
-## The drinks
+## The Drinks
 
-From lightest to heaviest. Everything below a Shot is measured against the drink in your hand.
+From lightest to heaviest. Everything below a :kw[Shot] is measured against the drink in your hand.
 
 <Ladder />
 
 How often each comes up in the Standard rule set:
 
-- **Sips** are common: most rules and most Tavern cards.
-- **Finishing your drink** is uncommon, about one or two per player per act.
-- **Chugs and Shots** are rare: the boss-fight Chug, a Shot when the run is lost, and drinks you choose yourself at
-  [rest sites](../rest-sites/) or from [Tavern potions](../../wiki/potions/). No card in your deck makes you Chug or
-  take a Shot.
+- :kw[Sip]{label="Sips"} are common: most rules and most Tavern cards.
+- :kw[Finish Your Drink]{label="Finishing your drink"} is uncommon, about one or two per player per act.
+- :kw[Chug]{label="Chugs"} and :kw[Shot]{label="Shots"} are rare: the boss-fight Chug, a Shot when the run is lost,
+  and drinks you choose yourself at [rest sites](../rest-sites/) or from [Tavern potions](../../wiki/potions/). No
+  card in your deck makes you Chug or take a Shot.
 
 ## Tipsy
 
-Every drink adds to your **Tipsy**, a buff that shows how much you've had this run (Sip 1, Finish 3, Chug 5,
-Shot 10). It never goes down during a run. Some Tavern cards and relics get stronger with it, such as *Down the
-Hatch*, *Hair of the Dog* and the *Hip Flask*. Hover over a player's Tipsy to see their drinks so far.
+Every drink adds to your :kw[Tipsy], a buff that shows how much you've had this run. It never goes down during a
+run. Some Tavern cards and relics get stronger with it, such as :card[Down the Hatch], :card[Hair of the Dog] and
+the :relic[Hip Flask]. Hover over a player's Tipsy to see their drinks so far.
 
-## The bar tab
+## The Bar Tab
 
 During combat, a counter for each kind of drink sits under each player, showing how many Sips, Finishes and so on
 they've been handed this fight. Use it to check everyone has kept up. It resets every combat.
@@ -39,14 +39,15 @@ Drink** on, the drinker accepts it first on a card-selection screen.
 
 ## Caps
 
-Each rule set can cap how many of each heavy drink a player takes per act. A drink that would go over the cap is
-stepped down one rung at a time: a Shot over the cap becomes a Chug, and so on. In Casual, Chugs and Shots are capped
-at zero, so they never happen.
+Each [rule set](../rule-sets/#compare-the-rule-sets) can cap how many of each heavy drink a player takes per act. A
+drink that would go over the cap is stepped down one rung at a time: a :kw[Shot] over the cap becomes a :kw[Chug],
+and so on. In Casual, Chugs and Shots are capped at zero, so they never happen.
 
-Drinks you **choose** (rest site drinks and Tavern potions) are never stepped down, because that would change the
-price of what you picked. They still count toward the caps for drinks you didn't choose.
+Drinks you **choose** ([rest site](../rest-sites/) drinks and [Tavern potions](../../wiki/potions/)) are never
+stepped down, because that would change the price of what you picked. They still count toward the caps for drinks
+you didn't choose.
 
-## Skipping and passing drinks
+## Skipping and Passing Drinks
 
-- *Designated Driver* makes you immune to drinks for the rest of the combat. Water still counts.
-- *Slip Away* passes the next drink you'd get to a random teammate.
+- :card[Designated Driver] makes you immune to drinks for the rest of the combat. :kw[Water] still counts.
+- :card[Slip Away] passes the next drink you'd get to a random teammate.

@@ -1,0 +1,40 @@
+---
+// The navigation box at the bottom of an entry's page: every entry of its kind, under the kind's headings.
+import { href, refs } from '../../lib/data';
+import { grouped, kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	/** The slug of the page it is on, shown without a link. */
+	current?: string;
+}
+
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const { current } = Astro.props;
+const groups = grouped(kind);
+---
+
+<nav class="sts-navbox not-content" aria-label={`All ${kind.plural}`}>
+	<p class="sts-navbox__title">
+		Tavern {kind.plural} <a href={href(kind.page)}>View all {kind.items.length}</a>
+	</p>
+	<dl>
+		{
+			groups.map(({ group, items }) => (
+				<div>
+					{group.html ? <dt set:html={group.html} /> : <dt>{group.title}</dt>}
+					<dd>
+						<ul role="list">
+							{items.map((item) => (
+								<li
+									class:list={{ 'sts-navbox__current': item.slug === current }}
+									set:html={refs.ref(kind.ref, item.slug, { link: item.slug !== current, tip: item.slug !== current })}
+								/>
+							))}
+						</ul>
+					</dd>
+				</div>
+			))
+		}
+	</dl>
+</nav>

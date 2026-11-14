@@ -1,0 +1,38 @@
+---
+// One entry in a compendium: a card shows its face (and its upgraded face, for the "Show upgrades" toggle); relics,
+// potions and keywords show their icon, name and text. The whole tile is a link, so keywords in the text only get
+// hover boxes.
+import CardFace from './CardFace.astro';
+import ItemIcon from './ItemIcon.astro';
+import { refs, type Card } from '../../lib/data';
+import { entryHref, kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	item: Entry;
+}
+
+const { item } = Astro.props;
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const link = entryHref(kind.key, item.slug);
+const other = item as Entry & { image?: string | null; icon?: string | null; rarity?: string };
+const meta = kind.facts(item)[0]?.value;
+---
+
+{
+	kind.key === 'cards' ? (
+		<a class="sts-card-link" href={link} aria-label={item.title}>
+			<CardFace card={item as unknown as Card} size="sm" class="sts-face-base" />
+			<CardFace card={item as unknown as Card} size="sm" upgraded class="sts-face-up" />
+		</a>
+	) : (
+		<a class="sts-tile sts-tile--link" href={link}>
+			<header>
+				<ItemIcon image={other.image ?? other.icon ?? null} title={item.title} rarity={other.rarity} />
+				<h3>{item.title}</h3>
+			</header>
+			<p class="sts-meta">{meta}</p>
+			<p class="sts-text" set:html={refs.terms(kind.text(item), 'hover')} />
+		</a>
+	)
+}

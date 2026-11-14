@@ -1,57 +1,108 @@
 ---
-// Every built-in rule set side by side, straight from the rules engine's presets.
-import { rules, restSiteLimitNames, type Preset } from '../lib/data';
+// Every built-in rule set side by side, straight from the rules engine's presets: what each moment costs, grouped
+// by what it's about, then the limits. Drinks are pills tinted by how heavy they are, so the rule sets can be
+// compared at a glance. When every rule set agrees on who drinks, that's said once, under the moment's name.
+import DrinkPill from './DrinkPill.astro';
+import { drinks, href, restSiteLimitNames, rules, type Preset } from '../lib/data';
 
 const presets = rules.presets;
-const triggers = presets[0].triggers.map((t) => ({ id: t.id, name: t.name }));
-const rule = (preset: Preset, id: string) => preset.triggers.find((t) => t.id === id)!;
-const kinds = ['Finish', 'Chug', 'Shot'];
-const cap = (preset: Preset, kind: string) => (preset.caps as Record<string, number>)[kind];
+const rule = (preset: Preset, id: string) => preset.triggers.find((trigger) => trigger.id === id)!;
+
+/** What each family of moments (the first part of a trigger's id) is headed. */
+const families: Record<string, string> = { encounter: 'Fights', player: 'Players', run: 'The Run' };
+const groups = new Map<string, (typeof presets)[0]['triggers']>();
+for (const trigger of presets[0].triggers) {
+	const family = trigger.id.split('.')[0];
+	const title = families[family] ?? family.charAt(0).toUpperCase() + family.slice(1);
+	groups.set(title, [...(groups.get(title) ?? []), trigger]);
+}
+
+/** Who drinks, if every rule set that has the rule on agrees. */
+function sharedTarget(id: string) {
+	const targets = new Set(presets.map((preset) => rule(preset, id)).filter((r) => r.enabled).map((r) => r.target));
+	return targets.size === 1 ? [...targets][0] : null;
+}
+
+// The drinks a rule set can cap, heaviest last (the ladder's order).
+const capped = drinks.map((drink) => drink.id.split(':')[1]).filter((kind) => presets.some((preset) => kind in preset.caps));
+const cap = (preset: Preset, kind: string) => (preset.caps as Record<string, number | undefined>)[kind];
+const columns = presets.length + 1;
 ---
 
-<div class="sts-table-wrap">
+<div class="sts-rules sts-wide-page not-content">
 	<table>
 		<thead>
 			<tr>
-				<th>When</th>
-				{presets.map((p) => <th>{p.name}</th>)}
+				<th scope="col">When</th>
+				{presets.map((preset) => <th scope="col">{preset.name}</th>)}
 			</tr>
 		</thead>
-		<tbody>
-			{
-				triggers.map((t) => (
-					<tr>
-						<td>{t.name}</td>
-						{presets.map((p) => {
-							const r = rule(p, t.id);
-							const threshold = r.threshold !== null ? ` (${r.threshold}+ ${r.thresholdUnit})` : '';
-							return r.enabled ? (
-								<td>
-									<strong>{r.drink}</strong>
-									<br />
-									<small>
-										{r.target}
-										{threshold}
-									</small>
-								</td>
-							) : (
-								<td class="sts-off">Off</td>
-							);
-						})}
+		{
+			[...groups].map(([title, triggers]) => (
+				<tbody>
+					<tr class="sts-rules__group">
+						<th colspan={columns} scope="colgroup">
+							{title}
+						</th>
 					</tr>
-				))
-			}
+					{triggers.map((trigger) => {
+						const everyone = sharedTarget(trigger.id);
+						return (
+							<tr>
+								<th scope="row">
+									{trigger.name}
+									{everyone && <small>{everyone}</small>}
+								</th>
+								{presets.map((preset) => {
+									const r = rule(preset, trigger.id);
+									return r.enabled ? (
+										<td>
+											<DrinkPill kind={r.kind} label={r.drink} />
+											{!everyone && <small>{r.target}</small>}
+											{r.threshold !== null && (
+												<small>
+													{r.threshold}+ {r.thresholdUnit}
+												</small>
+											)}
+										</td>
+									) : (
+										<td class="sts-rules__off">Off</td>
+									);
+								})}
+							</tr>
+						);
+					})}
+				</tbody>
+			))
+		}
+		<tbody>
+			<tr class="sts-rules__group">
+				<th colspan={columns} scope="colgroup">Limits</th>
+			</tr>
 			<tr>
-				<td>Rest site drinks</td>
-				{presets.map((p) => <td>{restSiteLimitNames[p.restSiteDrinks] ?? p.restSiteDrinks}</td>)}
+				<th scope="row">
+					<a href={href('play/rest-sites/')}>Rest Site Drinks</a>
+					<small>Chug or Shot by choice</small>
+				</th>
+				{
+					presets.map((preset) => (
+						<td class:list={{ 'sts-rules__off': preset.restSiteDrinks === 'Off' }}>
+							{restSiteLimitNames[preset.restSiteDrinks] ?? preset.restSiteDrinks}
+						</td>
+					))
+				}
 			</tr>
 			{
-				kinds.map((kind) => (
+				capped.map((kind) => (
 					<tr>
-						<td>Max {kind} per act</td>
-						{presets.map((p) => (
-							<td>{cap(p, kind) ?? 'No limit'}</td>
-						))}
+						<th scope="row">
+							<DrinkPill kind={kind} />
+							<small>Most per player, per act</small>
+						</th>
+						{presets.map((preset) => {
+							const most = cap(preset, kind);
+							return <td class:list={{ 'sts-rules__off': most === 0 }}>{most === undefined ? 'No limit' : most === 0 ? 'Never' : most}</td>;
+						})}
 					</tr>
 				))
 			}

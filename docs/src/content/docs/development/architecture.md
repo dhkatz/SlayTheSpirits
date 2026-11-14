@@ -33,7 +33,7 @@ Rules:
   there, define an abstraction and adapt it in the game-bound layer.
 - Game-bound projects stay thin: translate game → abstraction → game. Logic goes down a layer, where it can be tested.
 
-## Shipping: one DLL per mod
+## Shipping: One DLL per Mod
 
 The game only loads `<id>.dll`, and it reflects over that DLL's types before any mod code runs. A separate
 `SpireKit.dll` next to it would fail to resolve. So `build/Sts2.Mod.targets` **merges** every project
@@ -45,7 +45,7 @@ reference into the mod DLL with ILRepack. Consequences:
   embedding SpireKit would collide. Today that's just the hook listener (one line, see below).
   `SpireNetEnvelope` is safe: the game breaks wire-id ties by mod id, and handlers are registered per type.
 
-## Game facts this design relies on (v0.113.0)
+## Game Facts This Design Relies On (v0.113.0)
 
 | Fact | Consequence |
 |---|---|
@@ -97,7 +97,7 @@ reference into the mod DLL with ILRepack. Consequences:
 | Sharing | `ShareCode` | `PREFIX:base64url(deflate(json))` |
 | Run data | `ModContext.RunData.Register(slot, capture, restore)` | per-run state that survives save/quit: captured when the game snapshots the run, stored beside its save (`rundata/profile<N>/current_run[_mp].json`, stamped with seed + start time), sent to clients inside the loaded save, restored before `RunStarted` |
 
-## The drinking game
+## The Drinking Game
 
 ```
 game hook ─▶ SpireKit event ─▶ GameTriggers ─▶ TriggerOccurrence ─▶ PenaltyEngine ─▶ Announcer ─▶ toast
@@ -171,7 +171,7 @@ Rules (`RuleSet`) live in the host's profile (`profile.json` in the mod storage 
 `RulesService` (host-authoritative), lock at run start, and are kept in `runs/<seed>.json` so a resumed
 run uses the rules it started with.
 
-## How to…
+## How To…
 
 **Add a trigger.** Add a `TriggerDefinition` to `BuiltInTriggers`, give it defaults in `Presets`, map the
 game event in `GameTriggers.From`, and add a display name in `Announcer`. If the game event doesn't exist
@@ -232,7 +232,7 @@ without it read as the default (`defaults:` on `RuleSetCodec.Format`).
 **Change the RuleSet shape** (rename, change meaning). Bump `RuleSetCodec.SchemaVersion` and register a
 `JsonMigration` from the previous version. Old profiles and share codes keep working.
 
-## Known gaps (next milestones)
+## Known Gaps (Next Milestones)
 
 - Locked rules still use their own `runs/<seed>.json` sidecar and reach clients over the rules channel; they
   could move to `RunData` too, so clients get them in the same packet as the save.

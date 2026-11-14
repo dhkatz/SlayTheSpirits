@@ -1,0 +1,51 @@
+---
+// The picture in an entry's infobox. A card: its face, with Base and Upgraded tabs if it can be upgraded (plain radio
+// buttons, switched in CSS). A relic, potion or keyword: its icon above its text.
+import CardFace from './CardFace.astro';
+import ItemIcon from './ItemIcon.astro';
+import { refs, type Card } from '../../lib/data';
+import { kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
+
+interface Props {
+	kind: KindKey;
+	item: Entry;
+}
+
+const { item } = Astro.props;
+const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
+const card = item as unknown as Card;
+const other = item as Entry & { image?: string | null; icon?: string | null; rarity?: string; flavor?: string };
+---
+
+{
+	kind.key === 'cards' ? (
+		<div class="sts-art sts-art--card">
+			{card.upgradable && (
+				<div class="sts-tabs" role="radiogroup" aria-label="Card version">
+					<label>
+						<input type="radio" name="face" value="base" checked />
+						Base
+					</label>
+					<label>
+						<input type="radio" name="face" value="upgraded" />
+						Upgraded
+					</label>
+				</div>
+			)}
+			<div class="sts-art__face sts-art__face--base">
+				<CardFace card={card} size="lg" />
+			</div>
+			{card.upgradable && (
+				<div class="sts-art__face sts-art__face--upgraded">
+					<CardFace card={card} size="lg" upgraded />
+				</div>
+			)}
+		</div>
+	) : (
+		<div class="sts-art sts-art--icon">
+			<ItemIcon image={other.image ?? other.icon ?? null} title={item.title} rarity={other.rarity} size="lg" />
+			<p class="sts-art__text" set:html={refs.terms(kind.text(item), 'link')} />
+			{other.flavor && <p class="sts-flavor">{other.flavor}</p>}
+		</div>
+	)
+}
