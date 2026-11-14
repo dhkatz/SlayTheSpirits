@@ -68,6 +68,9 @@ public sealed class ModContext
     /// </summary>
     public RunDataRegistry RunData { get; }
 
+    /// <summary>Options this mod adds at rest sites, next to Rest and Smith.</summary>
+    public RestSiteOptionRegistry RestSite { get; } = new();
+
     /// <summary>Tabs this mod adds to the game's Settings screen (main menu and pause menu).</summary>
     public SettingsTabRegistry SettingsTabs { get; } = new();
 

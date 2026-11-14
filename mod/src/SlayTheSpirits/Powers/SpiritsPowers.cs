@@ -64,7 +64,6 @@ public sealed class SpiritsWaterTabPower() : SpiritsTabPower(PenaltyKind.Water);
 
 public sealed class SpiritsSipTabPower() : SpiritsTabPower(PenaltyKind.Sip);
 
-public sealed class SpiritsDrinkTabPower() : SpiritsTabPower(PenaltyKind.Drink);
 
 public sealed class SpiritsShotTabPower() : SpiritsTabPower(PenaltyKind.Shot);
 

@@ -36,7 +36,7 @@ public sealed class RuleSetTests
     public void Older_files_missing_newer_settings_get_the_defaults()
     {
         // A file saved before Tipsy, drink confirmation and per-enemy rules existed: only a few settings.
-        const string json = """{"schema":1,"data":{"name":"Old","triggers":{},"content":{}}}""";
+        const string json = """{"schema":3,"data":{"name":"Old","triggers":{},"content":{}}}""";
 
         var result = RuleSetCodec.FromJson(json);
 
@@ -50,13 +50,15 @@ public sealed class RuleSetTests
         Assert.NotNull(result.Value.Labels);
         Assert.Equal(defaults.Content.TavernCards, result.Value.Content.TavernCards);
         Assert.Equal(defaults.Content.CharacterCards, result.Value.Content.CharacterCards);
+        Assert.Equal(defaults.Content.TavernPotions, result.Value.Content.TavernPotions);
+        Assert.Equal(defaults.RestSiteDrinks, result.Value.RestSiteDrinks);
         Assert.NotNull(result.Value.Content.DisabledCards);
     }
 
     [Fact]
     public void Explicit_nulls_are_treated_as_missing()
     {
-        const string json = """{"schema":1,"data":{"name":"Nulls","triggers":null,"tipsy":null,"labels":null,"content":null}}""";
+        const string json = """{"schema":3,"data":{"name":"Nulls","triggers":null,"tipsy":null,"labels":null,"content":null}}""";
 
         var result = RuleSetCodec.FromJson(json);
 
@@ -78,9 +80,9 @@ public sealed class RuleSetTests
     {
         var json = RuleSetCodec.ToJson(Presets.Standard);
 
-        Assert.Contains("\"schema\": 1", json, StringComparison.Ordinal);
+        Assert.Contains($"\"schema\": {RuleSetCodec.SchemaVersion}", json, StringComparison.Ordinal);
         Assert.Contains("\"encounter.boss.start\"", json, StringComparison.Ordinal);
-        Assert.Contains("\"Shot\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"Chug\"", json, StringComparison.Ordinal);
         Assert.Contains("\"Everyone\"", json, StringComparison.Ordinal);
     }
 

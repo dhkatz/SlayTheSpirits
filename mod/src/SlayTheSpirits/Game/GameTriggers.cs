@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Rooms;
 using SlayTheSpirits.Party;
+using SlayTheSpirits.Potions;
 using SlayTheSpirits.Triggers;
 using SpireKit.GameEvents;
 
@@ -18,6 +19,7 @@ internal static class GameTriggers
         PlayerDied e => [new(BuiltInTriggers.PlayerDied.Id, Id(e.Player))],
         PlayerDamaged e => [new(BuiltInTriggers.PlayerBigHit.Id, Id(e.Player), Magnitude: e.HpLost, Label: e.Dealer?.Name)],
         CardAddedToDeck { Card.Type: CardType.Curse } e => [new(BuiltInTriggers.CurseObtained.Id, Id(e.Player), Label: e.Card.Title)],
+        PotionUsed { Potion: SpiritsPotion } => [], // The potion is the drink; don't add a second one.
         PotionUsed e => [new(BuiltInTriggers.PotionUsed.Id, Id(e.Player), Label: Text(e.Potion.Title))],
         PlayerTurnEnding { EnergyLeft: > 0 } e => [new(BuiltInTriggers.TurnEndedWithEnergy.Id, Id(e.Player), Magnitude: e.EnergyLeft)],
         RoomEntered { RoomType: RoomType.RestSite } => [new(BuiltInTriggers.RestSiteEntered.Id)],
@@ -47,7 +49,8 @@ internal static class GameTriggers
         }
     }
 
-    private static string? Text(LocString? text)
+    /// <summary>Formatted text, or null if it can't be read (missing localization must not break gameplay).</summary>
+    public static string? Text(LocString? text)
     {
         try
         {

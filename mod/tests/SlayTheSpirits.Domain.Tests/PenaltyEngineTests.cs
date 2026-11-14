@@ -20,14 +20,14 @@ public sealed class PenaltyEngineTests
         new(new Penalty(kind, count), target, subject, null, CardCause);
 
     [Fact]
-    public void Boss_start_gives_everyone_a_shot()
+    public void Boss_start_makes_everyone_chug()
     {
         var engine = NewEngine();
 
         var result = engine.Handle(new TriggerOccurrence(BuiltInTriggers.BossEncounterStarted.Id), Four);
 
         Assert.Equal([Alice, Bob, Cara, Dave], result.Select(a => a.Player));
-        Assert.All(result, a => Assert.Equal(PenaltyKind.Shot, a.Penalty.Kind));
+        Assert.All(result, a => Assert.Equal(PenaltyKind.Chug, a.Penalty.Kind));
     }
 
     [Fact]
@@ -71,9 +71,10 @@ public sealed class PenaltyEngineTests
         var engine = NewEngine();
         var shot = Request(PenaltyKind.Shot, TargetKind.Subject, Alice);
 
+        // Standard: 1 Shot and 2 Chugs per act, so extra Shots step down the ladder.
         var kinds = Enumerable.Range(0, 4).Select(_ => engine.Handle(shot, Four).Single()).ToList();
 
-        Assert.Equal([PenaltyKind.Shot, PenaltyKind.Shot, PenaltyKind.Shot, PenaltyKind.Drink], kinds.Select(a => a.Penalty.Kind));
+        Assert.Equal([PenaltyKind.Shot, PenaltyKind.Chug, PenaltyKind.Chug, PenaltyKind.Finish], kinds.Select(a => a.Penalty.Kind));
         Assert.Contains(AssignmentNote.Downgraded, kinds[3].Notes);
         Assert.Equal(PenaltyKind.Shot, kinds[3].OriginalPenalty?.Kind);
 
@@ -86,9 +87,10 @@ public sealed class PenaltyEngineTests
     {
         var engine = NewEngine(Presets.Casual);
 
-        var result = engine.Handle(Request(PenaltyKind.Finish, TargetKind.Subject, Alice), Four).Single();
+        // Casual allows no Shots or Chugs.
+        var result = engine.Handle(Request(PenaltyKind.Shot, TargetKind.Subject, Alice), Four).Single();
 
-        Assert.Equal(PenaltyKind.Drink, result.Penalty.Kind);
+        Assert.Equal(PenaltyKind.Finish, result.Penalty.Kind);
     }
 
     [Fact]
@@ -113,8 +115,8 @@ public sealed class PenaltyEngineTests
         var engine = NewEngine();
         engine.AddRedirects(Alice);
 
-        var first = engine.Handle(Request(PenaltyKind.Drink, TargetKind.Subject, Alice), Four).Single();
-        var second = engine.Handle(Request(PenaltyKind.Drink, TargetKind.Subject, Alice), Four).Single();
+        var first = engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Alice), Four).Single();
+        var second = engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Alice), Four).Single();
 
         Assert.NotEqual(Alice, first.Player);
         Assert.Equal(Alice, first.OriginalPlayer);
@@ -133,7 +135,7 @@ public sealed class PenaltyEngineTests
         var tally = engine.State.Tally;
         Assert.Equal(3, tally.Count(Alice, PenaltyKind.Sip));
         Assert.Equal(1, tally.Count(Alice, PenaltyKind.Finish));
-        Assert.Equal((3 * 1) + 5, tally.TipsyOf(Alice));
+        Assert.Equal((3 * 1) + 3, tally.TipsyOf(Alice));
         Assert.Equal(PenaltyKind.Finish, tally.WorstMoments[Alice.Value].Penalty.Kind);
         Assert.Equal("Gremlin Nob", tally.WorstMoments[Alice.Value].Label);
     }
@@ -175,14 +177,12 @@ public sealed class PenaltyEngineTests
     {
         var engine = NewEngine();
         var shot = Request(PenaltyKind.Shot, TargetKind.Subject, Alice);
-        for (var i = 0; i < 3; i++)
-        {
-            engine.Handle(shot, Four);
-        }
+        engine.Handle(shot, Four);
 
         var capped = engine.Handle(shot, Four).Single();
 
-        Assert.Equal(TipsyWeights.Defaults[PenaltyKind.Drink], capped.Tipsy);
+        Assert.Equal(PenaltyKind.Chug, capped.Penalty.Kind);
+        Assert.Equal(TipsyWeights.Defaults[PenaltyKind.Chug], capped.Tipsy);
     }
 
     [Fact]

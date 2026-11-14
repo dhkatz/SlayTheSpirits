@@ -33,11 +33,10 @@ public static class Banter
     private static readonly Dictionary<PenaltyKind, string[]> Drinking = new()
     {
         [PenaltyKind.Water] = ["Ahh, refreshing.", "Hydration check!", "Water? Fine..."],
-        [PenaltyKind.Sip] = ["*sip*", "Just a little one.", "Mmm.", "A dainty sip."],
-        [PenaltyKind.Drink] = ["Down the hatch!", "*gulp*", "Don't mind if I do.", "Cheers!"],
+        [PenaltyKind.Sip] = ["*sip*", "Just a little one.", "Mmm.", "Don't mind if I do.", "Cheers!"],
+        [PenaltyKind.Finish] = ["Bottoms up!", "Gone. All gone.", "Down the hatch!", "Another!"],
+        [PenaltyKind.Chug] = ["CHUG! CHUG! CHUG!", "Hold my sword...", "*glug glug glug*", "Watch and learn."],
         [PenaltyKind.Shot] = ["Here goes nothing!", "SHOT!", "Oof. That burns.", "One... two... GO!"],
-        [PenaltyKind.Chug] = ["CHUG! CHUG! CHUG!", "Hold my sword...", "*glug glug glug*"],
-        [PenaltyKind.Finish] = ["Bottoms up!", "Gone. All gone.", "Watch and learn.", "Another!"],
     };
 
     /// <summary>What a player says when handing <paramref name="target"/> a drink (null = everyone).</summary>

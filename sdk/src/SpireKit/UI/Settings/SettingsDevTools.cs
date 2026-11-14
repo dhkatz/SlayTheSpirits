@@ -36,8 +36,9 @@ internal static class SettingsDevTools
         {
             if (NGame.Instance?.MainMenu is { } menu && menu.IsNodeReady())
             {
-                // The game keeps preloading common assets in the background after the menu appears; opening
-                // Settings during that makes Godot report "Invalid Task ID". A player can't click that fast.
+                // The game keeps preloading common assets for a few seconds after the menu appears; wait like a
+                // player would. (The "Invalid Task ID" Godot error seen around then is the game's own: it shows
+                // up without any mods installed too.)
                 tree.CreateTimer(PreloadGraceSeconds).Timeout += () =>
                 {
                     menu.OpenSettingsMenu();

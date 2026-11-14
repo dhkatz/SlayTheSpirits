@@ -1,7 +1,12 @@
 using MegaCrit.Sts2.Core.Models.CardPools;
+using MegaCrit.Sts2.Core.Models.PotionPools;
+using MegaCrit.Sts2.Core.Models.RelicPools;
 using SlayTheSpirits.Cards;
 using SlayTheSpirits.Game;
+using SlayTheSpirits.Penalties;
+using SlayTheSpirits.Potions;
 using SlayTheSpirits.Presentation;
+using SlayTheSpirits.Relics;
 using SlayTheSpirits.Rules;
 using SpireKit.Modding;
 
@@ -34,6 +39,10 @@ public sealed class SlayTheSpiritsMod : SpireMod
         DrinkGame = new DrinkGame(context, Rules, new Announcer(context.Toasts, () => Rules.Effective));
         Rules.Initialize();
         RulesSettingsTab.Register(context, Rules);
+        foreach (var kind in Engine.RestSiteDrinks.Kinds)
+        {
+            context.RestSite.Add(player => SpiritsRestSiteDrink.For(player, kind));
+        }
 
         context.Content
             // Colorless Tavern set: shops, colorless rewards, card generators.
@@ -47,10 +56,8 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddCard<ColorlessCardPool, SpiritsDesignatedDriver>()
             .AddCard<ColorlessCardPool, SpiritsBottomsUp>()
             .AddCard<ColorlessCardPool, SpiritsLastCall>()
-            .AddCard<ColorlessCardPool, SpiritsDoubleShot>()
             // Drinks as status cards: handed out by Tavern cards, auto-played on confirm or draw.
             .AddCard<StatusCardPool, SpiritsSip>()
-            .AddCard<StatusCardPool, SpiritsDrink>()
             .AddCard<StatusCardPool, SpiritsShot>()
             .AddCard<StatusCardPool, SpiritsChug>()
             .AddCard<StatusCardPool, SpiritsFinishYourDrink>()
@@ -63,13 +70,29 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddCard<RegentCardPool, SpiritsRoyalDecree>()
             .AddCard<NecrobinderCardPool, SpiritsPourOneOut>()
             .AddCard<FoolCardPool, SpiritsDrinkingSong>()
-            .SetCardFilter(Rules.IsCardAllowed);
+            // Tavern relics never drop: the rest site Shot is the only way to get one.
+            .AddRelic<EventRelicPool, SpiritsHipFlask>()
+            .AddRelic<EventRelicPool, SpiritsBeerBelly>()
+            .AddRelic<EventRelicPool, SpiritsTipJar>()
+            .AddRelic<EventRelicPool, SpiritsDrinkingBuddy>()
+            .AddRelic<EventRelicPool, SpiritsPintGlass>()
+            // Tavern potions drop like any other in multiplayer runs.
+            .AddPotion<SharedPotionPool, SpiritsLightBeer>()
+            .AddPotion<SharedPotionPool, SpiritsTallboy>()
+            .AddPotion<SharedPotionPool, SpiritsFirewater>()
+            .SetCardFilter(Rules.IsCardAllowed)
+            .SetPotionFilter(potion => DrinkGame.IsMultiplayerRun && Rules.IsPotionAllowed(potion));
     }
 
     protected override void OnGameReady(ModContext context)
     {
         TabText.Apply(context.Loc, Rules.Effective);
-        Rules.EffectiveChanged += rules => TabText.Apply(context.Loc, rules);
+        RestSiteText.Apply(context.Loc, Rules.Effective);
+        Rules.EffectiveChanged += rules =>
+        {
+            TabText.Apply(context.Loc, rules);
+            RestSiteText.Apply(context.Loc, rules);
+        };
         Rules.LoadProfile();
     }
 }

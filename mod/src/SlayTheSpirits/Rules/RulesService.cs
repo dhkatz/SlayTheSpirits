@@ -159,6 +159,9 @@ internal sealed class RulesService
         return card is ISpiritsCharacterCard ? content.CharacterCards : content.TavernCards;
     }
 
+    /// <summary>Whether Tavern potions may drop under the rules in effect (host-synced, so identical on every peer).</summary>
+    public bool IsPotionAllowed(PotionModel potion) => Effective?.Content.TavernPotions == true;
+
     private static string RunFile(string runKey) => $"{LockedRunsDir}/{runKey}.json";
 
     private static byte[] Encode(RuleSet rules) => Encoding.UTF8.GetBytes(RuleSetCodec.ToJson(rules));

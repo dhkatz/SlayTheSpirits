@@ -12,10 +12,9 @@ public static class TipsyWeights
     {
         [PenaltyKind.Water] = 0,
         [PenaltyKind.Sip] = 1,
-        [PenaltyKind.Drink] = 2,
-        [PenaltyKind.Shot] = 3,
-        [PenaltyKind.Chug] = 4,
-        [PenaltyKind.Finish] = 5,
+        [PenaltyKind.Finish] = 3,
+        [PenaltyKind.Chug] = 5,
+        [PenaltyKind.Shot] = 10,
     };
 
     /// <summary>Tipsy per single unit of <paramref name="kind"/> under <paramref name="rules"/>.</summary>

@@ -17,6 +17,19 @@ public enum TargetKind
     RandomOther,
 }
 
+/// <summary>How often rest sites offer their Chug and Shot options.</summary>
+public enum RestSiteDrinkLimit
+{
+    /// <summary>Rest sites only have the game's own options.</summary>
+    Off,
+
+    /// <summary>Each player can take each drink at one rest site per act.</summary>
+    OncePerAct,
+
+    /// <summary>At every rest site.</summary>
+    Unlimited,
+}
+
 /// <summary>What happens when a trigger fires.</summary>
 /// <param name="Enabled">Off rules are kept (so the UI remembers their values) but never fire.</param>
 /// <param name="Penalty">What to drink.</param>
@@ -74,6 +87,12 @@ public sealed record RuleSet
     /// </summary>
     public bool ConfirmDrinks { get; init; }
 
+    /// <summary>
+    /// Rest sites offer a Chug (pick 2 of 5 cards) and a Shot (choose a relic) next to Rest and Smith. They're
+    /// voluntary, so <see cref="CapsPerAct"/> doesn't apply; this limit is what keeps them rare.
+    /// </summary>
+    public RestSiteDrinkLimit RestSiteDrinks { get; init; } = RestSiteDrinkLimit.OncePerAct;
+
     /// <summary>Optional relabels; missing kinds use the default English names.</summary>
     public IReadOnlyDictionary<PenaltyKind, PenaltyLabel> Labels { get; init; } = new Dictionary<PenaltyKind, PenaltyLabel>();
 
@@ -89,6 +108,9 @@ public sealed record ContentToggles
 
     /// <summary>Character-specific Tavern cards.</summary>
     public bool CharacterCards { get; init; } = true;
+
+    /// <summary>Tavern potions (Light Beer, Tallboy, Firewater) among random potions.</summary>
+    public bool TavernPotions { get; init; } = true;
 
     /// <summary>Individual cards switched off, by card id.</summary>
     public IReadOnlyList<string> DisabledCards { get; init; } = [];

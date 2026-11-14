@@ -73,7 +73,7 @@ internal sealed class RulesSettingsTab
         var custom = RuleEditing.PresetIndex(shown) < 0 ? shown : _rules.LastCustom;
         if (custom is not null)
         {
-            names.Add(custom.Name);
+            names.Add(RuleEditing.Named(custom).Name); // Never shows a second "Standard".
         }
 
         var index = RuleEditing.PresetIndex(shown) is var preset and >= 0 ? preset : names.Count - 1;
@@ -87,6 +87,9 @@ internal sealed class RulesSettingsTab
         page.Toggle("Confirm Each Drink", shown.ConfirmDrinks, on => Edit(page, r => r with { ConfirmDrinks = on }), editable);
         page.Toggle("Tavern Cards", shown.Content.TavernCards, on => Edit(page, r => r with { Content = r.Content with { TavernCards = on } }), editable);
         page.Toggle("Character Cards", shown.Content.CharacterCards, on => Edit(page, r => r with { Content = r.Content with { CharacterCards = on } }), editable);
+        page.Toggle("Tavern Potions", shown.Content.TavernPotions, on => Edit(page, r => r with { Content = r.Content with { TavernPotions = on } }), editable);
+        var limits = Enum.GetValues<RestSiteDrinkLimit>();
+        page.Choice("Rest Site Drinks", [.. limits.Select(LimitName)], Array.IndexOf(limits, shown.RestSiteDrinks), i => Edit(page, r => r with { RestSiteDrinks = limits[i] }), editable);
     }
 
     private void BuildTriggers(SettingsPage page, RuleSet shown, bool editable)
@@ -211,6 +214,14 @@ internal sealed class RulesSettingsTab
             _rules.UpdateProfile(rules);
         }
     }
+
+    private static string LimitName(RestSiteDrinkLimit limit) => limit switch
+    {
+        RestSiteDrinkLimit.Off => "Off",
+        RestSiteDrinkLimit.OncePerAct => "Once per Act",
+        RestSiteDrinkLimit.Unlimited => "Every Rest Site",
+        _ => limit.ToString(),
+    };
 
     private static List<string> KindNames(RuleSet rules, int count) =>
         [.. Enum.GetValues<PenaltyKind>().Select(k => count == 1 ? PenaltyLabels.For(rules, k).Singular : PenaltyLabels.For(rules, k).Plural)];

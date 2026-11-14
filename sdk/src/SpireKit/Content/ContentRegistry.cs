@@ -23,6 +23,7 @@ public sealed class ContentRegistry
     private readonly ModContext _context;
     private readonly HashSet<Type> _registered = [];
     private Func<CardModel, bool>? _cardFilter;
+    private Func<PotionModel, bool>? _potionFilter;
 
     internal ContentRegistry(ModContext context) => _context = context;
 
@@ -48,9 +49,45 @@ public sealed class ContentRegistry
     /// Sets the run-time availability rule for this mod's cards. Only consulted during runs; the card
     /// library always shows everything. Must be deterministic across peers.
     /// </summary>
-    public void SetCardFilter(Func<CardModel, bool> isAllowed) => _cardFilter = isAllowed;
+    public ContentRegistry SetCardFilter(Func<CardModel, bool> isAllowed)
+    {
+        _cardFilter = isAllowed;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the run-time availability rule for this mod's potions (random drops, shops, events, potion generators).
+    /// Only consulted during runs; the potion lab always shows everything. Must be deterministic across peers.
+    /// </summary>
+    public ContentRegistry SetPotionFilter(Func<PotionModel, bool> isAllowed)
+    {
+        _potionFilter = isAllowed;
+        return this;
+    }
 
     internal bool HasCardFilter => _cardFilter is not null;
+
+    internal bool HasPotionFilter => _potionFilter is not null;
+
+    internal bool IsPotionAllowed(PotionModel potion)
+    {
+        if (_potionFilter is null || potion.GetType().Assembly != _context.Mod.GetType().Assembly)
+        {
+            return true;
+        }
+
+        try
+        {
+            return _potionFilter(potion);
+        }
+#pragma warning disable CA1031 // A broken filter fails closed for our own content, never for the game's.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _context.Log.Error($"Potion filter threw for {potion.Id}; hiding it.", ex);
+            return false;
+        }
+    }
 
     internal bool IsCardAllowed(CardModel card)
     {

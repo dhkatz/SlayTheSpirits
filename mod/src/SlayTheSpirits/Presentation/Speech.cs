@@ -22,8 +22,8 @@ internal static class Speech
         {
             PenaltyKind.Water => $"[blue]{line}[/blue]",
             PenaltyKind.Sip => $"[gold]{line}[/gold]",
-            PenaltyKind.Drink => $"[sine][gold]{line}[/gold][/sine]",
-            PenaltyKind.Shot => $"[jitter][orange]{line}[/orange][/jitter]",
+            PenaltyKind.Finish => $"[sine][gold]{line}[/gold][/sine]",
+            PenaltyKind.Chug => $"[jitter][orange]{line}[/orange][/jitter]",
             _ => $"[jitter][red]{line}[/red][/jitter]",
         };
     }

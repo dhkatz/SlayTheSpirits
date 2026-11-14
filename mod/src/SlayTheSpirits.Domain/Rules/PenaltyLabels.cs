@@ -10,10 +10,9 @@ public static class PenaltyLabels
     {
         [PenaltyKind.Water] = new("Water", "Waters"),
         [PenaltyKind.Sip] = new("Sip", "Sips"),
-        [PenaltyKind.Drink] = new("Drink", "Drinks"),
-        [PenaltyKind.Shot] = new("Shot", "Shots"),
-        [PenaltyKind.Chug] = new("Chug", "Chugs"),
         [PenaltyKind.Finish] = new("Finish Your Drink", "Finish Your Drink"),
+        [PenaltyKind.Chug] = new("Chug", "Chugs"),
+        [PenaltyKind.Shot] = new("Shot", "Shots"),
     };
 
     public static PenaltyLabel For(RuleSet rules, PenaltyKind kind)

@@ -7,58 +7,66 @@ namespace SlayTheSpirits.Rules;
 /// <summary>Built-in rule sets. <see cref="Standard"/> is the default profile.</summary>
 public static class Presets
 {
+    /// <summary>
+    /// The default: sips for small things, finish your drink when you die, everyone chugs a beer when a boss
+    /// shows up, and a shot only when the run is lost.
+    /// </summary>
     public static RuleSet Standard { get; } = new()
     {
         Name = "Standard",
         Triggers = Rules(
-            (BuiltInTriggers.BossEncounterStarted, On(PenaltyKind.Shot, TargetKind.Everyone)),
-            (BuiltInTriggers.BossDefeated, On(PenaltyKind.Drink, TargetKind.Everyone)),
-            (BuiltInTriggers.EliteEncounterStarted, On(PenaltyKind.Drink, TargetKind.Everyone)),
+            (BuiltInTriggers.BossEncounterStarted, On(PenaltyKind.Chug, TargetKind.Everyone)),
+            (BuiltInTriggers.BossDefeated, On(PenaltyKind.Sip, TargetKind.Everyone)),
+            (BuiltInTriggers.EliteEncounterStarted, On(PenaltyKind.Sip, TargetKind.Everyone)),
             (BuiltInTriggers.PlayerDied, On(PenaltyKind.Finish, TargetKind.Subject)),
-            (BuiltInTriggers.PlayerBigHit, On(PenaltyKind.Drink, TargetKind.Subject, threshold: 20)),
-            (BuiltInTriggers.CurseObtained, On(PenaltyKind.Drink, TargetKind.Subject)),
+            (BuiltInTriggers.PlayerBigHit, On(PenaltyKind.Sip, TargetKind.Subject, threshold: 20)),
+            (BuiltInTriggers.CurseObtained, On(PenaltyKind.Sip, TargetKind.Subject)),
             (BuiltInTriggers.PotionUsed, On(PenaltyKind.Sip, TargetKind.Subject)),
             (BuiltInTriggers.TurnEndedWithEnergy, Off(PenaltyKind.Sip, TargetKind.Subject, threshold: 1)),
             (BuiltInTriggers.RestSiteEntered, On(PenaltyKind.Water, TargetKind.Everyone)),
             (BuiltInTriggers.RunWon, On(PenaltyKind.Finish, TargetKind.Everyone)),
-            (BuiltInTriggers.RunLost, On(PenaltyKind.Drink, TargetKind.Everyone))),
-        CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Shot] = 3, [PenaltyKind.Chug] = 1 },
+            (BuiltInTriggers.RunLost, On(PenaltyKind.Shot, TargetKind.Everyone))),
+        CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 2, [PenaltyKind.Chug] = 2, [PenaltyKind.Shot] = 1 },
     };
 
+    /// <summary>Sips and the odd finished drink; never a chug or a shot (caps turn them into Finish).</summary>
     public static RuleSet Casual { get; } = Standard with
     {
         Name = "Casual",
         Triggers = Rules(
-            (BuiltInTriggers.BossEncounterStarted, On(PenaltyKind.Drink, TargetKind.Everyone)),
+            (BuiltInTriggers.BossEncounterStarted, On(PenaltyKind.Finish, TargetKind.Everyone)),
             (BuiltInTriggers.BossDefeated, On(PenaltyKind.Sip, TargetKind.Everyone)),
             (BuiltInTriggers.EliteEncounterStarted, On(PenaltyKind.Sip, TargetKind.Everyone)),
-            (BuiltInTriggers.PlayerDied, On(PenaltyKind.Drink, TargetKind.Subject)),
+            (BuiltInTriggers.PlayerDied, On(PenaltyKind.Sip, TargetKind.Subject)),
             (BuiltInTriggers.PlayerBigHit, Off(PenaltyKind.Sip, TargetKind.Subject, threshold: 25)),
             (BuiltInTriggers.CurseObtained, On(PenaltyKind.Sip, TargetKind.Subject)),
             (BuiltInTriggers.PotionUsed, Off(PenaltyKind.Sip, TargetKind.Subject)),
             (BuiltInTriggers.TurnEndedWithEnergy, Off(PenaltyKind.Sip, TargetKind.Subject, threshold: 1)),
             (BuiltInTriggers.RestSiteEntered, On(PenaltyKind.Water, TargetKind.Everyone)),
-            (BuiltInTriggers.RunWon, On(PenaltyKind.Drink, TargetKind.Everyone)),
-            (BuiltInTriggers.RunLost, On(PenaltyKind.Sip, TargetKind.Everyone))),
-        CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Shot] = 0, [PenaltyKind.Chug] = 0, [PenaltyKind.Finish] = 0 },
+            (BuiltInTriggers.RunWon, On(PenaltyKind.Finish, TargetKind.Everyone)),
+            (BuiltInTriggers.RunLost, On(PenaltyKind.Finish, TargetKind.Everyone))),
+        CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 1, [PenaltyKind.Chug] = 0, [PenaltyKind.Shot] = 0 },
+        RestSiteDrinks = RestSiteDrinkLimit.Off,
     };
 
+    /// <summary>Elites and curses empty glasses, deaths cost a shot, and the run's end is a shot either way.</summary>
     public static RuleSet Degenerate { get; } = Standard with
     {
         Name = "Degenerate",
         Triggers = Rules(
             (BuiltInTriggers.BossEncounterStarted, On(PenaltyKind.Chug, TargetKind.Everyone)),
-            (BuiltInTriggers.BossDefeated, On(PenaltyKind.Shot, TargetKind.Everyone)),
-            (BuiltInTriggers.EliteEncounterStarted, On(PenaltyKind.Shot, TargetKind.Everyone)),
-            (BuiltInTriggers.PlayerDied, On(PenaltyKind.Finish, TargetKind.Everyone)),
-            (BuiltInTriggers.PlayerBigHit, On(PenaltyKind.Drink, TargetKind.Subject, threshold: 12)),
-            (BuiltInTriggers.CurseObtained, On(PenaltyKind.Shot, TargetKind.Subject)),
-            (BuiltInTriggers.PotionUsed, On(PenaltyKind.Drink, TargetKind.Subject)),
+            (BuiltInTriggers.BossDefeated, On(PenaltyKind.Sip, TargetKind.Everyone, count: 2)),
+            (BuiltInTriggers.EliteEncounterStarted, On(PenaltyKind.Finish, TargetKind.Everyone)),
+            (BuiltInTriggers.PlayerDied, On(PenaltyKind.Shot, TargetKind.Subject)),
+            (BuiltInTriggers.PlayerBigHit, On(PenaltyKind.Sip, TargetKind.Subject, threshold: 12)),
+            (BuiltInTriggers.CurseObtained, On(PenaltyKind.Finish, TargetKind.Subject)),
+            (BuiltInTriggers.PotionUsed, On(PenaltyKind.Sip, TargetKind.Subject)),
             (BuiltInTriggers.TurnEndedWithEnergy, On(PenaltyKind.Sip, TargetKind.Subject, threshold: 1)),
             (BuiltInTriggers.RestSiteEntered, On(PenaltyKind.Water, TargetKind.Everyone)),
-            (BuiltInTriggers.RunWon, On(PenaltyKind.Finish, TargetKind.Everyone)),
-            (BuiltInTriggers.RunLost, On(PenaltyKind.Finish, TargetKind.Everyone))),
-        CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Shot] = 5, [PenaltyKind.Chug] = 2 },
+            (BuiltInTriggers.RunWon, On(PenaltyKind.Shot, TargetKind.Everyone)),
+            (BuiltInTriggers.RunLost, On(PenaltyKind.Shot, TargetKind.Everyone))),
+        CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 4, [PenaltyKind.Chug] = 3, [PenaltyKind.Shot] = 2 },
+        RestSiteDrinks = RestSiteDrinkLimit.Unlimited,
     };
 
     /// <summary>Same structure as <see cref="Standard"/>, relabeled for a non-alcoholic table.</summary>
@@ -68,10 +76,9 @@ public static class Presets
         Labels = new Dictionary<PenaltyKind, PenaltyLabel>
         {
             [PenaltyKind.Sip] = new("Sip of soda", "Sips of soda"),
-            [PenaltyKind.Drink] = new("Drink of soda", "Drinks of soda"),
-            [PenaltyKind.Shot] = new("Shot of pickle juice", "Shots of pickle juice"),
-            [PenaltyKind.Chug] = new("Chug your soda", "Chug your soda"),
             [PenaltyKind.Finish] = new("Finish your soda", "Finish your soda"),
+            [PenaltyKind.Chug] = new("Chug a soda", "Chug sodas"),
+            [PenaltyKind.Shot] = new("Shot of pickle juice", "Shots of pickle juice"),
         },
     };
 

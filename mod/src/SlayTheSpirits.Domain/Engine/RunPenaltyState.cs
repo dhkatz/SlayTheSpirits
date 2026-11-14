@@ -18,6 +18,9 @@ public sealed class RunPenaltyState
     /// <summary>Per player: count of each kind received this act (after policies), for caps.</summary>
     public Dictionary<ulong, Dictionary<PenaltyKind, int>> ActCounts { get; init; } = [];
 
+    /// <summary>Per player: rest site drinks taken this act (<see cref="RestSiteDrinks"/>), counted apart from caps.</summary>
+    public Dictionary<ulong, Dictionary<PenaltyKind, int>> RestSiteDrinksThisAct { get; init; } = [];
+
     /// <summary>Players currently immune (e.g. Designated Driver). Cleared by the game layer at combat end.</summary>
     public HashSet<ulong> Immune { get; init; } = [];
 
@@ -27,8 +30,22 @@ public sealed class RunPenaltyState
     /// <summary>Run-long totals and highlights.</summary>
     public RunTally Tally { get; init; } = new();
 
-    internal int CountThisAct(PlayerId player, PenaltyKind kind) =>
+    public int CountThisAct(PlayerId player, PenaltyKind kind) =>
         ActCounts.TryGetValue(player.Value, out var counts) ? counts.GetValueOrDefault(kind) : 0;
+
+    public int RestSiteDrinkCount(PlayerId player, PenaltyKind kind) =>
+        RestSiteDrinksThisAct.TryGetValue(player.Value, out var counts) ? counts.GetValueOrDefault(kind) : 0;
+
+    internal void RecordRestSiteDrink(PlayerId player, PenaltyKind kind)
+    {
+        if (!RestSiteDrinksThisAct.TryGetValue(player.Value, out var counts))
+        {
+            counts = [];
+            RestSiteDrinksThisAct[player.Value] = counts;
+        }
+
+        counts[kind] = counts.GetValueOrDefault(kind) + 1;
+    }
 
     internal void Record(PlayerId player, Penalty penalty)
     {

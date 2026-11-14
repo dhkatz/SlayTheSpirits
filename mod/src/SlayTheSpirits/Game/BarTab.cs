@@ -32,7 +32,6 @@ internal static class BarTab
                 {
                     PenaltyKind.Water => ApplyAsync<SpiritsWaterTabPower>(context, creature, amount),
                     PenaltyKind.Sip => ApplyAsync<SpiritsSipTabPower>(context, creature, amount),
-                    PenaltyKind.Drink => ApplyAsync<SpiritsDrinkTabPower>(context, creature, amount),
                     PenaltyKind.Shot => ApplyAsync<SpiritsShotTabPower>(context, creature, amount),
                     PenaltyKind.Chug => ApplyAsync<SpiritsChugTabPower>(context, creature, amount),
                     PenaltyKind.Finish => ApplyAsync<SpiritsFinishTabPower>(context, creature, amount),

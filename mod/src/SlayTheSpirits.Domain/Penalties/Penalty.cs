@@ -1,18 +1,28 @@
 namespace SlayTheSpirits.Penalties;
 
 /// <summary>What a player has to drink, from lightest to heaviest.</summary>
-/// <remarks>Numeric order is severity order; <see cref="Water"/> is the non-alcoholic exception.</remarks>
+/// <remarks>
+/// Numeric order is severity order (caps downgrade one step at a time); <see cref="Water"/> is the non-alcoholic
+/// exception. Everything up to <see cref="Chug"/> is measured against the drink in your hand; a <see cref="Shot"/>
+/// is liquor, a full standard drink on its own, so it is the rare top step. Saved rules and runs store kinds by
+/// name, and "Drink" (an old step between Sip and Shot) is migrated to <see cref="Sip"/>.
+/// </remarks>
 public enum PenaltyKind
 {
     /// <summary>A hydration break. Never counted toward caps.</summary>
     Water = 0,
-    Sip = 1,
-    Drink = 2,
-    Shot = 3,
-    Chug = 4,
 
-    /// <summary>Finish whatever is in your glass.</summary>
-    Finish = 5,
+    /// <summary>A sip of whatever you're drinking.</summary>
+    Sip = 1,
+
+    /// <summary>Finish whatever is left in your drink.</summary>
+    Finish = 2,
+
+    /// <summary>Chug a whole drink: a beer, a seltzer, any can or bottle.</summary>
+    Chug = 3,
+
+    /// <summary>A shot of liquor. Reserved for disasters and big payoffs.</summary>
+    Shot = 4,
 }
 
 /// <summary>A quantity of a <see cref="PenaltyKind"/>, e.g. "2 Shots".</summary>
