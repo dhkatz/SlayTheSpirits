@@ -90,6 +90,8 @@ internal sealed class RulesSettingsTab
         page.Toggle("Tavern Potions", shown.Content.TavernPotions, on => Edit(page, r => r with { Content = r.Content with { TavernPotions = on } }), editable);
         var limits = Enum.GetValues<RestSiteDrinkLimit>();
         page.Choice("Rest Site Drinks", [.. limits.Select(LimitName)], Array.IndexOf(limits, shown.RestSiteDrinks), i => Edit(page, r => r with { RestSiteDrinks = limits[i] }), editable);
+        var taverns = Enum.GetValues<TavernLimit>();
+        page.Choice("Taverns", [.. taverns.Select(TavernName)], Array.IndexOf(taverns, shown.Taverns), i => Edit(page, r => r with { Taverns = taverns[i] }), editable);
     }
 
     private void BuildTriggers(SettingsPage page, RuleSet shown, bool editable)
@@ -214,6 +216,14 @@ internal sealed class RulesSettingsTab
             _rules.UpdateProfile(rules);
         }
     }
+
+    private static string TavernName(TavernLimit limit) => limit switch
+    {
+        TavernLimit.Off => "Off",
+        TavernLimit.OncePerAct => "One Shop per Act",
+        TavernLimit.EveryShop => "Every Shop",
+        _ => limit.ToString(),
+    };
 
     private static string LimitName(RestSiteDrinkLimit limit) => limit switch
     {

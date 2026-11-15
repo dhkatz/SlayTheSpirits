@@ -30,6 +30,19 @@ public enum RestSiteDrinkLimit
     Unlimited,
 }
 
+/// <summary>Which shops on the map are the Tavern instead.</summary>
+public enum TavernLimit
+{
+    /// <summary>Every shop is the game's merchant.</summary>
+    Off,
+
+    /// <summary>One shop per act, picked from the run's seed and marked on the map.</summary>
+    OncePerAct,
+
+    /// <summary>Every shop on the map.</summary>
+    EveryShop,
+}
+
 /// <summary>What happens when a trigger fires.</summary>
 /// <param name="Enabled">Off rules are kept (so the UI remembers their values) but never fire.</param>
 /// <param name="Penalty">What to drink.</param>
@@ -92,6 +105,12 @@ public sealed record RuleSet
     /// voluntary, so <see cref="CapsPerAct"/> doesn't apply; this limit is what keeps them rare.
     /// </summary>
     public RestSiteDrinkLimit RestSiteDrinks { get; init; } = RestSiteDrinkLimit.OncePerAct;
+
+    /// <summary>
+    /// Shops that become the Tavern: a bar whose menu is paid for in gold and drinks (see <see cref="Engine.TavernMenu"/>).
+    /// Multiplayer runs only, like the rest of the Tavern content.
+    /// </summary>
+    public TavernLimit Taverns { get; init; } = TavernLimit.OncePerAct;
 
     /// <summary>Optional relabels; missing kinds use the default English names.</summary>
     public IReadOnlyDictionary<PenaltyKind, PenaltyLabel> Labels { get; init; } = new Dictionary<PenaltyKind, PenaltyLabel>();
