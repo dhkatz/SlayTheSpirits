@@ -6,6 +6,9 @@
     By default the game starts without Steam on a local test profile (user://default/<Profile>/), so your real
     save is untouched; -Steam uses your normal Steam profile instead.
 
+    The game folder is found automatically (see tools/common.ps1): -GameDir, then $env:STS2_GAME_DIR, then
+    Sts2GameDir in local.props, then your Steam libraries.
+
     The build skips deploying while the game is running, so -Build closes running instances first.
 
 .EXAMPLE
@@ -17,7 +20,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $GameDir = 'E:\Games\Steam\steamapps\common\Slay the Spire 2',
+    [string] $GameDir,
     [switch] $Build,
     [switch] $Gallery,
     [switch] $Steam,
@@ -29,23 +32,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$exe = Join-Path $GameDir 'SlayTheSpire2.exe'
-if (-not (Test-Path $exe)) { throw "Game not found: $exe" }
+. (Join-Path $PSScriptRoot 'common.ps1')
 
-$running = Get-Process -Name 'SlayTheSpire2' -ErrorAction SilentlyContinue
-if ($running) {
-    if ($Build) {
-        Write-Host 'Closing the running game so the build can deploy...'
-        $running | Stop-Process -Force
-        $running | Wait-Process -Timeout 15 -ErrorAction SilentlyContinue
-    } else {
-        Write-Warning 'The game is already running; starting another instance.'
-    }
-}
+$GameDir = Resolve-Sts2GameDir $GameDir
 
 if ($Build) {
-    dotnet build (Join-Path $PSScriptRoot '..\mod\src\SlayTheSpirits') -nologo -v m
-    if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
+    Invoke-ModBuild $GameDir
+} elseif (Test-Sts2Running) {
+    Write-Warning 'The game is already running; starting another instance.'
 }
 
 $arguments = @()
@@ -58,10 +52,7 @@ if ($DumpScenes) { $arguments += @('--spirekit-dump-scenes', ($DumpScenes -join 
 
 $what = if ($Steam) { 'Steam profile' } else { "test profile $Profile" }
 Write-Host "Starting Slay the Spire 2 ($what)$(if ($Gallery) { ' with the controls gallery' })..."
-if ($arguments.Count -gt 0) {
-    Start-Process -FilePath $exe -WorkingDirectory $GameDir -ArgumentList $arguments
-} else {
-    Start-Process -FilePath $exe -WorkingDirectory $GameDir
-}
+Write-Host "Game: $GameDir"
+Start-Sts2 $GameDir $arguments
 
-Write-Host "Log: $(Join-Path $env:APPDATA 'SlayTheSpire2\logs\godot.log')"
+Write-Host "Log: $(Get-Sts2LogPath)"

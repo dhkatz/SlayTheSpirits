@@ -5,9 +5,9 @@
   -->
   <Target Name="Sts2ValidateGameDir" BeforeTargets="ResolveAssemblyReferences">
     <Error Condition="'$(Sts2GameDir)' == ''"
-           Text="Sts2GameDir is not set. Copy local.props.example to local.props (repo root) and point it at your Slay the Spire 2 install." />
+           Text="Couldn't find Slay the Spire 2 in your Steam libraries. Set the STS2_GAME_DIR environment variable, or copy local.props.example to local.props (repo root) and set Sts2GameDir." />
     <Error Condition="!Exists('$(Sts2DataDir)\sts2.dll')"
-           Text="sts2.dll not found under '$(Sts2DataDir)'. Check Sts2GameDir in local.props." />
+           Text="sts2.dll not found under '$(Sts2DataDir)'. Check the game folder set by $(Sts2GameDirSource)." />
   </Target>
 
   <ItemGroup>

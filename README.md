@@ -18,8 +18,10 @@ test-first modding SDK that lives in this repo (and is designed to be split out 
 
 Requirements: .NET SDK 9+, Slay the Spire 2 (v0.113.0+), Godot 4.5.1 mono (only for packing `.pck` files).
 
+The build finds the game in your Steam libraries. If it's somewhere else, set `STS2_GAME_DIR`, or copy
+`local.props.example` to `local.props` and set `Sts2GameDir`.
+
 ```powershell
-copy local.props.example local.props   # then edit paths
 dotnet test                            # engine + SDK core tests (no game needed)
 dotnet build mod/src/SlayTheSpirits    # builds, merges, packs and deploys to <game>/mods/SlayTheSpirits
 ```
@@ -38,13 +40,15 @@ Every player needs the same mod version (the game enforces this for gameplay mod
 ./tools/launch.ps1 -Steam                  # your real Steam profile
 ```
 
+The scripts find the game the same way the build does; `-GameDir` overrides it.
+
 Rules are edited in game under **Settings → Spirits** (main menu; read-only during a run or as a client).
 
 ### Local Multiplayer Testing
 
 ```powershell
-./tools/test.ps1 -Build        # host + 1 client on this machine (LAN, Steam off, separate test profiles)
-./tools/test.ps1 -Clients 3    # 4-player table
+./tools/multiplayer.ps1 -Build       # host + 1 client on this machine (LAN, Steam off, separate test profiles)
+./tools/multiplayer.ps1 -Clients 3   # 4-player table
 ```
 
 ## Layout

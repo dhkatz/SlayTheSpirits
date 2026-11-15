@@ -12,7 +12,8 @@
 //
 //   npm run extract-game-art
 //
-// Paths come from ../local.props (Sts2GameDir, GodotExe), or the STS2_GAME_DIR and GODOT_EXE environment variables.
+// The game folder is the one the build uses (STS2_GAME_DIR, local.props or Steam; see build/Sts2.GameDir.props).
+// Godot comes from the GODOT_EXE environment variable or GodotExe in ../local.props.
 // It asks the community wiki which pages exist (--offline skips that and keeps the links it already had).
 
 import { execFileSync } from 'node:child_process';
@@ -47,7 +48,16 @@ function setting(env, property) {
 	return value.trim();
 }
 
-const pck = join(setting('STS2_GAME_DIR', 'Sts2GameDir'), 'SlayTheSpire2.pck');
+// The game folder comes from the build, which also checks STS2_GAME_DIR, local.props and Steam.
+function gameDir() {
+	const out = execFileSync('dotnet', ['msbuild', join(repoRoot, 'mod/src/SlayTheSpirits'), '-nologo', '-getProperty:Sts2GameDir'], {
+		encoding: 'utf8',
+	}).trim();
+	if (!out) throw new Error('Couldn\'t find Slay the Spire 2. Set STS2_GAME_DIR, or Sts2GameDir in local.props');
+	return out;
+}
+
+const pck = join(gameDir(), 'SlayTheSpire2.pck');
 const godot = setting('GODOT_EXE', 'GodotExe');
 
 // Godot runs a script from a project, so give it an empty one.
