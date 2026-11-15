@@ -140,21 +140,28 @@ internal sealed class SpiritsShotRestSiteOption(Player owner) : SpiritsRestSiteD
 
     protected override async Task<bool> GrantRewardAsync()
     {
-        _offer ??= Offer();
-        var chosen = _offer.Count == 1 ? _offer[0] : await RelicSelectCmd.FromChooseARelicScreen(Player, _offer);
+        _offer ??= Offer(Player);
+        return await ChooseAsync(Player, _offer);
+    }
+
+    /// <summary>Lets <paramref name="player"/> pick one of <paramref name="offer"/>; false if they backed out.</summary>
+    internal static async Task<bool> ChooseAsync(Player player, IReadOnlyList<RelicModel> offer)
+    {
+        var chosen = offer.Count == 1 ? offer[0] : await RelicSelectCmd.FromChooseARelicScreen(player, offer);
         if (chosen is null)
         {
             return false;
         }
 
-        await RelicCmd.Obtain(chosen.ToMutable(), Player);
+        await RelicCmd.Obtain(chosen.ToMutable(), player);
         return true;
     }
 
-    private List<RelicModel> Offer()
+    /// <summary>Up to <see cref="Choices"/> Tavern relics <paramref name="player"/> doesn't have (also the Tavern's Top Shelf).</summary>
+    internal static List<RelicModel> Offer(Player player)
     {
-        var rng = Player.PlayerRng.Rewards;
-        var unowned = SpiritsRelic.All.Where(r => !Player.Relics.Any(owned => owned.Id == r.Id)).ToList();
+        var rng = player.PlayerRng.Rewards;
+        var unowned = SpiritsRelic.All.Where(r => !player.Relics.Any(owned => owned.Id == r.Id)).ToList();
         var offer = new List<RelicModel>();
         while (offer.Count < Choices && unowned.Count > 0)
         {
@@ -163,6 +170,6 @@ internal sealed class SpiritsShotRestSiteOption(Player owner) : SpiritsRestSiteD
             offer.Add(pick);
         }
 
-        return offer.Count > 0 ? offer : [RelicFactory.PullNextRelicForRewardFromFront(Player)];
+        return offer.Count > 0 ? offer : [RelicFactory.PullNextRelicForRewardFromFront(player)];
     }
 }
