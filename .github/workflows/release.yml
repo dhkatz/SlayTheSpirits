@@ -55,11 +55,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      # The mod builds against the public-beta branch (SpireKit uses APIs that aren't on the default branch yet).
+      # When they ship to the default branch, delete the beta line.
       - name: Download Slay the Spire 2
         id: game
         uses: dhkatz/steam-download@v2
         with:
           appid: 2868840
+          beta: public-beta
           username: ${{ secrets.STEAM_USERNAME }}
           vdf: ${{ secrets.STEAM_VDF }}
 
@@ -70,7 +73,7 @@ jobs:
           BUILD: ${{ steps.game.outputs.buildid }}
         run: |
           "STS2_GAME_DIR=$env:GAME" >> $env:GITHUB_ENV
-          "Built against Slay the Spire 2 build $env:BUILD" >> $env:GITHUB_STEP_SUMMARY
+          "Built against Slay the Spire 2 build $env:BUILD (public-beta)" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Test
         run: dotnet test -c Release
