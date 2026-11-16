@@ -252,6 +252,10 @@ export const relics: Kind<Relic> = {
 
 const potionsPage = 'wiki/potions/';
 
+/** "a Sip" or "2 Sips", linked to the Sip keyword. */
+const sipsOf = (potion: Potion) =>
+	potion.sips === 1 ? `a ${keyword(potion.drink)}` : `${potion.sips} ${keyword(potion.drink, `${term(potion.drink).title}s`)}`;
+
 export const potions: Kind<Potion> = {
 	key: 'potions',
 	ref: 'potion',
@@ -264,12 +268,12 @@ export const potions: Kind<Potion> = {
 	summary: (potion) => `${potion.title}: ${article(potion.rarity)} ${lower(potion.rarity)} potion from Slay the Spirits. ${potion.searchText}`,
 	tagline: (potion) => `${filtered(potionsPage, 'rarity', potion.rarity)} ${link(potionsPage, 'potion')}`,
 	lead: (potion) =>
-		`${self('potion', potion)} is ${article(potion.rarity)} ${filtered(potionsPage, 'rarity', potion.rarity)} ${link(potionsPage, 'potion')}. Using it means taking a ${keyword(potion.drink)} for real.`,
+		`${self('potion', potion)} is ${article(potion.rarity)} ${filtered(potionsPage, 'rarity', potion.rarity)} ${link(potionsPage, 'potion')}. Using it means taking ${sipsOf(potion)} for real.`,
 	obtain: (potion) => (potion.found ? refs.inline(potion.found) : null),
 	text: (potion) => potion.description,
 	facts: (potion) => [
 		{ label: 'Rarity', value: potion.rarity, href: filteredHref(potionsPage, 'rarity', potion.rarity) },
-		{ label: 'Drink', value: term(potion.drink).title, html: `${keyword(potion.drink)} (+${term(potion.drink).tipsy} ${keyword('tipsy')})` },
+		{ label: 'Drink', value: term(potion.drink).title, html: `${sipsOf(potion)} (+${potion.sips * term(potion.drink).tipsy} ${keyword('tipsy')})` },
 		{ label: 'Target', value: potion.target, href: filteredHref(potionsPage, 'target', potion.target) },
 		{ label: 'Use', value: potion.usage },
 		{ label: 'Character', value: potion.poolName ?? '' },

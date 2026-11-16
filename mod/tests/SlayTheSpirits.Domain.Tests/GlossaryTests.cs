@@ -36,7 +36,7 @@ public sealed class GlossaryTests
     {
         var body = Glossary.Tipsy(Presets.Standard).Body;
 
-        Assert.Contains("Sip 1, Finish Your Drink 3, Chug 5, Shot 10", body, StringComparison.Ordinal);
+        Assert.Contains("Sip 1, Finish Your Drink 6, Chug 8, Shot 10", body, StringComparison.Ordinal);
         Assert.DoesNotContain("Water", body, StringComparison.Ordinal);
     }
 

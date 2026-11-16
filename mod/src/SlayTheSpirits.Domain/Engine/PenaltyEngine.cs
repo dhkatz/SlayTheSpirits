@@ -52,7 +52,7 @@ public sealed class PenaltyEngine
         var results = new List<PenaltyAssignment>();
         foreach (var player in TargetResolver.Resolve(request, party, _rng))
         {
-            IEnumerable<PenaltyAssignment> pending = [PenaltyAssignment.Plain(player, request.Penalty, request.Cause)];
+            IEnumerable<PenaltyAssignment> pending = [PenaltyAssignment.Plain(player, request.Penalty, request.Cause, request.Batch)];
             foreach (var policy in request.Voluntary ? Array.Empty<IPenaltyPolicy>() : _policies)
             {
                 pending = [.. pending.SelectMany(a => policy.Apply(a, context))];
@@ -81,18 +81,19 @@ public sealed class PenaltyEngine
         return Handle(new PenaltyRequest(new Penalty(kind), TargetKind.Subject, player, player, cause, Voluntary: true), party);
     }
 
-    /// <summary>Moves to a new act, resetting per-act caps and rest site drinks.</summary>
-    public void EnterAct(int act)
+    /// <summary>Moves to a new act, resetting per-act caps and rest site drinks. False if already in that act.</summary>
+    public bool EnterAct(int act)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(act, 1);
         if (act == State.Act)
         {
-            return;
+            return false;
         }
 
         State.Act = act;
         State.ActCounts.Clear();
         State.RestSiteDrinksThisAct.Clear();
+        return true;
     }
 
     /// <summary>Run-long Tipsy for a player (what their Tipsy buff should show).</summary>

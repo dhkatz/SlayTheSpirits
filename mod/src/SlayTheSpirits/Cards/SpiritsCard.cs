@@ -20,8 +20,8 @@ public interface ISpiritsCharacterCard;
 /// Base for Tavern cards: multiplayer-only, able to hand out penalties, and aware of Tipsy.
 /// </summary>
 /// <remarks>
-/// Card effects run inside the lockstep action queue, so <see cref="PenalizeAsync"/> produces identical
-/// results (and identical Tipsy changes) on every peer. Always <c>await</c> it before reading Tipsy.
+/// Card effects run inside the lockstep action queue, so the drinks they hand out produce identical results (and
+/// identical Tipsy changes) on every peer. Always <c>await</c> them before reading Tipsy.
 /// </remarks>
 public abstract class SpiritsCard(int energyCost, CardType type, CardRarity rarity, TargetType targetType)
     : SpireCard(energyCost, type, rarity, targetType)
@@ -56,70 +56,83 @@ public abstract class SpiritsCard(int energyCost, CardType type, CardRarity rari
 
     private PenaltyCause CardCause => new(Id.ToString(), Title);
 
+    // Combat cards only ever hand out Sips: Finishing your drink, Chugs and Shots belong to the boss fights, rest
+    // sites, the Tavern and events, where they stay rare. Stronger cards cost more Sips instead.
+
     /// <summary>
-    /// Hands <paramref name="drinker"/> a drink card. If it's someone else, the owner says a line and the drinker
-    /// confirms it on the card-selection screen (per host rules), then it auto-plays. Call this LAST in
-    /// <c>OnPlay</c>: after another player's choice, the rest of the play runs on that player's action queue.
+    /// Hands <paramref name="drinker"/> <paramref name="count"/> Sips, each its own drink card played straight away.
+    /// If it's someone else, the owner says a line and the drinker confirms once (per host rules). The Sips form one
+    /// batch, so a redirect (Slip Away) passes them all on together. Call this LAST in <c>OnPlay</c>: after another
+    /// player's choice, the rest of the play runs on that player's action queue.
     /// </summary>
-    protected async Task GiveDrinkAsync(PlayerChoiceContext choiceContext, Player drinker, PenaltyKind kind)
+    protected async Task GiveSipsAsync(PlayerChoiceContext choiceContext, Player drinker, int count = 1)
     {
-        var card = DrinkCards.Create(CombatState!, drinker, kind, CardCause, Owner);
+        var cards = CreateSips(drinker, count, NextBatch());
         if (drinker != Owner)
         {
             Speech.Giver(Owner, drinker);
         }
 
-        if (await DrinkCards.ConfirmAsync(choiceContext, card, drinker))
+        if (await DrinkCards.ConfirmAsync(choiceContext, cards[0], drinker))
         {
-            await DrinkCards.PlayAsync(choiceContext, card);
-        }
-    }
-
-    /// <summary>
-    /// Everyone drinks: the owner drinks straight away; every other living player confirms at the same time,
-    /// then the drinks play in seat order (so results are identical on every peer whoever answers first).
-    /// </summary>
-    protected async Task GiveEveryoneAsync(PlayerChoiceContext choiceContext, PenaltyKind kind)
-    {
-        var combat = CombatState!;
-        var players = combat.Players.Where(static p => p.Creature.IsAlive).OrderBy(p => Owner.RunState.GetPlayerSlotIndex(p)).ToList();
-        var cards = players.Select(p => (Player: p, Card: DrinkCards.Create(combat, p, kind, CardCause, Owner))).ToList();
-        Speech.Giver(Owner, null);
-
-        // Choices may be answered in any order; only the confirmations run concurrently.
-        var confirmations = cards.Select(c => c.Player == Owner
-            ? Task.FromResult(true)
-            : DrinkCards.ConfirmAsync(new BlockingPlayerChoiceContext(), c.Card, c.Player)).ToList();
-        var confirmed = await Task.WhenAll(confirmations);
-
-        for (var i = 0; i < cards.Count; i++)
-        {
-            if (confirmed[i])
+            foreach (var card in cards)
             {
-                await DrinkCards.PlayAsync(choiceContext, cards[i].Card);
+                await DrinkCards.PlayAsync(choiceContext, card);
             }
         }
     }
 
-    /// <summary>Shuffles drink cards into a player's pile; they auto-play whenever they're drawn.</summary>
-    protected async Task ShuffleDrinksAsync(Player drinker, PenaltyKind kind, int count, PileType pile = PileType.Draw)
+    /// <summary>
+    /// Everyone takes <paramref name="count"/> Sips: the owner drinks straight away; every other living player
+    /// confirms at the same time, then the drinks play in seat order (so results are identical on every peer whoever
+    /// answers first).
+    /// </summary>
+    protected async Task GiveEveryoneSipsAsync(PlayerChoiceContext choiceContext, int count = 1)
     {
-        var cards = Enumerable.Range(0, count).Select(_ => DrinkCards.Create(CombatState!, drinker, kind, CardCause, Owner)).ToList();
+        var combat = CombatState!;
+        var players = combat.Players.Where(static p => p.Creature.IsAlive).OrderBy(p => Owner.RunState.GetPlayerSlotIndex(p)).ToList();
+        var batch = NextBatch();
+        var rounds = players.Select(p => (Player: p, Cards: CreateSips(p, count, batch))).ToList();
+        Speech.Giver(Owner, null);
+
+        // Choices may be answered in any order; only the confirmations run concurrently.
+        var confirmations = rounds.Select(r => r.Player == Owner
+            ? Task.FromResult(true)
+            : DrinkCards.ConfirmAsync(new BlockingPlayerChoiceContext(), r.Cards[0], r.Player)).ToList();
+        var confirmed = await Task.WhenAll(confirmations);
+
+        for (var i = 0; i < rounds.Count; i++)
+        {
+            if (!confirmed[i])
+            {
+                continue;
+            }
+
+            foreach (var card in rounds[i].Cards)
+            {
+                await DrinkCards.PlayAsync(choiceContext, card);
+            }
+        }
+    }
+
+    /// <summary>Shuffles Sips into a player's pile; they auto-play whenever they're drawn.</summary>
+    protected async Task ShuffleSipsAsync(Player drinker, int count, PileType pile = PileType.Draw)
+    {
+        var cards = Enumerable.Range(0, count).Select(_ => DrinkCards.Create(CombatState!, drinker, PenaltyKind.Sip, CardCause, Owner)).ToList();
         await CardPileCmd.AddGeneratedCardsToCombat(cards, pile, Owner, pile == PileType.Draw ? CardPilePosition.Random : CardPilePosition.Bottom);
     }
 
-    /// <summary>Hands out a penalty caused by this card and updates Tipsy (no drink card; e.g. curses).</summary>
-    /// <param name="choiceContext">The card play's context.</param>
-    /// <param name="penalty">What to drink.</param>
-    /// <param name="target">Who, relative to <paramref name="subject"/>.</param>
-    /// <param name="subject">The chosen player; defaults to the card's owner.</param>
-    protected Task PenalizeAsync(PlayerChoiceContext choiceContext, Penalty penalty, TargetKind target, Player? subject = null) =>
-        SlayTheSpiritsMod.Game?.PenalizeAsync(
-            new PenaltyRequest(
-                penalty,
-                target,
-                new PlayerId((subject ?? Owner).NetId),
-                new PlayerId(Owner.NetId),
-                CardCause),
-            choiceContext) ?? Task.CompletedTask;
+    private List<SpiritsDrinkCard> CreateSips(Player drinker, int count, string batch)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
+        return [.. Enumerable.Range(0, count).Select(_ => DrinkCards.Create(CombatState!, drinker, PenaltyKind.Sip, CardCause, Owner, batch))];
+    }
+
+    /// <summary>
+    /// A name for the drinks from one play. Only compared with other batch names on the same machine, so it needn't
+    /// match across peers; every peer still groups the same drinks together.
+    /// </summary>
+    private string NextBatch() => $"{Id.Entry}#{Interlocked.Increment(ref _batches)}";
+
+    private static long _batches;
 }

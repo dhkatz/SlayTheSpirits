@@ -17,15 +17,28 @@ public interface IPenaltyPolicy
     IEnumerable<PenaltyAssignment> Apply(PenaltyAssignment assignment, PolicyContext context);
 }
 
-/// <summary>Passes a player's next penalty to a random other player (e.g. Slip Away).</summary>
+/// <summary>
+/// Passes a player's next penalty to a random other player (e.g. Slip Away). The rest of a redirected batch
+/// (<see cref="PenaltyRequest.Batch"/>) follows it to the same player without using up another redirect.
+/// </summary>
 public sealed class RedirectPolicy : IPenaltyPolicy
 {
     public IEnumerable<PenaltyAssignment> Apply(PenaltyAssignment assignment, PolicyContext context)
     {
         var state = context.State;
-        if (assignment.OriginalPlayer is not null
-            || !state.PendingRedirects.TryGetValue(assignment.Player.Value, out var remaining)
-            || remaining <= 0)
+        if (assignment.OriginalPlayer is not null)
+        {
+            return [assignment];
+        }
+
+        if (assignment.Batch is { } batch
+            && state.RedirectedBatches.TryGetValue(assignment.Player.Value, out var redirected)
+            && redirected.Batch == batch)
+        {
+            return [Redirect(assignment, redirected.Target)];
+        }
+
+        if (!state.PendingRedirects.TryGetValue(assignment.Player.Value, out var remaining) || remaining <= 0)
         {
             return [assignment];
         }
@@ -46,13 +59,20 @@ public sealed class RedirectPolicy : IPenaltyPolicy
         }
 
         var target = context.Rng.Pick(others).Id;
-        return [assignment with
+        if (assignment.Batch is { } first)
         {
-            Player = target,
-            OriginalPlayer = assignment.Player,
-            Notes = [.. assignment.Notes, AssignmentNote.Redirected],
-        }];
+            state.RedirectedBatches[assignment.Player.Value] = (first, target);
+        }
+
+        return [Redirect(assignment, target)];
     }
+
+    private static PenaltyAssignment Redirect(PenaltyAssignment assignment, PlayerId target) => assignment with
+    {
+        Player = target,
+        OriginalPlayer = assignment.Player,
+        Notes = [.. assignment.Notes, AssignmentNote.Redirected],
+    };
 }
 
 /// <summary>Immune players (e.g. Designated Driver) skip alcoholic penalties; water still applies.</summary>

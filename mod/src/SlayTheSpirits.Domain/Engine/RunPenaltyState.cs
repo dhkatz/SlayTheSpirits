@@ -27,6 +27,14 @@ public sealed class RunPenaltyState
     /// <summary>Per player: number of upcoming penalties to pass to a random other player (e.g. Slip Away).</summary>
     public Dictionary<ulong, int> PendingRedirects { get; init; } = [];
 
+    /// <summary>
+    /// Per player: the last batch of drinks that was redirected away from them, and to whom, so the rest of that batch
+    /// follows (<see cref="PenaltyRequest.Batch"/>). A batch is one card play, which never spans a save, so this isn't
+    /// persisted.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Dictionary<ulong, (string Batch, PlayerId Target)> RedirectedBatches { get; } = [];
+
     /// <summary>Run-long totals and highlights.</summary>
     public RunTally Tally { get; init; } = new();
 

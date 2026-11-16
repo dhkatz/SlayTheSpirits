@@ -16,30 +16,32 @@ using SpireKit.Content;
 namespace SlayTheSpirits.Potions;
 
 /// <summary>
-/// Base for Tavern potions: drinking one means drinking for real. The drink is voluntary (the player chose to use
-/// it), so caps never downgrade it and the "uses a potion" rule doesn't add a second drink on top.
+/// Base for Tavern potions: drinking one means drinking for real. Like combat cards, they only cost Sips (stronger
+/// potions cost more). The drink is voluntary (the player chose to use it), so caps never touch it and the "uses a
+/// potion" rule doesn't add a drink on top.
 /// </summary>
 /// <remarks>
 /// They drop like other potions in multiplayer runs while <see cref="Rules.ContentToggles.TavernPotions"/> is on
 /// (<see cref="Rules.RulesService.IsPotionAllowed"/>). The drink is taken before the effect, inside the potion's
 /// action, so its Tipsy is already counted.
 /// </remarks>
-public abstract class SpiritsPotion(PenaltyKind drink) : SpirePotion
+public abstract class SpiritsPotion(int sips) : SpirePotion
 {
-    public PenaltyKind Drink { get; } = drink;
+    /// <summary>How many Sips drinking it costs.</summary>
+    public int Sips { get; } = sips;
 
     public override PotionUsage Usage => PotionUsage.CombatOnly;
 
     /// <summary>Tooltips beyond the drink one.</summary>
     protected virtual IEnumerable<IHoverTip> AdditionalHoverTips => [];
 
-    public sealed override IEnumerable<IHoverTip> ExtraHoverTips => [.. SpiritsTips.ForPenalties([Drink]), .. AdditionalHoverTips];
+    public sealed override IEnumerable<IHoverTip> ExtraHoverTips => [.. SpiritsTips.ForPenalties([PenaltyKind.Sip]), .. AdditionalHoverTips];
 
     protected sealed override async Task OnUse(PlayerChoiceContext choiceContext, Creature? target)
     {
         if (SlayTheSpiritsMod.Game is { } game)
         {
-            await game.DrinkAsync(Owner, Drink, new PenaltyCause(Id.ToString(), GameTriggers.Text(Title)), choiceContext);
+            await game.DrinkAsync(Owner, new Penalty(PenaltyKind.Sip, Sips), new PenaltyCause(Id.ToString(), GameTriggers.Text(Title)), choiceContext);
         }
 
         await AfterDrinkAsync(choiceContext, target);
@@ -50,7 +52,7 @@ public abstract class SpiritsPotion(PenaltyKind drink) : SpirePotion
 }
 
 /// <summary>Common. Take a Sip. Gain 2 Strength and 2 Dexterity.</summary>
-public sealed class SpiritsLightBeer() : SpiritsPotion(PenaltyKind.Sip)
+public sealed class SpiritsLightBeer() : SpiritsPotion(1)
 {
     public override PotionRarity Rarity => PotionRarity.Common;
 
@@ -69,8 +71,8 @@ public sealed class SpiritsLightBeer() : SpiritsPotion(PenaltyKind.Sip)
     }
 }
 
-/// <summary>Uncommon. Take a Chug. Gain 15 Block and 3 Strength.</summary>
-public sealed class SpiritsTallboy() : SpiritsPotion(PenaltyKind.Chug)
+/// <summary>Uncommon. Take 2 Sips. Gain 15 Block and 3 Strength.</summary>
+public sealed class SpiritsTallboy() : SpiritsPotion(2)
 {
     public override PotionRarity Rarity => PotionRarity.Uncommon;
 
@@ -89,8 +91,8 @@ public sealed class SpiritsTallboy() : SpiritsPotion(PenaltyKind.Chug)
     }
 }
 
-/// <summary>Rare. Take a Shot. Deal 25 damage to ALL enemies. Gain 2 Energy.</summary>
-public sealed class SpiritsFirewater() : SpiritsPotion(PenaltyKind.Shot)
+/// <summary>Rare. Take 3 Sips. Deal 25 damage to ALL enemies. Gain 2 Energy.</summary>
+public sealed class SpiritsFirewater() : SpiritsPotion(3)
 {
     public override PotionRarity Rarity => PotionRarity.Rare;
 

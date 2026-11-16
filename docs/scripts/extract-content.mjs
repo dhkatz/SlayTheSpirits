@@ -437,7 +437,9 @@ const potions = registered('Potion').map(({ pool: poolClass, name }) => {
 	const found = potionClasses.get(name);
 	if (!found) return fail(name, 'registered but no class found in Potions/');
 	const poolInfo = pool(name, 'potionPools', poolClass) ?? {};
-	const drink = found.header.match(/SpiritsPotion\(PenaltyKind\.(\w+)\)/)?.[1];
+	// Potions only cost Sips: `SpiritsPotion(2)` is two of them.
+	const sips = Number(found.header.match(/SpiritsPotion\((\d+)\)/)?.[1]);
+	const drink = sips > 0 ? 'Sip' : undefined;
 	const rarity = enumProperty(potionClasses, found, 'Rarity', 'PotionRarity');
 	const target = enumProperty(potionClasses, found, 'TargetType', 'TargetType');
 	const usage = enumProperty(potionClasses, found, 'Usage', 'PotionUsage');
@@ -450,6 +452,7 @@ const potions = registered('Potion').map(({ pool: poolClass, name }) => {
 		poolName: poolInfo.name,
 		found: poolInfo.found,
 		drink: termsById.get(`drink:${drink}`)?.slug ?? fail(name, `PenaltyKind.${drink} isn't on the drink ladder`),
+		sips,
 		rarity: known(name, rarity, taxonomy.rarities, 'rarity'),
 		target: taxonomy.targets[target] ?? fail(name, `unknown target ${target}; add it to src/lib/taxonomy.json`),
 		usage: taxonomy.potionUsage[usage] ?? fail(name, `unknown usage ${usage}; add it to src/lib/taxonomy.json`),

@@ -107,12 +107,14 @@ card OnPlay ──────────────────────�
 
 **The ladder** (`PenaltyKind`, lightest first): Water < Sip < Finish (whatever's left in your drink) < Chug (a
 whole beer or seltzer) < Shot (liquor, a full standard drink). Everything below Shot is measured against the
-drink in your hand. Three tiers of frequency: **Sips** are common (most rules and cards), **Finishes** uncommon
-(about 1–2 per player per act: deaths, the run's end, a few rare Exhaust cards, and a per-act cap), **Chugs and
-Shots** rare (the boss-fight Chug, a Shot when the run is lost, and the opt-in rest site drinks). No card hands out a
-Chug or Shot: a voluntary heavy drink is a once-an-act decision, and a card would just sit in the deck. Tipsy weights
-1 / 3 / 5 / 10. Caps step a penalty down one rung at a time. Schema v1 files had a "Drink" step between Sip and
-Shot; `DrinkStepMigration` turns it into Sip.
+drink in your hand. Three tiers of frequency: **Sips** are common (most rules, every combat card and potion),
+**Finishes** uncommon (deaths, the run's end, the Tavern, and a per-act cap), **Chugs and Shots** rare (the
+boss-fight Chug, a Shot when the run is lost, and the opt-in rest site and Tavern drinks). **Combat cards and potions
+only ever hand out Sips** (`SpiritsCard.GiveSipsAsync` and friends take no kind): stronger ones cost more Sips, each
+its own drink card. A Finish every few combats from cards was far too much drinking in playtests. Tipsy weights
+1 / 6 / 8 / 10, roughly the sips each drink is worth with a can at ~12 sips (schema v3 and earlier defaulted to
+1 / 3 / 5 / 10; `TipsyWeightsMigration` moves profiles still on those). Caps step a penalty down one rung at a time.
+Schema v1 files had a "Drink" step between Sip and Shot; `DrinkStepMigration` turns it into Sip.
 
 **Rest site drinks** (`RestSiteDrinks`, `SpiritsRestSiteDrink`): next to Rest and Smith, a Chug picks 2 of 5 Tavern
 cards (colorless set plus the character's, uniform odds, following the content switches) and a Shot chooses 1 of up
@@ -121,17 +123,17 @@ to 3 Tavern relics the player doesn't have (a normal reward relic once they own 
 `RunPenaltyState.RestSiteDrinksThisAct`, apart from other drinks) / Every Rest Site (Degenerate). Casual has them off.
 The offer is rolled once per visit, so backing out and back in doesn't reroll it.
 
-**Voluntary drinks** (`PenaltyRequest.Voluntary`): rest site drinks and Tavern potions are chosen for a reward, so
+**Voluntary drinks** (`PenaltyRequest.Voluntary`): rest site drinks, the Tavern menu and Tavern potions are chosen for a reward, so
 no policy touches them (no redirect, immunity or cap downgrade, which would change the price). They still count
 toward the caps for drinks nobody chose.
 
-**Tavern relics** (`SpiritsRelic`, Event rarity, only from the rest site Shot): Hip Flask (Strength per 10 Tipsy at
-combat start), Beer Belly (+8 Max HP; Block = half Tipsy at combat start), Tip Jar (3 Gold per Tipsy from your
-drinks), Drinking Buddy (3 Block when a teammate drinks in combat), Pint Glass (heal 6 on a Finish, Chug or Shot).
+**Tavern relics** (`SpiritsRelic`, Event rarity, only from the rest site Shot): Hip Flask (Strength per 15 Tipsy at
+combat start), Beer Belly (+8 Max HP; Block = a quarter of Tipsy at combat start, max 15), Tip Jar (2 Gold per Tipsy
+from your drinks), Drinking Buddy (3 Block when a teammate drinks in combat), Pint Glass (heal 6 on a Finish, Chug or Shot).
 `DrinkGame` calls `SpiritsRelic.AfterDrinkAsync` for every delivered drink, in seat order, so effects stay in
 lockstep. **Tavern potions** (`SpiritsPotion`, shared pool, multiplayer runs, `ContentToggles.TavernPotions`): Light
-Beer (Sip; 2 Strength, 2 Dexterity), Tallboy (Chug; 15 Block, 3 Strength), Firewater (Shot; 25 to all enemies,
-2 Energy). Using one doesn't also fire the "uses a potion" rule.
+Beer (1 Sip; 2 Strength, 2 Dexterity), Tallboy (2 Sips; 15 Block, 3 Strength), Firewater (3 Sips; 25 to all
+enemies, 2 Energy), priced with `SpiritsPotion(sips)`. Using one doesn't also fire the "uses a potion" rule.
 
 `PenaltyEngine.Handle`: rule lookup (`RuleResolver`) → targets (`TargetResolver`, seeded RNG) → policies
 (`RedirectPolicy` → `ImmunityPolicy` → `CapPolicy`) → Tipsy (`TipsyWeights`, configurable per kind) →
@@ -140,13 +142,16 @@ record in `RunPenaltyState` and `RunTally`.
 **Tipsy** is the run-long drunkenness counter, shown as `SpiritsTipsyPower` under each player. Powers are
 wiped at combat end, so `TipsyBuff` re-applies each player's total on `CombatStarted` and adds deltas as
 penalties land. It's real combat state (covered by the game's desync checksum), which is fine because the
-engine is deterministic; cards read it via `SpiritsCard.OwnerTipsy` (always after `await PenalizeAsync`).
+engine is deterministic; cards read it via `SpiritsCard.OwnerTipsy` (always after awaiting their drinks). Between
+acts, `DrinkGame` shows the bar tab so far and logs each player's Tipsy and drinks (`After act N: …`), the numbers to
+tune Tipsy-scaling cards against.
 
 **Drink cards.** Cards never hand out drinks directly; they create drink *status cards* (`SpiritsSip`,
 `SpiritsShot`, `SpiritsFinishYourDrink`…, in the game's status pool) owned by the drinker:
-- `GiveDrinkAsync(ctx, player, kind)`: the giver says a line, then the card auto-plays. With
-  `RuleSet.ConfirmDrinks` (off by default) another player first confirms on the game's choose-a-card screen. The engine runs when the drink
-  card plays, so caps, immunity and redirects apply then. Call it last in `OnPlay`: after another player's
+- `GiveSipsAsync(ctx, player, count)`: the giver says a line, then each Sip auto-plays as its own card. With
+  `RuleSet.ConfirmDrinks` (off by default) another player first confirms once on the game's choose-a-card screen. The engine runs when each drink
+  card plays, so caps, immunity and redirects apply then. The Sips from one play share a `PenaltyRequest.Batch`, so
+  a redirect (Slip Away) passes them all to the same player. Call it last in `OnPlay`: after another player's
   choice the rest of the play runs on that player's queue (same as the base game's Tutor).
 - `GiveEveryoneAsync(ctx, kind)`: all other players confirm simultaneously; drinks then play in seat order,
   so the engine sees the same sequence on every peer regardless of who answers first.

@@ -63,7 +63,7 @@ internal abstract class TavernEntry : MerchantEntry
 
         if (Item.Drink is { } kind && SlayTheSpiritsMod.Game is { } game)
         {
-            await game.DrinkAsync(_player, kind, Cause, null);
+            await game.DrinkAsync(_player, new Penalty(kind), Cause, null);
         }
 
         return (true, gold);

@@ -2,7 +2,7 @@
   "SPIRITS_LIGHT_BEER.title": "Light Beer",
   "SPIRITS_LIGHT_BEER.description": "Take a [gold]Sip[/gold].\nGain [blue]{StrengthPower}[/blue] [gold]Strength[/gold] and [blue]{DexterityPower}[/blue] [gold]Dexterity[/gold].",
   "SPIRITS_TALLBOY.title": "Tallboy",
-  "SPIRITS_TALLBOY.description": "Take a [gold]Chug[/gold].\nGain [blue]{Block}[/blue] [gold]Block[/gold] and [blue]{StrengthPower}[/blue] [gold]Strength[/gold].",
+  "SPIRITS_TALLBOY.description": "Take [blue]2[/blue] [gold]Sips[/gold].\nGain [blue]{Block}[/blue] [gold]Block[/gold] and [blue]{StrengthPower}[/blue] [gold]Strength[/gold].",
   "SPIRITS_FIREWATER.title": "Firewater",
-  "SPIRITS_FIREWATER.description": "Take a [gold]Shot[/gold].\nDeal [blue]{Damage}[/blue] damage to ALL enemies. Gain {Energy:energyIcons()}."
+  "SPIRITS_FIREWATER.description": "Take [blue]3[/blue] [gold]Sips[/gold].\nDeal [blue]{Damage}[/blue] damage to ALL enemies. Gain {Energy:energyIcons()}."
 }

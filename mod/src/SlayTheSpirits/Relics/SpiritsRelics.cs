@@ -92,10 +92,10 @@ public abstract class SpiritsRelic : SpireRelic
     }
 }
 
-/// <summary>At the start of each combat, gain 1 Strength for every 10 Tipsy.</summary>
+/// <summary>At the start of each combat, gain 1 Strength for every 15 Tipsy.</summary>
 public sealed class SpiritsHipFlask : SpiritsRelic
 {
-    public const int TipsyPerStrength = 10;
+    public const int TipsyPerStrength = 15;
 
     protected override bool MentionsTipsy => true;
 
@@ -112,10 +112,14 @@ public sealed class SpiritsHipFlask : SpiritsRelic
     }
 }
 
-/// <summary>Upon pickup, raise Max HP by 8. At the start of each combat, gain Block equal to half your Tipsy.</summary>
+/// <summary>Upon pickup, raise Max HP by 8. At the start of each combat, gain Block equal to a quarter of your Tipsy (max 15).</summary>
 public sealed class SpiritsBeerBelly : SpiritsRelic
 {
     public const int MaxHp = 8;
+
+    public const int TipsyPerBlock = 4;
+
+    public const int MaxBlock = 15;
 
     public override bool HasUponPickupEffect => true;
 
@@ -127,7 +131,7 @@ public sealed class SpiritsBeerBelly : SpiritsRelic
 
     public override async Task BeforeCombatStart()
     {
-        var block = OwnerTipsy / 2;
+        var block = Math.Min(OwnerTipsy / TipsyPerBlock, MaxBlock);
         if (block > 0)
         {
             Flash();
@@ -136,10 +140,10 @@ public sealed class SpiritsBeerBelly : SpiritsRelic
     }
 }
 
-/// <summary>Whenever you drink, gain 3 Gold for each Tipsy it gives.</summary>
+/// <summary>Whenever you drink, gain 2 Gold for each Tipsy it gives.</summary>
 public sealed class SpiritsTipJar : SpiritsRelic
 {
-    public const int GoldPerTipsy = 3;
+    public const int GoldPerTipsy = 2;
 
     protected override bool MentionsTipsy => true;
 

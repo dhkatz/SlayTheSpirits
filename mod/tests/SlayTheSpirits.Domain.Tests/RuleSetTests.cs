@@ -36,7 +36,7 @@ public sealed class RuleSetTests
     public void Older_files_missing_newer_settings_get_the_defaults()
     {
         // A file saved before Tipsy, drink confirmation and per-enemy rules existed: only a few settings.
-        const string json = """{"schema":3,"data":{"name":"Old","triggers":{},"content":{}}}""";
+        const string json = """{"schema":4,"data":{"name":"Old","triggers":{},"content":{}}}""";
 
         var result = RuleSetCodec.FromJson(json);
 
@@ -58,7 +58,7 @@ public sealed class RuleSetTests
     [Fact]
     public void Explicit_nulls_are_treated_as_missing()
     {
-        const string json = """{"schema":3,"data":{"name":"Nulls","triggers":null,"tipsy":null,"labels":null,"content":null}}""";
+        const string json = """{"schema":4,"data":{"name":"Nulls","triggers":null,"tipsy":null,"labels":null,"content":null}}""";
 
         var result = RuleSetCodec.FromJson(json);
 

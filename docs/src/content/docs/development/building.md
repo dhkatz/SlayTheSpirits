@@ -138,7 +138,7 @@ In any page or note, write a directive and it becomes the entry's icon and name,
 
 ```md
 :card[Down the Hatch] gets stronger with :kw[Tipsy], like the :relic[Hip Flask].
-The :char[Ironclad] has it. :potion[Tallboy] makes you :kw[Chug].
+The :char[Ironclad] has it. :potion[Tallboy] makes you :kw[Sip] twice.
 :kw[Finish Your Drink]{label="finishing your drink"} shows other words; {noicon} drops the icon.
 ```
 
