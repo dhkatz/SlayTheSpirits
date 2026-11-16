@@ -16,10 +16,20 @@ $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $script:Sts2ExeName = 'SlayTheSpire2.exe'
 $script:ModProject = Join-Path $script:RepoRoot 'mod\src\SlayTheSpirits'
 
-function Get-BuildGameDir {
-    $json = dotnet msbuild $script:ModProject -nologo -getProperty:Sts2GameDir -getProperty:Sts2GameDirSource
-    if ($LASTEXITCODE -ne 0) { throw "Couldn't evaluate the build to find the game:`n$($json -join "`n")" }
+<#
+.SYNOPSIS
+    Evaluates the mod project and returns the named MSBuild properties as an object (no build is run).
+#>
+function Get-BuildProperties([Parameter(Mandatory)] [string[]] $Names, [string[]] $MSBuildArgs = @()) {
+    # -getProperty prints JSON for two or more properties, so always ask for at least two.
+    $query = @($Names) + 'MSBuildProjectName' | Select-Object -Unique | ForEach-Object { "-getProperty:$_" }
+    $json = dotnet msbuild $script:ModProject -nologo @query @MSBuildArgs
+    if ($LASTEXITCODE -ne 0) { throw "Couldn't evaluate the build:`n$($json -join "`n")" }
     return ($json -join "`n" | ConvertFrom-Json).Properties
+}
+
+function Get-BuildGameDir {
+    return Get-BuildProperties Sts2GameDir, Sts2GameDirSource
 }
 
 <#

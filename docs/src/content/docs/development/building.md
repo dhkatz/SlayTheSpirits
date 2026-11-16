@@ -46,6 +46,37 @@ For multiplayer on one machine:
 ./tools/multiplayer.ps1 -Clients 3   # a 4-player table
 ```
 
+## Release to the Steam Workshop
+
+1. Bump `<Version>` in `mod/src/SlayTheSpirits/SlayTheSpirits.csproj` and merge it. Every player needs the same
+   version.
+2. Publish a GitHub release tagged `v<Version>` (for example `gh release create v0.2.0 --generate-notes`). Its notes
+   become the Workshop change note.
+
+That runs the [Release workflow](https://github.com/dhkatz/SlayTheSpirits/blob/main/.github/workflows/release.yml) on a
+Windows runner:
+
+1. Downloads the game with [dhkatz/steam-download](https://github.com/dhkatz/steam-download) (the build compiles
+   against it, and packs the `.pck` with its executable).
+2. Runs the tests and builds the mod in Release.
+3. Checks the mod's version matches the tag.
+4. Attaches `SlayTheSpirits-<Version>.zip` (a `SlayTheSpirits/` folder, ready for `<game>/mods`) to the release.
+5. Uploads to the Workshop with [gmod-workshop/workshop-upload](https://github.com/gmod-workshop/workshop-upload),
+   using the description and cover image in `workshop/`.
+
+**Actions → Release → Run workflow** on a `v*` tag runs it again; untick *upload* to only download, test and build.
+
+The workflow runs in the `steam-workshop` environment, which only allows `v*` tags. It holds the secrets
+`STEAM_USERNAME` and `STEAM_VDF` (base64 of SteamCMD's `config/config.vdf` after logging in once) and the variable
+`WORKSHOP_ID`. The first release creates a private item; set `WORKSHOP_ID` to its ID afterwards so later releases
+update it. When the Steam login expires, the workflow fails at login: log in with SteamCMD again and update
+`STEAM_VDF`.
+
+The game is never cached or kept as an artifact: this repository is public, and pull requests from forks can restore
+its caches.
+
+Steam only records a change note when the files changed, so re-running a release adds no new entry.
+
 ## Repository Layout
 
 ```
@@ -59,6 +90,7 @@ mod/
 build/                         MSBuild targets (game references, merge, pack, deploy) and the PCK packer
 docs/                          this site (Astro Starlight)
 tools/                         launch and multiplayer scripts, placeholder icon generator
+workshop/                      Steam Workshop description and cover image
 ```
 
 ## Work on the Docs

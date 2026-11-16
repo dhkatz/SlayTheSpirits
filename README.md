@@ -51,6 +51,12 @@ Rules are edited in game under **Settings → Spirits** (main menu; read-only du
 ./tools/multiplayer.ps1 -Clients 3   # 4-player table
 ```
 
+### Releasing
+
+Bump `<Version>` in `mod/src/SlayTheSpirits/SlayTheSpirits.csproj`, merge, and publish a GitHub release tagged
+`v<Version>`. CI downloads the game, builds the mod, attaches it to the release and uploads it to the Steam Workshop
+([details](docs/src/content/docs/development/building.md#release-to-the-steam-workshop)).
+
 ## Layout
 
 ```
@@ -65,6 +71,7 @@ mod/
   tools/SlayTheSpirits.DocsExport/ exports the rules engine's data (presets, drinks) for the docs site
 build/                       MSBuild targets (game refs, merge/pack/deploy) and the Godot PCK packer
 docs/                        docs site and wiki (Astro Starlight), published to GitHub Pages
+workshop/                    Steam Workshop description and cover image (uploaded by the Release workflow)
 ```
 
 See the [architecture guide](docs/src/content/docs/development/architecture.md) before adding features
