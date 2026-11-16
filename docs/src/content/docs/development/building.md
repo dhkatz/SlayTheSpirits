@@ -56,8 +56,9 @@ For multiplayer on one machine:
 That runs the [Release workflow](https://github.com/dhkatz/SlayTheSpirits/blob/main/.github/workflows/release.yml) on a
 Windows runner:
 
-1. Downloads the game with [dhkatz/steam-download](https://github.com/dhkatz/steam-download) (the build compiles
-   against it, and packs the `.pck` with its executable).
+1. Downloads the game's `public-beta` branch with [dhkatz/steam-download](https://github.com/dhkatz/steam-download)
+   (the build compiles against it, and packs the `.pck` with its executable). SpireKit uses APIs that are only on
+   the beta for now, so players need it too; when they reach the default branch, drop `beta:` from the workflow.
 2. Runs the tests and builds the mod in Release.
 3. Checks the mod's version matches the tag.
 4. Attaches `SlayTheSpirits-<Version>.zip` (a `SlayTheSpirits/` folder, ready for `<game>/mods`) to the release.
