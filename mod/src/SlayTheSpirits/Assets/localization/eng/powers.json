@@ -3,5 +3,8 @@
   "SPIRITS_TIPSY_POWER.description": "How much this player has had to drink this run. Some Tavern cards grow stronger with [gold]Tipsy[/gold].",
   "SPIRITS_TIPSY_POWER.smartDescription": "{OwnerName} is at [blue]{Amount}[/blue] [gold]Tipsy[/gold] this run. Some Tavern cards grow stronger with [gold]Tipsy[/gold].",
   "SPIRITS_DESIGNATED_DRIVER_POWER.title": "Designated Driver",
-  "SPIRITS_DESIGNATED_DRIVER_POWER.description": "Immune to penalties this combat. Water still counts."
+  "SPIRITS_DESIGNATED_DRIVER_POWER.description": "Immune to penalties this combat. Water still counts.",
+  "SPIRITS_DRUNK_DRIVER_POWER.title": "Drunk Driver",
+  "SPIRITS_DRUNK_DRIVER_POWER.description": "At the start of your turn, deal damage equal to a quarter of your [gold]Tipsy[/gold] to a random enemy.",
+  "SPIRITS_DRUNK_DRIVER_POWER.smartDescription": "At the start of your turn, deal damage equal to a quarter of your [gold]Tipsy[/gold] (max [blue]{Amount}[/blue]) to a random enemy."
 }

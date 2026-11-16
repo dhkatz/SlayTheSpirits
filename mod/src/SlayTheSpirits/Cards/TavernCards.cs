@@ -54,21 +54,78 @@ public sealed class SpiritsPeerPressure() : SpiritsCard(1, CardType.Skill, CardR
     protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1m);
 }
 
-/// <summary>1: Shuffle a Sip into each teammate's draw pile. Draw 2 (3).</summary>
-public sealed class SpiritsPassTheBottle() : SpiritsCard(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self)
+/// <summary>
+/// 0: Draw 1 (2) card. Take a Sip. Draws 1 more each time it's played this combat (max 4). Then it goes into a random
+/// teammate's draw pile, like the game's The Ball: whoever holds the bottle drinks from it.
+/// </summary>
+/// <remarks>
+/// The game moves it (and hands it to the new owner) through <see cref="GetResultLocationForCardPlay"/>, the same way
+/// as The Ball. Its draw count lives on the combat copy, so it grows as it goes round the table and the deck copy
+/// starts fresh next combat.
+/// </remarks>
+public sealed class SpiritsPassTheBottle() : SpiritsCard(0, CardType.Skill, CardRarity.Uncommon, TargetType.Self)
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(2)];
+    public const int MaxCards = 4;
+
+    private decimal _extraCards;
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1)];
 
     protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
+    /// <summary>Draws added by plays this combat; kept so a downgrade (e.g. Magiknight) doesn't lose them.</summary>
+    private decimal ExtraCards
+    {
+        get => _extraCards;
+        set
+        {
+            AssertMutable();
+            _extraCards = value;
+        }
+    }
+
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        foreach (var teammate in CombatState!.Players.Where(p => p != Owner && p.Creature.IsAlive).ToList())
+        await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
+        if (DynamicVars.Cards.BaseValue < MaxCards)
         {
-            await ShuffleSipsAsync(teammate, 1);
+            DynamicVars.Cards.BaseValue += 1;
+            ExtraCards += 1;
         }
 
-        await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
+        await GiveSipsAsync(choiceContext, Owner);
+    }
+
+    protected override CardLocation GetResultLocationForCardPlay()
+    {
+        var location = base.GetResultLocationForCardPlay();
+        if (CombatState is null)
+        {
+            return location;
+        }
+
+        var teammates = CombatState.GetTeammatesOf(Owner.Creature)
+            .Where(c => c is { IsAlive: true, IsPlayer: true } && c.Player != Owner)
+            .ToList();
+        if (Owner.RunState.Rng.CombatTargets.NextItem(teammates)?.Player is not { } teammate)
+        {
+            return location;
+        }
+
+        location.player = teammate;
+        if (location.pileType == PileType.Discard)
+        {
+            location.pileType = PileType.Draw;
+            location.position = CardPilePosition.Random;
+        }
+
+        return location;
+    }
+
+    protected override void AfterDowngraded()
+    {
+        base.AfterDowngraded();
+        DynamicVars.Cards.BaseValue += ExtraCards;
     }
 
     protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1m);
@@ -162,6 +219,9 @@ public sealed class SpiritsDesignatedDriver() : SpiritsCard(1, CardType.Skill, C
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<SpiritsDesignatedDriverPower>()];
 
+    /// <summary>Not while you're the Drunk Driver.</summary>
+    protected override bool IsPlayable => !IsMutable || CombatState is null || !Owner.Creature.HasPower<SpiritsDrunkDriverPower>();
+
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         SlayTheSpiritsMod.Game?.GrantImmunity(new PlayerId(Owner.NetId));
@@ -250,6 +310,96 @@ public sealed class SpiritsDoubleShot() : SpiritsCard(3, CardType.Attack, CardRa
                 .WithHitFx("vfx/vfx_attack_blunt", null, "blunt_attack.mp3")
                 .Execute(choiceContext);
         }
+    }
+
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+}
+
+/// <summary>
+/// Power. 1: At the start of your turn, deal damage equal to a quarter of your Tipsy (up to 12 (16)) to a random enemy.
+/// Can't be played while you're the Designated Driver (and the other way round).
+/// </summary>
+public sealed class SpiritsDrunkDriver() : SpiritsCard(1, CardType.Power, CardRarity.Uncommon, TargetType.Self)
+{
+    private const string MaxDamage = "MaxDamage";
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar(MaxDamage, 12m)];
+
+    protected override bool ScalesWithTipsy => true;
+
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<SpiritsDrunkDriverPower>()];
+
+    protected override bool IsPlayable => !IsMutable || CombatState is null || !Owner.Creature.HasPower<SpiritsDesignatedDriverPower>();
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+        await PowerCmd.Apply<SpiritsDrunkDriverPower>(choiceContext, Owner.Creature, DynamicVars[MaxDamage].BaseValue, Owner.Creature, this);
+
+    protected override void OnUpgrade() => DynamicVars[MaxDamage].UpgradeValueBy(4m);
+}
+
+/// <summary>
+/// X: Take X Sips. Deal 4 (6) damage to ALL enemies X times, +1 per hit for every 15 Tipsy. The Sips land first, so
+/// they count toward the bonus.
+/// </summary>
+public sealed class SpiritsBottomlessMimosas() : SpiritsCard(0, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies)
+{
+    public const int TipsyPerDamage = 15;
+
+    protected override bool HasEnergyCostX => true;
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(4m, ValueProp.Move)];
+
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        var refills = ResolveEnergyXValue();
+        if (refills <= 0)
+        {
+            return;
+        }
+
+        await GiveSipsAsync(choiceContext, Owner, refills);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue + (OwnerTipsy / TipsyPerDamage))
+            .WithHitCount(refills)
+            .FromCard(this, cardPlay)
+            .TargetingAllOpponents(CombatState!)
+            .WithHitFx("vfx/vfx_attack_blunt", null, "blunt_attack.mp3")
+            .Execute(choiceContext);
+    }
+
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2m);
+}
+
+/// <summary>
+/// Rare. 3 (2): Exhaust. Take 3 Sips. Then play the top card of your draw pile once for every 8 Tipsy (max 8),
+/// Exhausting them, and end your turn. You don't remember any of it.
+/// </summary>
+public sealed class SpiritsBlackout() : SpiritsCard(3, CardType.Skill, CardRarity.Rare, TargetType.Self)
+{
+    private const string Sips = "Sips";
+
+    public const int TipsyPerCard = 8;
+
+    public const int MaxCards = 8;
+
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar(Sips, 3m)];
+
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await GiveSipsAsync(choiceContext, Owner, DynamicVars[Sips].IntValue);
+        var cards = Math.Min(OwnerTipsy / TipsyPerCard, MaxCards);
+        if (cards > 0)
+        {
+            await CardPileCmd.AutoPlayFromDrawPile(choiceContext, Owner, cards, CardPilePosition.Top, forceExhaust: true);
+        }
+
+        // The game ends a player's turn the same way when they die on it.
+        PlayerCmd.EndTurn(Owner, canBackOut: false);
     }
 
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);

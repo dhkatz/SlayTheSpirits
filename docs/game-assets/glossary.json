@@ -49,12 +49,44 @@
 			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Dexterity"
 		},
 		{
+			"id": "power:PLATING_POWER",
+			"kind": "power",
+			"title": "Plating",
+			"description": "At the end of your turn, gain [gold]Block[/gold]. [gold]Plating[/gold] is reduced by [blue]1[/blue] at the start of your turn.",
+			"icon": "icons/plating_power.png",
+			"wiki": null
+		},
+		{
+			"id": "power:REGEN_POWER",
+			"kind": "power",
+			"title": "Regen",
+			"description": "[gold]Regen[/gold] heals HP at the end of your turn. Each turn, [gold]Regen[/gold] is reduced by [blue]1[/blue].",
+			"icon": "icons/regen_power.png",
+			"wiki": null
+		},
+		{
 			"id": "power:STRENGTH_POWER",
 			"kind": "power",
 			"title": "Strength",
 			"description": "Strength adds additional damage to Attacks.",
 			"icon": "icons/strength_power.png",
 			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Strength"
+		},
+		{
+			"id": "power:THORNS_POWER",
+			"kind": "power",
+			"title": "Thorns",
+			"description": "When hit by an attack, deal damage back.",
+			"icon": "icons/thorns_power.png",
+			"wiki": null
+		},
+		{
+			"id": "power:VIGOR_POWER",
+			"kind": "power",
+			"title": "Vigor",
+			"description": "Your next Attack deals additional damage.",
+			"icon": "icons/vigor_power.png",
+			"wiki": null
 		},
 		{
 			"id": "static:BLOCK",

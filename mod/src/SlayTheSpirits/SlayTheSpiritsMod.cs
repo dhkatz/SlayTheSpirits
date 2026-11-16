@@ -56,6 +56,9 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddCard<ColorlessCardPool, SpiritsDesignatedDriver>()
             .AddCard<ColorlessCardPool, SpiritsBottomsUp>()
             .AddCard<ColorlessCardPool, SpiritsLastCall>()
+            .AddCard<ColorlessCardPool, SpiritsDrunkDriver>()
+            .AddCard<ColorlessCardPool, SpiritsBottomlessMimosas>()
+            .AddCard<ColorlessCardPool, SpiritsBlackout>()
             // Drinks as status cards: handed out by Tavern cards, auto-played on confirm or draw.
             .AddCard<StatusCardPool, SpiritsSip>()
             .AddCard<StatusCardPool, SpiritsShot>()
@@ -84,6 +87,7 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddRelic<EventRelicPool, SpiritsTipJar>()
             .AddRelic<EventRelicPool, SpiritsDrinkingBuddy>()
             .AddRelic<EventRelicPool, SpiritsPintGlass>()
+            .AddRelic<EventRelicPool, SpiritsJungleJuice>()
             // Tavern potions drop like any other in multiplayer runs.
             .AddPotion<SharedPotionPool, SpiritsLightBeer>()
             .AddPotion<SharedPotionPool, SpiritsTallboy>()

@@ -193,8 +193,30 @@ def relic_icons():
         (trapezoid(34, 94, 37, 91, 22, 40), (255, 250, 238, 255)),
         (lambda x, y: trapezoid(37, 91, 44, 84, 40, 111)(x, y) and 44 <= x <= 50, (255, 255, 255, 70)),
     ])
+    # Jungle Juice: a red party cup with a slice of orange on the rim.
+    cup = trapezoid(30, 98, 40, 88, 26, 114)
+    jungle_juice = shape_icon([
+        (cup, (200, 40, 45, 255)),
+        (lambda x, y: cup(x, y) and y <= 36, (245, 245, 250, 255)),
+        (lambda x, y: cup(x, y) and 34 <= x <= 42, (255, 255, 255, 60)),
+        (lambda x, y: circle(92, 28, 16)(x, y) and y <= 30, (250, 160, 30, 255)),
+        (lambda x, y: circle(92, 28, 11)(x, y) and y <= 30, (255, 210, 110, 255)),
+    ])
     return {'hip_flask': hip_flask, 'beer_belly': beer_belly, 'tip_jar': tip_jar,
-            'drinking_buddy': drinking_buddy, 'pint_glass': pint_glass}
+            'drinking_buddy': drinking_buddy, 'pint_glass': pint_glass, 'jungle_juice': jungle_juice}
+
+
+def steering_wheel():
+    """Drunk Driver: a steering wheel, slightly crooked."""
+    rim = ring(64, 64, 50, 38)
+    hub = circle(64, 64, 12)
+    spoke = lambda x, y: (abs((y - 64) - 0.25 * (x - 64)) <= 5 and abs(x - 64) <= 44) or (abs(x - 64 - 0.25 * (y - 64)) <= 5 and 64 <= y <= 108)
+    return shape_icon([
+        (rim, (60, 60, 70, 255)),
+        (lambda x, y: rim(x, y) and y < 50, (90, 90, 105, 255)),
+        (spoke, (120, 120, 135, 255)),
+        (hub, (200, 60, 50, 255)),
+    ])
 
 
 def potion_icons():
@@ -226,6 +248,7 @@ def main(images_dir):
     os.makedirs(rest_site, exist_ok=True)
     png(f'{powers}/spirits_tipsy_power.png', mug((231, 160, 40, 255), (255, 248, 232, 255), (190, 205, 215, 255)))
     png(f'{powers}/spirits_designated_driver_power.png', mug((110, 190, 245, 255), (210, 236, 255, 255), (190, 205, 215, 255)))
+    png(f'{powers}/spirits_drunk_driver_power.png', steering_wheel())
     tabs = tab_icons()
     for kind, img in tabs.items():
         png(f'{powers}/spirits_{kind}_tab_power.png', img)
