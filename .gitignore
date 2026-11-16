@@ -20,3 +20,6 @@ build/pck/.godot/
 
 # Never commit decompiled game code
 **/_sts2-reference/
+
+# Source art and audio before processing (the processed files live under Assets/)
+.assets/

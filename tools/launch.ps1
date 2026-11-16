@@ -14,6 +14,7 @@
 .EXAMPLE
     ./tools/launch.ps1 -Build -Gallery    # rebuild, then open the SpireKit controls gallery (F8 toggles it)
     ./tools/launch.ps1 -Steam             # your real profile
+    ./tools/launch.ps1 -Tavern            # every shop is the Tavern (dev console: room shop)
     ./tools/launch.ps1 -Profile 2         # another test profile
     ./tools/launch.ps1 -OpenSettings Spirits   # straight to a mod's Settings tab
     ./tools/launch.ps1 -DumpScenes res://scenes/screens/settings_screen.tscn   # node tree -> <mod storage>/dumps/
@@ -23,6 +24,7 @@ param(
     [string] $GameDir,
     [switch] $Build,
     [switch] $Gallery,
+    [switch] $Tavern,
     [switch] $Steam,
     [int] $Profile = 1,
     [string[]] $DumpScenes,
@@ -46,6 +48,7 @@ $arguments = @()
 if (-not $Steam) { $arguments += @('--force-steam', 'off', '--clientId', $Profile) }
 if (-not $NoWindowPosition) { $arguments += @('-wpos', 0, 0) }
 if ($Gallery) { $arguments += '--spirekit-gallery' }
+if ($Tavern) { $arguments += '--spirits-tavern' }
 if ($OpenSettings) { $arguments += @('--spirekit-open-settings', $OpenSettings) }
 if ($Scroll) { $arguments += @('--spirekit-scroll', $Scroll) }
 if ($DumpScenes) { $arguments += @('--spirekit-dump-scenes', ($DumpScenes -join ',')) }

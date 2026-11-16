@@ -76,3 +76,15 @@ workshop/                    Steam Workshop description and cover image (uploade
 
 See the [architecture guide](docs/src/content/docs/development/architecture.md) before adding features
 ([on the site](https://dhkatz.github.io/SlayTheSpirits/development/architecture/)).
+
+## Credits
+
+The Tavern's music is a remix ("haunted" with slowdown, tape wobble and reverb, layered with wind, rumble and a ghost
+moan) of CC0 (public domain) work from [OpenGameArt](https://opengameart.org):
+
+- [Medieval: King's Feast](https://opengameart.org/content/medieval-kings-feast) by RandomMind
+- [A Cold Wind](https://opengameart.org/content/a-cold-wind) by Umplix
+- [Loopable Dungeon Ambience](https://opengameart.org/content/loopable-dungeon-ambience) by JaggedStone
+- [Ghost](https://opengameart.org/content/ghost) by Ogrebane
+
+The bartender's voice is the game's own merchant, pitched down at runtime; no game audio ships with the mod.

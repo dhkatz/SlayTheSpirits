@@ -47,6 +47,7 @@ public static class Presets
             (BuiltInTriggers.RunLost, On(PenaltyKind.Finish, TargetKind.Everyone))),
         CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 1, [PenaltyKind.Chug] = 0, [PenaltyKind.Shot] = 0 },
         RestSiteDrinks = RestSiteDrinkLimit.Off,
+        Taverns = TavernLimit.Off,
     };
 
     /// <summary>Elites and curses empty glasses, deaths cost a shot, and the run's end is a shot either way.</summary>
@@ -67,6 +68,7 @@ public static class Presets
             (BuiltInTriggers.RunLost, On(PenaltyKind.Shot, TargetKind.Everyone))),
         CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 4, [PenaltyKind.Chug] = 3, [PenaltyKind.Shot] = 2 },
         RestSiteDrinks = RestSiteDrinkLimit.Unlimited,
+        Taverns = TavernLimit.EveryShop,
     };
 
     /// <summary>Same structure as <see cref="Standard"/>, relabeled for a non-alcoholic table.</summary>

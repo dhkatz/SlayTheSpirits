@@ -44,6 +44,7 @@ static JsonObject Preset(RuleSet rules) => new()
     ["name"] = rules.Name,
     ["enabled"] = rules.Enabled,
     ["restSiteDrinks"] = rules.RestSiteDrinks.ToString(),
+    ["taverns"] = rules.Taverns.ToString(),
     ["confirmDrinks"] = rules.ConfirmDrinks,
     ["caps"] = new JsonObject(rules.CapsPerAct.OrderBy(static c => c.Key).Select(static c => KeyValuePair.Create(c.Key.ToString(), (JsonNode?)c.Value))),
     ["labels"] = new JsonObject(Enum.GetValues<PenaltyKind>().Select(kind => KeyValuePair.Create(kind.ToString(), (JsonNode?)new JsonObject
