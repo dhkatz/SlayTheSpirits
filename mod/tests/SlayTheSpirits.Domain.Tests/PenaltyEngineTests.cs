@@ -142,6 +142,60 @@ public sealed class PenaltyEngineTests
     }
 
     [Fact]
+    public void A_takeover_sends_the_next_penalty_to_the_teammate_who_offered()
+    {
+        var engine = NewEngine();
+        engine.AddTakeover(Bob, Cara);
+        var sips = Request(PenaltyKind.Sip, TargetKind.Subject, Bob) with { Batch = "last-call#1" };
+
+        var first = engine.Handle(sips, Four).Single();
+        var second = engine.Handle(sips, Four).Single();
+        var later = engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Bob), Four).Single();
+
+        Assert.Equal(Cara, first.Player);
+        Assert.Equal(Bob, first.OriginalPlayer);
+        Assert.Equal(Cara, second.Player);
+        Assert.Equal(Bob, later.Player);
+    }
+
+    [Fact]
+    public void A_takeover_comes_before_the_players_own_redirects()
+    {
+        var engine = NewEngine();
+        engine.AddRedirects(Bob);
+        engine.AddTakeover(Bob, Cara);
+
+        Assert.Equal(Cara, engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Bob), Four).Single().Player);
+        Assert.NotEqual(Bob, engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Bob), Four).Single().Player);
+        Assert.Equal(Bob, engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Bob), Four).Single().Player);
+    }
+
+    [Fact]
+    public void A_turn_redirect_passes_one_penalty_until_it_is_armed_again()
+    {
+        var engine = NewEngine();
+        engine.ArmTurnRedirect(Alice);
+
+        Assert.NotEqual(Alice, engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Alice), Four).Single().Player);
+        Assert.Equal(Alice, engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Alice), Four).Single().Player);
+
+        engine.ArmTurnRedirect(Alice);
+        engine.ClearCombatEffects();
+        Assert.Equal(Alice, engine.Handle(Request(PenaltyKind.Sip, TargetKind.Subject, Alice), Four).Single().Player);
+    }
+
+    [Fact]
+    public void Takeovers_survive_a_save()
+    {
+        var engine = NewEngine();
+        engine.AddTakeover(Bob, Cara);
+
+        var restored = RunPenaltyStateCodec.FromJson(RunPenaltyStateCodec.ToJson(engine.State))!;
+
+        Assert.Equal(Cara.Value, restored.PendingTakeovers[Bob.Value]);
+    }
+
+    [Fact]
     public void Entering_an_act_reports_whether_it_changed()
     {
         var engine = NewEngine();

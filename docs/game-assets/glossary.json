@@ -41,6 +41,14 @@
 			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Frost"
 		},
 		{
+			"id": "orb:LIGHTNING_ORB",
+			"kind": "orb",
+			"title": "Lightning",
+			"description": "Orb: Deals damage to random enemies.",
+			"icon": "icons/lightning_orb.png",
+			"wiki": null
+		},
+		{
 			"id": "power:DEXTERITY_POWER",
 			"kind": "power",
 			"title": "Dexterity",
@@ -54,6 +62,14 @@
 			"title": "Plating",
 			"description": "At the end of your turn, gain [gold]Block[/gold]. [gold]Plating[/gold] is reduced by [blue]1[/blue] at the start of your turn.",
 			"icon": "icons/plating_power.png",
+			"wiki": null
+		},
+		{
+			"id": "power:POISON_POWER",
+			"kind": "power",
+			"title": "Poison",
+			"description": "Poisoned creatures lose HP at the start of their turn. Each turn, Poison is reduced by [blue]1[/blue].",
+			"icon": "icons/poison_power.png",
 			"wiki": null
 		},
 		{
@@ -111,6 +127,14 @@
 			"description": "Energy is used to play cards from your [gold]Hand[/gold].",
 			"icon": null,
 			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Energy"
+		},
+		{
+			"id": "static:FORGE",
+			"kind": "static",
+			"title": "Forge",
+			"description": "The first time you [gold]Forge[/gold] each combat, add [gold]Sovereign Blade[/gold] into your [gold]Hand[/gold]. Adds additional damage to [gold]Sovereign Blade[/gold].",
+			"icon": null,
+			"wiki": null
 		},
 		{
 			"id": "static:MONEY_POUCH",

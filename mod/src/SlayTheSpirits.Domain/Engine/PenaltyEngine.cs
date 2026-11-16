@@ -96,6 +96,19 @@ public sealed class PenaltyEngine
 
     public void ClearImmunities() => State.Immune.Clear();
 
+    /// <summary>Clears everything that lasts one combat: immunities and per-turn redirects.</summary>
+    public void ClearCombatEffects()
+    {
+        State.Immune.Clear();
+        State.TurnRedirects.Clear();
+    }
+
+    /// <summary><paramref name="taker"/> takes <paramref name="player"/>'s next penalty (Take One for the Team).</summary>
+    public void AddTakeover(PlayerId player, PlayerId taker) => State.PendingTakeovers[player.Value] = taker.Value;
+
+    /// <summary>Passes <paramref name="player"/>'s next penalty this turn to a random other player (Dine and Dash).</summary>
+    public void ArmTurnRedirect(PlayerId player) => State.TurnRedirects.Add(player.Value);
+
     public void AddRedirects(PlayerId player, int count = 1)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
