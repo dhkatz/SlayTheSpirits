@@ -9,6 +9,14 @@
 			"wiki": "https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Exhaust"
 		},
 		{
+			"id": "keyword:INNATE",
+			"kind": "keyword",
+			"title": "Innate",
+			"description": "Start each combat with this card in your [gold]Hand[/gold].",
+			"icon": null,
+			"wiki": null
+		},
+		{
 			"id": "keyword:RETAIN",
 			"kind": "keyword",
 			"title": "Retain",

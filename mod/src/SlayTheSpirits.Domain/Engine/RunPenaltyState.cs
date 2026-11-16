@@ -18,8 +18,8 @@ public sealed class RunPenaltyState
     /// <summary>Per player: count of each kind received this act (after policies), for caps.</summary>
     public Dictionary<ulong, Dictionary<PenaltyKind, int>> ActCounts { get; init; } = [];
 
-    /// <summary>Per player: rest site drinks taken this act (<see cref="RestSiteDrinks"/>), counted apart from caps.</summary>
-    public Dictionary<ulong, Dictionary<PenaltyKind, int>> RestSiteDrinksThisAct { get; init; } = [];
+    /// <summary>Per player: rest site tabs taken this act (<see cref="RestSiteTabs"/>).</summary>
+    public Dictionary<ulong, Dictionary<RestSiteTab, int>> RestSiteTabsThisAct { get; init; } = [];
 
     /// <summary>Players currently immune (e.g. Designated Driver). Cleared by the game layer at combat end.</summary>
     public HashSet<ulong> Immune { get; init; } = [];
@@ -41,18 +41,18 @@ public sealed class RunPenaltyState
     public int CountThisAct(PlayerId player, PenaltyKind kind) =>
         ActCounts.TryGetValue(player.Value, out var counts) ? counts.GetValueOrDefault(kind) : 0;
 
-    public int RestSiteDrinkCount(PlayerId player, PenaltyKind kind) =>
-        RestSiteDrinksThisAct.TryGetValue(player.Value, out var counts) ? counts.GetValueOrDefault(kind) : 0;
+    public int RestSiteTabCount(PlayerId player, RestSiteTab tab) =>
+        RestSiteTabsThisAct.TryGetValue(player.Value, out var counts) ? counts.GetValueOrDefault(tab) : 0;
 
-    internal void RecordRestSiteDrink(PlayerId player, PenaltyKind kind)
+    internal void RecordRestSiteTab(PlayerId player, RestSiteTab tab)
     {
-        if (!RestSiteDrinksThisAct.TryGetValue(player.Value, out var counts))
+        if (!RestSiteTabsThisAct.TryGetValue(player.Value, out var counts))
         {
             counts = [];
-            RestSiteDrinksThisAct[player.Value] = counts;
+            RestSiteTabsThisAct[player.Value] = counts;
         }
 
-        counts[kind] = counts.GetValueOrDefault(kind) + 1;
+        counts[tab] = counts.GetValueOrDefault(tab) + 1;
     }
 
     internal void Record(PlayerId player, Penalty penalty)

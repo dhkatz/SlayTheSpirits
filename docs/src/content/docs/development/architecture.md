@@ -109,25 +109,31 @@ card OnPlay ──────────────────────�
 whole beer or seltzer) < Shot (liquor, a full standard drink). Everything below Shot is measured against the
 drink in your hand. Three tiers of frequency: **Sips** are common (most rules, every combat card and potion),
 **Finishes** uncommon (deaths, the run's end, the Tavern, and a per-act cap), **Chugs and Shots** rare (the
-boss-fight Chug, a Shot when the run is lost, and the opt-in rest site and Tavern drinks). **Combat cards and potions
+boss-fight Chug, a Shot when the run is lost, and the opt-in Tavern drinks). **Combat cards and potions
 only ever hand out Sips** (`SpiritsCard.GiveSipsAsync` and friends take no kind): stronger ones cost more Sips, each
 its own drink card. A Finish every few combats from cards was far too much drinking in playtests. Tipsy weights
 1 / 6 / 8 / 10, roughly the sips each drink is worth with a can at ~12 sips (schema v3 and earlier defaulted to
 1 / 3 / 5 / 10; `TipsyWeightsMigration` moves profiles still on those). Caps step a penalty down one rung at a time.
 Schema v1 files had a "Drink" step between Sip and Shot; `DrinkStepMigration` turns it into Sip.
 
-**Rest site drinks** (`RestSiteDrinks`, `SpiritsRestSiteDrink`): next to Rest and Smith, a Chug picks 2 of 5 Tavern
-cards (colorless set plus the character's, uniform odds, following the content switches) and a Shot chooses 1 of up
-to 3 Tavern relics the player doesn't have (a normal reward relic once they own them all).
-`RuleSet.RestSiteDrinks` is Off / Once per Act (Standard; counted per player and kind in
-`RunPenaltyState.RestSiteDrinksThisAct`, apart from other drinks) / Every Rest Site (Degenerate). Casual has them off.
-The offer is rolled once per visit, so backing out and back in doesn't reroll it.
+**Rest site tabs** (`RestSiteTabs`, `SpiritsRestSiteTab`): next to Rest and Smith, *Open a Tab* picks 2 of 5 Tavern
+cards (colorless set plus the character's, uniform odds, following the content switches) and *Run Up the Tab* chooses
+1 of up to 3 Tavern relics the player doesn't have (a normal reward relic once they own them all). The price is a
+random Tavern curse in your deck (`SpiritsCurse.Minor` / `.Major`, rolled on the player's reward RNG after the
+reward), not a drink: the curses make you Sip and get in your way for the rest of the run. Gaining one fires the
+"gains a curse" rule like any curse. Minor curses are in the game's curse pool (multiplayer only); major ones
+(`ISpiritsMajorCurse`) are filtered out of random sources in `RulesService.IsCardAllowed`. The Tavern's *Settle Up*
+removes one for a Finish. `RuleSet.RestSiteTabs` (stored as `restSiteDrinks`, its old name) is Off / Once per Act
+(Standard; counted per player and option in `RunPenaltyState.RestSiteTabsThisAct`) / Every Rest Site (Degenerate).
+Casual has them off. The options keep the old Chug and Shot ids (`SPIRITS_CHUG`, `SPIRITS_SHOT`), which saved run
+histories refer to; run state v2 counted Chugs and Shots, and `RestSiteTabMigration` turns them into tabs. The offer
+is rolled once per visit, so backing out and back in doesn't reroll it.
 
-**Voluntary drinks** (`PenaltyRequest.Voluntary`): rest site drinks, the Tavern menu and Tavern potions are chosen for a reward, so
+**Voluntary drinks** (`PenaltyRequest.Voluntary`): the Tavern menu and Tavern potions are chosen for a reward, so
 no policy touches them (no redirect, immunity or cap downgrade, which would change the price). They still count
 toward the caps for drinks nobody chose.
 
-**Tavern relics** (`SpiritsRelic`, Event rarity, only from the rest site Shot): Hip Flask (Strength per 15 Tipsy at
+**Tavern relics** (`SpiritsRelic`, Event rarity, only from running up a rest site tab and the Tavern's Top Shelf): Hip Flask (Strength per 15 Tipsy at
 combat start), Beer Belly (+8 Max HP; Block = a quarter of Tipsy at combat start, max 15), Tip Jar (2 Gold per Tipsy
 from your drinks), Drinking Buddy (3 Block when a teammate drinks in combat), Pint Glass (heal 6 on a Finish, Chug or Shot).
 `DrinkGame` calls `SpiritsRelic.AfterDrinkAsync` for every delivered drink, in seat order, so effects stay in
@@ -200,7 +206,7 @@ icon at `Assets/images/powers/<entry>.png` (`tools/icons.py` makes placeholders)
 A relic for normal drops instead: subclass `SpireRelic` with a Common/Uncommon/Rare rarity and add it to
 `SharedRelicPool`.
 
-**Add a Tavern potion.** Subclass `SpiritsPotion(kind)`, implement `AfterDrinkAsync`, register it with
+**Add a Tavern potion.** Subclass `SpiritsPotion(sips)`, implement `AfterDrinkAsync`, register it with
 `AddPotion<SharedPotionPool, …>()`; text in `localization/eng/potions.json`, art at `Assets/images/potions/<entry>.png`.
 
 **Add a policy** (e.g. a "Bartender" relic doubling sips). Implement `IPenaltyPolicy`, keep any state in

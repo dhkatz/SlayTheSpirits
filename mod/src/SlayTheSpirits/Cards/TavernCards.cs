@@ -254,19 +254,3 @@ public sealed class SpiritsDoubleShot() : SpiritsCard(3, CardType.Attack, CardRa
 
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
-
-/// <summary>Curse. Unplayable. When drawn, take a Sip. (Can turn up wherever curses do, in multiplayer.)</summary>
-public sealed class SpiritsSpill() : SpiritsCard(-1, CardType.Curse, CardRarity.Curse, TargetType.None)
-{
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Unplayable];
-
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
-
-    public override async Task AfterCardDrawn(PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw)
-    {
-        if (card == this)
-        {
-            await GiveSipsAsync(choiceContext, Owner);
-        }
-    }
-}

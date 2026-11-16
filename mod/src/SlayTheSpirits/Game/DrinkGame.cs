@@ -72,20 +72,17 @@ internal sealed class DrinkGame
         return PenalizeAsync(new PenaltyRequest(penalty, TargetKind.Subject, id, id, cause, Voluntary: true), choiceContext);
     }
 
-    /// <summary>Takes a rest site drink: uses up the option for this act and hands out the drink.</summary>
-    public Task TakeRestSiteDrinkAsync(Player player, PenaltyKind kind, PenaltyCause cause) =>
-        EnsureEngine() is { } engine && _run is { } run
-            ? DeliverAsync(run, engine.TakeRestSiteDrink(GameTriggers.Id(player), kind, cause, Party(run)), null, CombatPhase.None)
-            : Task.CompletedTask;
+    /// <summary>Takes a rest site tab: uses up the option for this act.</summary>
+    public void TakeRestSiteTab(Player player, RestSiteTab tab) => EnsureEngine()?.TakeRestSiteTab(GameTriggers.Id(player), tab);
 
-    /// <summary>Whether rest sites offer drinks under the rules in effect.</summary>
-    public bool IsRestSiteDrinkOffered => _rules.Effective is { } rules && RestSiteDrinks.IsOffered(rules);
+    /// <summary>Whether rest sites offer tabs under the rules in effect.</summary>
+    public bool IsRestSiteTabOffered => _rules.Effective is { } rules && RestSiteTabs.IsOffered(rules);
 
-    /// <summary>Whether <paramref name="player"/> can still take this drink at a rest site this act.</summary>
-    public bool IsRestSiteDrinkAvailable(Player player, PenaltyKind kind) =>
+    /// <summary>Whether <paramref name="player"/> can still take this tab at a rest site this act.</summary>
+    public bool IsRestSiteTabAvailable(Player player, RestSiteTab tab) =>
         EnsureEngine() is { } engine
         && _rules.Effective is { } rules
-        && RestSiteDrinks.IsAvailable(rules, engine.State, GameTriggers.Id(player), kind);
+        && RestSiteTabs.IsAvailable(rules, engine.State, GameTriggers.Id(player), tab);
 
     /// <summary>Grants immunity until the end of combat (Designated Driver).</summary>
     public void GrantImmunity(PlayerId player) => EnsureEngine()?.GrantImmunity(player);

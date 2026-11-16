@@ -51,7 +51,7 @@ public sealed class RuleSetTests
         Assert.Equal(defaults.Content.TavernCards, result.Value.Content.TavernCards);
         Assert.Equal(defaults.Content.CharacterCards, result.Value.Content.CharacterCards);
         Assert.Equal(defaults.Content.TavernPotions, result.Value.Content.TavernPotions);
-        Assert.Equal(defaults.RestSiteDrinks, result.Value.RestSiteDrinks);
+        Assert.Equal(defaults.RestSiteTabs, result.Value.RestSiteTabs);
         Assert.NotNull(result.Value.Content.DisabledCards);
     }
 

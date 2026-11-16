@@ -28,7 +28,6 @@ var data = new JsonObject
 {
     ["ladder"] = ladder,
     ["presets"] = presets,
-    ["restSiteDrinkKinds"] = new JsonArray([.. RestSiteDrinks.Kinds.Select(k => (JsonNode)k.ToString())]),
     ["tipsyTitle"] = Glossary.Tipsy(Presets.Standard).Title,
     ["tipsyDescription"] = Glossary.Tipsy(Presets.Standard).Body,
 };
@@ -43,7 +42,7 @@ static JsonObject Preset(RuleSet rules) => new()
 {
     ["name"] = rules.Name,
     ["enabled"] = rules.Enabled,
-    ["restSiteDrinks"] = rules.RestSiteDrinks.ToString(),
+    ["restSiteTabs"] = rules.RestSiteTabs.ToString(),
     ["taverns"] = rules.Taverns.ToString(),
     ["confirmDrinks"] = rules.ConfirmDrinks,
     ["caps"] = new JsonObject(rules.CapsPerAct.OrderBy(static c => c.Key).Select(static c => KeyValuePair.Create(c.Key.ToString(), (JsonNode?)c.Value))),

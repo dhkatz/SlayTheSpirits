@@ -5,7 +5,7 @@
 			"key": "colorless",
 			"name": "Colorless",
 			"color": "#a3a3a3",
-			"found": "Found in colorless card rewards and shops while **Tavern Cards** is on, and offered by the :kw[Chug] at a [rest site](play/rest-sites/).",
+			"found": "Found in colorless card rewards and shops while **Tavern Cards** is on, and offered when you open a tab at a [rest site](play/rest-sites/).",
 			"frame": "card_frame_colorless",
 			"energy": "colorless",
 			"energyOutline": "#5c5440"
@@ -68,7 +68,7 @@
 			"key": "curse",
 			"name": "Curse",
 			"color": "#585b61",
-			"found": "Anything that adds a random curse to your deck can add it.",
+			"found": "Opening a tab at a [rest site](play/rest-sites/) can add it, and so can anything else that adds a random curse to your deck.",
 			"frame": "card_frame_curse",
 			"energy": "colorless",
 			"energyOutline": "#5c5440"
@@ -84,12 +84,13 @@
 			"energyOutline": "#5c5440"
 		}
 	},
-	"characterFound": "Found in the :char[{name}]'s card rewards while **Character Cards** is on, and offered by the :kw[Chug] at a [rest site](play/rest-sites/) when playing the {name}.",
+	"characterFound": "Found in the :char[{name}]'s card rewards while **Character Cards** is on, and offered when you open a tab at a [rest site](play/rest-sites/) when playing the {name}.",
+	"majorCurseFound": "Only from running up a tab at a [rest site](play/rest-sites/). Random curses never include it.",
 	"relicPools": {
 		"EventRelicPool": {
 			"key": "tavern",
 			"name": "Tavern",
-			"found": "Only from taking a :kw[Shot] at a [rest site](play/rest-sites/), which offers 3 you don't have yet."
+			"found": "Only from running up a tab at a [rest site](play/rest-sites/) or the Tavern's Top Shelf, which offer 3 you don't have yet."
 		}
 	},
 	"potionPools": {

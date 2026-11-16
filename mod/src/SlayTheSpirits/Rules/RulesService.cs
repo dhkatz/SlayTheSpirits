@@ -151,7 +151,7 @@ internal sealed class RulesService
             return false;
         }
 
-        if (content.DisabledCards.Contains(card.Id.Entry, StringComparer.Ordinal))
+        if (content.DisabledCards.Contains(card.Id.Entry, StringComparer.Ordinal) || card is ISpiritsMajorCurse)
         {
             return false;
         }

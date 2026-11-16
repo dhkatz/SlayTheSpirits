@@ -26,6 +26,7 @@ import {
 	enumProperty,
 	flag,
 	gameTermId,
+	inherited,
 	json,
 	listProperty,
 	loc,
@@ -356,7 +357,8 @@ const cards = registered('Card')
 	.map(({ name, poolInfo }) => {
 		const found = cardClasses.get(name);
 		if (!found) return fail(name, 'registered but no class found in Cards/');
-		const ctor = found.header.match(/SpiritsCard\((-?\d+), CardType\.(\w+), CardRarity\.(\w+), TargetType\.(\w+)\)/);
+		// Its own SpiritsCard(...) call, or its base class's (the Tavern curses share SpiritsCurse's).
+		const ctor = inherited(cardClasses, found, /SpiritsCard\((-?\d+), CardType\.(\w+), CardRarity\.(\w+), TargetType\.(\w+)\)/);
 		if (!ctor) return fail(name, `can't read the SpiritsCard(...) constructor: ${found.header}`);
 		const entry = entryOf(name);
 		const values = vars(name, found.body);
@@ -376,7 +378,11 @@ const cards = registered('Card')
 			poolName: poolInfo.name,
 			poolColor: poolInfo.color,
 			character: poolInfo.character ? poolInfo.key : null,
-			found: poolInfo.character ? taxonomy.characterFound.replaceAll('{name}', poolInfo.name) : poolInfo.found,
+			found: poolInfo.character
+				? taxonomy.characterFound.replaceAll('{name}', poolInfo.name)
+				: /\bISpiritsMajorCurse\b/.test(found.header)
+					? taxonomy.majorCurseFound
+					: poolInfo.found,
 			type: known(name, ctor[2], taxonomy.cardTypes, 'card type'),
 			rarity: known(name, ctor[3], taxonomy.rarities, 'rarity'),
 			target: taxonomy.targets[ctor[4]] ?? fail(name, `unknown target ${ctor[4]}; add it to src/lib/taxonomy.json`),

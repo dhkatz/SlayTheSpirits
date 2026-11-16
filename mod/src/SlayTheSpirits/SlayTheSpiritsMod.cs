@@ -39,9 +39,9 @@ public sealed class SlayTheSpiritsMod : SpireMod
         DrinkGame = new DrinkGame(context, Rules, new Announcer(context.Toasts, () => Rules.Effective));
         Rules.Initialize();
         RulesSettingsTab.Register(context, Rules);
-        foreach (var kind in Engine.RestSiteDrinks.Kinds)
+        foreach (var tab in Engine.RestSiteTabs.All)
         {
-            context.RestSite.Add(player => SpiritsRestSiteDrink.For(player, kind));
+            context.RestSite.Add(player => SpiritsRestSiteTab.For(player, tab));
         }
 
         context.Content
@@ -61,8 +61,16 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddCard<StatusCardPool, SpiritsShot>()
             .AddCard<StatusCardPool, SpiritsChug>()
             .AddCard<StatusCardPool, SpiritsFinishYourDrink>()
-            // A curse that can turn up wherever random curses do.
+            // Tavern curses, the price of a rest site tab. The minor ones turn up wherever random curses do; the
+            // major ones are filtered out of random sources (RulesService.IsCardAllowed).
             .AddCard<CurseCardPool, SpiritsSpill>()
+            .AddCard<CurseCardPool, SpiritsDrunkText>()
+            .AddCard<CurseCardPool, SpiritsHiccups>()
+            .AddCard<CurseCardPool, SpiritsBarFly>()
+            .AddCard<CurseCardPool, SpiritsStickyFloor>()
+            .AddCard<CurseCardPool, SpiritsHangover>()
+            .AddCard<CurseCardPool, SpiritsBeerGoggles>()
+            .AddCard<CurseCardPool, SpiritsFuzzyMemory>()
             // One per character, in that character's normal rewards.
             .AddCard<IroncladCardPool, SpiritsKegStand>()
             .AddCard<SilentCardPool, SpiritsSlipAway>()
@@ -70,7 +78,7 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddCard<RegentCardPool, SpiritsRoyalDecree>()
             .AddCard<NecrobinderCardPool, SpiritsPourOneOut>()
             .AddCard<FoolCardPool, SpiritsDrinkingSong>()
-            // Tavern relics never drop: the rest site Shot is the only way to get one.
+            // Tavern relics never drop: running up a rest site tab and the Tavern's Top Shelf are the only ways to get one.
             .AddRelic<EventRelicPool, SpiritsHipFlask>()
             .AddRelic<EventRelicPool, SpiritsBeerBelly>()
             .AddRelic<EventRelicPool, SpiritsTipJar>()
@@ -87,12 +95,8 @@ public sealed class SlayTheSpiritsMod : SpireMod
     protected override void OnGameReady(ModContext context)
     {
         TabText.Apply(context.Loc, Rules.Effective);
-        RestSiteText.Apply(context.Loc, Rules.Effective);
-        Rules.EffectiveChanged += rules =>
-        {
-            TabText.Apply(context.Loc, rules);
-            RestSiteText.Apply(context.Loc, rules);
-        };
+        RestSiteText.Apply(context.Loc);
+        Rules.EffectiveChanged += rules => TabText.Apply(context.Loc, rules);
         Rules.LoadProfile();
     }
 }

@@ -17,13 +17,13 @@ public enum TargetKind
     RandomOther,
 }
 
-/// <summary>How often rest sites offer their Chug and Shot options.</summary>
-public enum RestSiteDrinkLimit
+/// <summary>How often rest sites offer their tabs (<see cref="Engine.RestSiteTabs"/>).</summary>
+public enum RestSiteTabLimit
 {
     /// <summary>Rest sites only have the game's own options.</summary>
     Off,
 
-    /// <summary>Each player can take each drink at one rest site per act.</summary>
+    /// <summary>Each player can take each tab at one rest site per act.</summary>
     OncePerAct,
 
     /// <summary>At every rest site.</summary>
@@ -101,10 +101,12 @@ public sealed record RuleSet
     public bool ConfirmDrinks { get; init; }
 
     /// <summary>
-    /// Rest sites offer a Chug (pick 2 of 5 cards) and a Shot (choose a relic) next to Rest and Smith. They're
-    /// voluntary, so <see cref="CapsPerAct"/> doesn't apply; this limit is what keeps them rare.
+    /// Rest sites offer two tabs next to Rest and Smith: Tavern cards for a minor Tavern curse, a Tavern relic for a
+    /// major one (<see cref="Engine.RestSiteTabs"/>). Stored as <c>restSiteDrinks</c>: they used to cost a Chug and a
+    /// Shot, and the setting still means the same thing.
     /// </summary>
-    public RestSiteDrinkLimit RestSiteDrinks { get; init; } = RestSiteDrinkLimit.OncePerAct;
+    [System.Text.Json.Serialization.JsonPropertyName("restSiteDrinks")]
+    public RestSiteTabLimit RestSiteTabs { get; init; } = RestSiteTabLimit.OncePerAct;
 
     /// <summary>
     /// Shops that become the Tavern: a bar whose menu is paid for in gold and drinks (see <see cref="Engine.TavernMenu"/>).

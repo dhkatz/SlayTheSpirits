@@ -81,13 +81,13 @@ const columns = presets.length + 1;
 			</tr>
 			<tr>
 				<th scope="row">
-					<a href={href('play/rest-sites/')}>Rest Site Drinks</a>
+					<a href={href('play/rest-sites/')}>Rest Site Tabs</a>
 					<small>Chug or Shot by choice</small>
 				</th>
 				{
 					presets.map((preset) => (
-						<td class:list={{ 'sts-rules__off': preset.restSiteDrinks === 'Off' }}>
-							{restSiteLimitNames[preset.restSiteDrinks] ?? preset.restSiteDrinks}
+						<td class:list={{ 'sts-rules__off': preset.restSiteTabs === 'Off' }}>
+							{restSiteLimitNames[preset.restSiteTabs] ?? preset.restSiteTabs}
 						</td>
 					))
 				}

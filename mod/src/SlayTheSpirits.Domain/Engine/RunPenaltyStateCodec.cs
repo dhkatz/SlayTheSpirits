@@ -7,12 +7,16 @@ namespace SlayTheSpirits.Engine;
 public static class RunPenaltyStateCodec
 {
     /// <summary>Bump when the state's JSON shape changes, and register a migration in <see cref="Format"/>.</summary>
-    public const int SchemaVersion = 2;
+    public const int SchemaVersion = 3;
 
     public static VersionedJsonDocument<RunPenaltyState> Format { get; } = new(
         SchemaVersion,
         DomainJsonContext.Default.RunPenaltyState,
-        migrations: [new JsonMigration(1, DrinkStepMigration.MigrateRunState)],
+        migrations:
+        [
+            new JsonMigration(1, DrinkStepMigration.MigrateRunState),
+            new JsonMigration(2, RestSiteTabMigration.MigrateRunState),
+        ],
         defaults: static () => new RunPenaltyState());
 
     public static string ToJson(RunPenaltyState state) => Format.Encode(state);
