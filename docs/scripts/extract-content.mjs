@@ -58,7 +58,7 @@ const game = json(join(gameAssets, 'glossary.json'));
 const publicDir = join(docs, 'public');
 const publicImages = join(publicDir, 'generated/images');
 rmSync(join(publicDir, 'generated'), { recursive: true, force: true });
-for (const folder of ['relics', 'potions', 'rest_site', 'powers', 'cards']) {
+for (const folder of ['relics', 'potions', 'rest_site', 'powers', 'cards', 'events']) {
 	const source = join(mod, 'Assets/images', folder);
 	if (existsSync(source)) cpSync(source, join(publicImages, folder), { recursive: true });
 }

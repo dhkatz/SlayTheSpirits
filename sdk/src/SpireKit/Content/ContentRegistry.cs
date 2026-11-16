@@ -22,6 +22,7 @@ public sealed class ContentRegistry
 
     private readonly ModContext _context;
     private readonly HashSet<Type> _registered = [];
+    private readonly List<Type> _events = [];
     private Func<CardModel, bool>? _cardFilter;
     private Func<PotionModel, bool>? _potionFilter;
 
@@ -44,6 +45,24 @@ public sealed class ContentRegistry
     public ContentRegistry AddPotion<TPool, TPotion>()
         where TPool : PotionPoolModel
         where TPotion : PotionModel => Add<TPool, TPotion>();
+
+    /// <summary>
+    /// Adds an event to the game's shared events, which can turn up in any act (see <see cref="SpireEvent"/>). Call from
+    /// <see cref="SpireMod.OnInitialize"/>.
+    /// </summary>
+    public ContentRegistry AddEvent<TEvent>()
+        where TEvent : SpireEvent
+    {
+        if (_registered.Add(typeof(TEvent)))
+        {
+            _events.Add(typeof(TEvent));
+        }
+
+        return this;
+    }
+
+    /// <summary>Events registered with <see cref="AddEvent{TEvent}"/>, in registration order.</summary>
+    internal IReadOnlyList<Type> Events => _events;
 
     /// <summary>
     /// Sets the run-time availability rule for this mod's cards. Only consulted during runs; the card

@@ -44,6 +44,7 @@ export default defineConfig({
 						{ slug: 'play/how-it-works' },
 						{ slug: 'play/rule-sets' },
 						{ slug: 'play/rest-sites' },
+						{ slug: 'play/events' },
 						{ slug: 'play/drink-responsibly' },
 					],
 				},

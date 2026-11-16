@@ -22,7 +22,7 @@ SpireKit isn't published yet. Until it is, the best reference is the source and 
 
 | Area | Highlights |
 |---|---|
-| Content | Cards, relics, potions and powers from raw PNG art; per-run filters for cards and potions; model name checks |
+| Content | Cards, relics, potions, powers and events from raw PNG art; per-run filters for cards and potions; model name checks |
 | Rest sites | Extra rest site options with their own icons |
 | Game events | Typed events (`RunStarted`, `CombatStarted`, `PlayerDied`, …) that run in lockstep on every peer |
 | Multiplayer | Named network channels, host-authoritative settings with run locking |

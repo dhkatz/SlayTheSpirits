@@ -86,7 +86,7 @@ reference into the mod DLL with ILRepack. Consequences:
 | Shared settings | `HostAuthoritativeState<T>` + `AuthorityChannel<T>` | host owns, clients mirror, run lock, retries; pure and tested |
 | Storage | `IFileStore`, `JsonDocumentFile<T>`, `VersionedJsonDocument<T>` | schema-versioned envelopes, migrations, corrupt-file backups; `defaults:` fills properties missing from older files (source-generated JSON would otherwise make them null/false) |
 | Determinism | `DeterministicRandom`, `StableHash` | never draw from the game's RNG; derive a stream from the run seed |
-| Content | `ContentRegistry`, `SpireCard`, `SpirePower`, `SpireRelic`, `SpirePotion`, `ModArt` | pool registration, card and potion run filters, name validation, raw-PNG art (`res://<ModId>/images/{cards,powers,relics,potions}/<entry>.png`); relic and potion outlines generated from the art |
+| Content | `ContentRegistry`, `SpireCard`, `SpirePower`, `SpireRelic`, `SpirePotion`, `SpireEvent`, `ModArt` | pool registration, card and potion run filters, name validation, raw-PNG art (`res://<ModId>/images/{cards,powers,relics,potions,events}/<entry>.png`); relic and potion outlines generated from the art; `AddEvent` adds events to the game's shared events (`SharedEventsPatch`, a postfix on `ModelDb.AllSharedEvents`; there's no event pool) with the default layout and a mod portrait (`EventPortraitPatches`); text from the `events` table |
 | Async hooks | `IEventBus.SubscribeAsync` / `PublishAsync` | hook-driven game events are awaited by the game, so handlers can issue game commands (apply power, gain block) in lockstep |
 | Localization | `LocInjector`, `SpireTips.Text(key, title, body, icon)` | runtime entries that survive language changes; keyword tooltips with computed text |
 | UI | `GameVfx.SpeechBubble`, `GameVfx.CombatBanner`, `ToastOverlay`, `GameFonts`, `GameStyle` | native speech bubbles and turn-style banners (queued, never overlapping); out-of-combat toasts; the game's palette, font and outlined text for code-built UI |
@@ -132,6 +132,12 @@ is rolled once per visit, so backing out and back in doesn't reroll it.
 **Voluntary drinks** (`PenaltyRequest.Voluntary`): the Tavern menu and Tavern potions are chosen for a reward, so
 no policy touches them (no redirect, immunity or cap downgrade, which would change the price). They still count
 toward the caps for drinks nobody chose.
+
+**Tavern events** (`SpiritsEvent`, `Events/`): the Speakeasy and Seven Grand join the shared "?" rooms of every act
+and allow themselves (`IsAllowed`, checked by the game when it picks the next event, from host-synced rules) only in
+multiplayer runs with the drinking game and `ContentToggles.TavernEvents` on. Each player gets their own copy; drinks
+chosen there are voluntary, and may be Finishes or Shots since they're out of combat. Adding events to the shared list
+changes the order of the game's own events in every run, the same on every peer.
 
 **Tavern relics** (`SpiritsRelic`, Event rarity, only from running up a rest site tab and the Tavern's Top Shelf): Hip Flask (Strength per 15 Tipsy at
 combat start), Beer Belly (+8 Max HP; Block = a quarter of Tipsy at combat start, max 15), Tip Jar (2 Gold per Tipsy
