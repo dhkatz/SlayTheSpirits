@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Launches two local Slay the Spire 2 instances (host + client) connected over LAN for multiplayer testing.
+    Launches local Slay the Spire 2 instances (one host + clients) connected over LAN for multiplayer testing.
 
 .DESCRIPTION
     Uses the game's built-in developer flags (see NMainMenu.CheckCommandLineArgs / NJoinFriendScreen.FastMpJoin):
@@ -10,16 +10,21 @@
       --force-steam off        don't initialize Steam, so each instance uses its own user://default/<id>/ profile
       -wpos <x> <y>            windowed, positioned relative to the current screen
 
-    Test profiles are separate from your real Steam save (fresh unlocks).
+    Test profiles are separate from your real Steam save (fresh unlocks). Windows are tiled in a 2x2 grid over
+    the primary screen.
+
+    The game folder is found automatically (see tools/common.ps1): -GameDir, then $env:STS2_GAME_DIR, then
+    Sts2GameDir in local.props, then your Steam libraries.
 
 .EXAMPLE
-    ./tools/test.ps1 -Build
-    ./tools/test.ps1 -Clients 3
-    ./tools/test.ps1 -Tavern     # every shop is the Tavern on all instances (dev console: room shop)
+    ./tools/multiplayer.ps1 -Build
+    ./tools/multiplayer.ps1 -Clients 3
+    ./tools/multiplayer.ps1 -Mode host_daily
+    ./tools/multiplayer.ps1 -Tavern     # every shop is the Tavern on all instances (dev console: room shop)
 #>
 [CmdletBinding()]
 param(
-    [string] $GameDir = 'E:\Games\Steam\steamapps\common\Slay the Spire 2',
+    [string] $GameDir,
     [ValidateRange(1, 3)] [int] $Clients = 1,
     [ValidateSet('host_standard', 'host_custom', 'host_daily', 'host_blitz', 'host_dread')] [string] $Mode = 'host_standard',
     [int] $ClientDelaySeconds = 8,
@@ -28,22 +33,24 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$exe = Join-Path $GameDir 'SlayTheSpire2.exe'
-if (-not (Test-Path $exe)) { throw "Game not found: $exe" }
+. (Join-Path $PSScriptRoot 'common.ps1')
+
+$GameDir = Resolve-Sts2GameDir $GameDir
 
 if ($Build) {
-    dotnet build (Join-Path $PSScriptRoot '..\mod\src\SlayTheSpirits') -nologo -v m
-    if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
+    Invoke-ModBuild $GameDir
+} elseif (Test-Sts2Running) {
+    Write-Warning 'The game is already running; starting more instances.'
 }
 
 $extra = @()
 if ($Tavern) { $extra += '--spirits-tavern' }
 
-# Tile windows left-to-right / top-to-bottom.
-$positions = @(@(0, 0), @(960, 0), @(0, 540), @(960, 540))
+$positions = Get-WindowGrid
+Write-Host "Game: $GameDir"
 
 Write-Host "Starting host ($Mode)..."
-Start-Process -FilePath $exe -WorkingDirectory $GameDir -ArgumentList (@(
+Start-Sts2 $GameDir (@(
     '--force-steam', 'off', '--fastmp', $Mode, '--clientId', '1',
     '-wpos', $positions[0][0], $positions[0][1]) + $extra)
 
@@ -53,7 +60,9 @@ Start-Sleep -Seconds $ClientDelaySeconds
 for ($i = 1; $i -le $Clients; $i++) {
     $id = 1000 + $i
     Write-Host "Starting client $i (clientId $id)..."
-    Start-Process -FilePath $exe -WorkingDirectory $GameDir -ArgumentList (@(
+    Start-Sts2 $GameDir (@(
         '--force-steam', 'off', '--fastmp', 'join', '--clientId', $id,
         '-wpos', $positions[$i][0], $positions[$i][1]) + $extra)
 }
+
+Write-Host "Log: $(Get-Sts2LogPath)"

@@ -1,0 +1,148 @@
+# Builds a release and uploads it to the Steam Workshop.
+#
+# To release: bump <Version> in mod/src/SlayTheSpirits/SlayTheSpirits.csproj, merge it, then publish a GitHub release
+# tagged v<Version>. This workflow downloads the game (the build compiles against it), runs the tests, builds the mod,
+# attaches it to the release as a zip, and uploads it to the Workshop with the release notes as the change note.
+#
+# Actions → Release → Run workflow on a v* tag re-runs it; untick "upload" to only download, test and build.
+#
+# Setup: environment "steam-workshop", deployments limited to v* tags.
+#   secrets    STEAM_USERNAME   Steam login name (owns the game)
+#              STEAM_VDF        base64 of SteamCMD's config/config.vdf after logging in once
+#   variables  WORKSHOP_ID      the Workshop item; leave unset for the first upload, which creates it (private)
+#
+# The game is never cached or uploaded: pull requests from forks can restore caches, and this repository is public.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: 'Attach the mod to the release and upload it to the Steam Workshop'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write  # attach the mod to the release
+
+# One release at a time, in order.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and upload to the Steam Workshop
+    if: github.ref_type == 'tag'
+    # The mod's .pck is packed by the game's own executable, which is Windows-only.
+    runs-on: windows-latest
+    environment: steam-workshop
+    env:
+      TAG: ${{ github.ref_name }}
+      UPLOAD: ${{ github.event_name == 'release' || inputs.upload }}
+      GH_TOKEN: ${{ github.token }}
+      DeployMods: 'false'  # MSBuild reads it as a property: don't install into the downloaded game
+      DOTNET_NOLOGO: 'true'
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Download Slay the Spire 2
+        id: game
+        uses: dhkatz/steam-download@v2
+        with:
+          appid: 2868840
+          username: ${{ secrets.STEAM_USERNAME }}
+          vdf: ${{ secrets.STEAM_VDF }}
+
+      # The build finds the game through STS2_GAME_DIR (build/Sts2.GameDir.props).
+      - name: Point the build at the game
+        env:
+          GAME: ${{ steps.game.outputs.path }}
+          BUILD: ${{ steps.game.outputs.buildid }}
+        run: |
+          "STS2_GAME_DIR=$env:GAME" >> $env:GITHUB_ENV
+          "Built against Slay the Spire 2 build $env:BUILD" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Test
+        run: dotnet test -c Release
+
+      - name: Build
+        run: dotnet build mod/src/SlayTheSpirits -c Release
+
+      - name: Check the version matches the tag
+        run: |
+          $manifest = Get-Content artifacts/mods/SlayTheSpirits/SlayTheSpirits.json -Raw | ConvertFrom-Json
+          if ("v$($manifest.version)" -ne $env:TAG) {
+            "::error::The mod is version $($manifest.version), but the tag is $env:TAG. Bump <Version> in SlayTheSpirits.csproj."
+            exit 1
+          }
+          Get-ChildItem artifacts/mods/SlayTheSpirits
+
+      - name: Attach the mod to the release
+        if: env.UPLOAD == 'true'
+        run: |
+          $zip = "SlayTheSpirits-$($env:TAG.TrimStart('v')).zip"
+          # Windows' bsdtar writes '/' separators (Compress-Archive may write '\').
+          & "$env:SystemRoot\System32\tar.exe" -a -cf $zip -C artifacts/mods SlayTheSpirits
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh release upload $env:TAG $zip --clobber
+
+      - name: Workshop text and image
+        id: workshop
+        if: env.UPLOAD == 'true'
+        run: |
+          $delimiter = "EOF_$([guid]::NewGuid().ToString('N'))"
+          $notes = gh release view $env:TAG --json body --jq .body
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          @(
+            "description<<$delimiter"
+            (Get-Content workshop/description.bbcode -Raw).TrimEnd()
+            $delimiter
+            "notes<<$delimiter"
+            ($notes -join "`n")
+            $delimiter
+          ) | Add-Content -Path $env:GITHUB_OUTPUT -Encoding utf8
+          if (Test-Path workshop/image.png) {
+            "icon=workshop/image.png" | Add-Content -Path $env:GITHUB_OUTPUT -Encoding utf8
+          } else {
+            "::warning::workshop/image.png is missing, so the Workshop item has no cover image."
+          }
+
+      - name: Upload to the Steam Workshop
+        id: upload
+        if: env.UPLOAD == 'true'
+        uses: gmod-workshop/workshop-upload@v1
+        with:
+          appid: 2868840
+          username: ${{ secrets.STEAM_USERNAME }}
+          vdf: ${{ secrets.STEAM_VDF }}
+          id: ${{ vars.WORKSHOP_ID }}
+          folder: artifacts/mods/SlayTheSpirits
+          title: Slay the Spirits
+          description: ${{ steps.workshop.outputs.description }}
+          icon: ${{ steps.workshop.outputs.icon }}
+          markdown-changelog: ${{ steps.workshop.outputs.notes }}
+          # Only a new item gets a visibility (private); after that it's set on the Workshop page.
+          visibility: ${{ vars.WORKSHOP_ID == '' && 'private' || '' }}
+
+      - name: Summary
+        if: env.UPLOAD == 'true'
+        env:
+          ITEM: ${{ steps.upload.outputs.id }}
+          KNOWN_ITEM: ${{ vars.WORKSHOP_ID }}
+        run: |
+          "Uploaded $env:TAG to https://steamcommunity.com/sharedfiles/filedetails/?id=$env:ITEM" >> $env:GITHUB_STEP_SUMMARY
+          if (-not $env:KNOWN_ITEM) {
+            $message = "Created Workshop item $env:ITEM (private). Set the steam-workshop environment variable WORKSHOP_ID=$env:ITEM so the next release updates it, then make it public on the Workshop page."
+            "::warning::$message"
+            $message >> $env:GITHUB_STEP_SUMMARY
+          }

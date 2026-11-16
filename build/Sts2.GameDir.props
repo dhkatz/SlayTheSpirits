@@ -1,0 +1,44 @@
+<Project>
+  <!--
+    Finds the Slay the Spire 2 install (Sts2GameDir). First match wins:
+      1. -p:Sts2GameDir=...                 on the command line
+      2. STS2_GAME_DIR                      environment variable
+      3. Sts2GameDir in local.props         (repo root, git-ignored)
+      4. Steam                              the library that holds app 2868840, per steamapps\libraryfolders.vdf
+
+    Sts2GameDirSource says which one was used, for error messages. tools/common.ps1 asks MSBuild for both
+    (dotnet msbuild -getProperty), so the scripts and the build always agree.
+  -->
+
+  <!-- Before local.props is imported, a value can only have come from the command line. -->
+  <PropertyGroup>
+    <Sts2GameDirSource Condition="'$(Sts2GameDir)' != ''">-p:Sts2GameDir</Sts2GameDirSource>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\local.props" Condition="Exists('$(MSBuildThisFileDirectory)..\local.props')" />
+
+  <PropertyGroup Condition="'$(Sts2GameDirSource)' == '' and '$(STS2_GAME_DIR)' != ''">
+    <Sts2GameDir>$(STS2_GAME_DIR)</Sts2GameDir>
+    <Sts2GameDirSource>STS2_GAME_DIR</Sts2GameDirSource>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Sts2GameDirSource)' == '' and '$(Sts2GameDir)' != ''">
+    <Sts2GameDirSource>local.props</Sts2GameDirSource>
+  </PropertyGroup>
+
+  <!-- Steam: libraryfolders.vdf lists every library and the app IDs installed in it. -->
+  <PropertyGroup Condition="'$(Sts2GameDir)' == '' and '$(OS)' == 'Windows_NT'">
+    <_Sts2SteamAppId>2868840</_Sts2SteamAppId>
+    <_Sts2SteamDir>$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\Software\Valve\Steam', 'SteamPath', null, RegistryView.Default))</_Sts2SteamDir>
+    <_Sts2SteamDir Condition="'$(_Sts2SteamDir)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath', null, RegistryView.Registry32))</_Sts2SteamDir>
+    <_Sts2SteamDir>$(_Sts2SteamDir.Replace('/', '\'))</_Sts2SteamDir>
+    <_Sts2SteamLibraries>$(_Sts2SteamDir)\steamapps\libraryfolders.vdf</_Sts2SteamLibraries>
+    <_Sts2SteamVdf Condition="'$(_Sts2SteamDir)' != '' and Exists('$(_Sts2SteamLibraries)')">$([System.IO.File]::ReadAllText('$(_Sts2SteamLibraries)'))</_Sts2SteamVdf>
+    <!-- The last "path" before the app ID, with no other "path" in between. Paths are escaped ("E:\\Games"). -->
+    <_Sts2SteamPattern>(?s)^.*"path"\s+"([^"]+)"(?:(?!"path").)*"$(_Sts2SteamAppId)"\s+".*$</_Sts2SteamPattern>
+    <_Sts2SteamLibrary Condition="'$(_Sts2SteamVdf)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(_Sts2SteamVdf)', '$(_Sts2SteamPattern)'))">$([System.Text.RegularExpressions.Regex]::Replace('$(_Sts2SteamVdf)', '$(_Sts2SteamPattern)', '$1').Replace('\\', '\'))</_Sts2SteamLibrary>
+    <_Sts2SteamGameDir Condition="'$(_Sts2SteamLibrary)' != ''">$(_Sts2SteamLibrary)\steamapps\common\Slay the Spire 2</_Sts2SteamGameDir>
+    <Sts2GameDir Condition="'$(_Sts2SteamGameDir)' != '' and Exists('$(_Sts2SteamGameDir)\SlayTheSpire2.exe')">$(_Sts2SteamGameDir)</Sts2GameDir>
+    <Sts2GameDirSource Condition="'$(Sts2GameDir)' != ''">Steam</Sts2GameDirSource>
+  </PropertyGroup>
+</Project>

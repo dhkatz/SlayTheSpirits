@@ -1,6 +1,6 @@
 <Project>
-  <!-- Machine-specific overrides (git-ignored). See local.props.example. -->
-  <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')" />
+  <!-- Machine-specific overrides (local.props, git-ignored) and finding the game install. -->
+  <Import Project="$(MSBuildThisFileDirectory)build\Sts2.GameDir.props" />
 
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
@@ -24,6 +24,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Sts2GameDir)' != ''">
+    <!-- Copy built mods into <Sts2GameDir>\mods. Set false in local.props (or -p:DeployMods=false) to skip. -->
+    <DeployMods Condition="'$(DeployMods)' == ''">true</DeployMods>
     <Sts2DataDir>$(Sts2GameDir)\data_sts2_windows_x86_64</Sts2DataDir>
     <Sts2ModsDir>$(Sts2GameDir)\mods</Sts2ModsDir>
   </PropertyGroup>

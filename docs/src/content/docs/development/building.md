@@ -13,12 +13,20 @@ description: Build the mod, run the tests, launch the game and work on these doc
 ## Build
 
 ```powershell
-copy local.props.example local.props   # then edit the paths
 dotnet test                            # rules engine and SDK tests (no game needed)
 dotnet build mod/src/SlayTheSpirits    # builds, merges, packs and installs to <game>/mods/SlayTheSpirits
 ```
 
 The build skips installing (with a warning) while the game is running. Close it and build again.
+
+The build finds the game itself (`build/Sts2.GameDir.props`). First match wins:
+
+1. `-p:Sts2GameDir=...` on the command line
+2. the `STS2_GAME_DIR` environment variable
+3. `Sts2GameDir` in `local.props` (copy `local.props.example`; it's git-ignored)
+4. your Steam libraries
+
+`local.props` is only needed for overrides, such as `DeployMods` or `GodotExe`.
 
 ## Run the Game
 
@@ -29,12 +37,45 @@ The build skips installing (with a warning) while the game is running. Close it 
 ./tools/launch.ps1 -Steam                  # your real Steam profile
 ```
 
+The scripts ask the build where the game is; `-GameDir` overrides it.
+
 For multiplayer on one machine:
 
 ```powershell
-./tools/test.ps1 -Build        # host and 1 client (LAN, Steam off, separate test profiles)
-./tools/test.ps1 -Clients 3    # a 4-player table
+./tools/multiplayer.ps1 -Build       # host and 1 client (LAN, Steam off, separate test profiles)
+./tools/multiplayer.ps1 -Clients 3   # a 4-player table
 ```
+
+## Release to the Steam Workshop
+
+1. Bump `<Version>` in `mod/src/SlayTheSpirits/SlayTheSpirits.csproj` and merge it. Every player needs the same
+   version.
+2. Publish a GitHub release tagged `v<Version>` (for example `gh release create v0.2.0 --generate-notes`). Its notes
+   become the Workshop change note.
+
+That runs the [Release workflow](https://github.com/dhkatz/SlayTheSpirits/blob/main/.github/workflows/release.yml) on a
+Windows runner:
+
+1. Downloads the game with [dhkatz/steam-download](https://github.com/dhkatz/steam-download) (the build compiles
+   against it, and packs the `.pck` with its executable).
+2. Runs the tests and builds the mod in Release.
+3. Checks the mod's version matches the tag.
+4. Attaches `SlayTheSpirits-<Version>.zip` (a `SlayTheSpirits/` folder, ready for `<game>/mods`) to the release.
+5. Uploads to the Workshop with [gmod-workshop/workshop-upload](https://github.com/gmod-workshop/workshop-upload),
+   using the description and cover image in `workshop/`.
+
+**Actions → Release → Run workflow** on a `v*` tag runs it again; untick *upload* to only download, test and build.
+
+The workflow runs in the `steam-workshop` environment, which only allows `v*` tags. It holds the secrets
+`STEAM_USERNAME` and `STEAM_VDF` (base64 of SteamCMD's `config/config.vdf` after logging in once) and the variable
+`WORKSHOP_ID`. The first release creates a private item; set `WORKSHOP_ID` to its ID afterwards so later releases
+update it. When the Steam login expires, the workflow fails at login: log in with SteamCMD again and update
+`STEAM_VDF`.
+
+The game is never cached or kept as an artifact: this repository is public, and pull requests from forks can restore
+its caches.
+
+Steam only records a change note when the files changed, so re-running a release adds no new entry.
 
 ## Repository Layout
 
@@ -48,7 +89,8 @@ mod/
   tools/SlayTheSpirits.DocsExport/  exports the rules engine's data for these docs
 build/                         MSBuild targets (game references, merge, pack, deploy) and the PCK packer
 docs/                          this site (Astro Starlight)
-tools/                         launch and test scripts, placeholder icon generator
+tools/                         launch and multiplayer scripts, placeholder icon generator
+workshop/                      Steam Workshop description and cover image
 ```
 
 ## Work on the Docs
@@ -115,7 +157,7 @@ stacked at the positions in its card scene, with the text on top in Kreon. The g
 text and icons. The build can't read the game, so all of this is extracted once into `game-assets/` and committed:
 
 ```powershell
-npm run extract-game-art   # reads the game and Godot paths from local.props
+npm run extract-game-art   # game folder from the build; Godot from GODOT_EXE or GodotExe in local.props
 ```
 
 Run it after a game update, after adding a pool or rarity to `taxonomy.json`, or when the build says a keyword is

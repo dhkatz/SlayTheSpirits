@@ -1,17 +1,20 @@
 <Project>
   <!--
-    Copy this file to local.props (git-ignored) and adjust paths for your machine.
-    Every path here can also be passed on the command line, e.g.
+    Optional. Copy this file to local.props (git-ignored) to override settings for your machine.
+    Every property here can also be passed on the command line, e.g.
       dotnet build -p:Sts2GameDir="D:\Steam\steamapps\common\Slay the Spire 2"
   -->
   <PropertyGroup>
-    <!-- Root of the Slay the Spire 2 install (the folder containing SlayTheSpire2.exe). -->
-    <Sts2GameDir>E:\Games\Steam\steamapps\common\Slay the Spire 2</Sts2GameDir>
+    <!-- Root of the Slay the Spire 2 install (the folder containing SlayTheSpire2.exe).
+         Optional: found in your Steam libraries automatically (build/Sts2.GameDir.props). The STS2_GAME_DIR
+         environment variable takes precedence over this. -->
+    <!-- <Sts2GameDir>D:\SteamLibrary\steamapps\common\Slay the Spire 2</Sts2GameDir> -->
 
-    <!-- Godot (mono) editor matching the game's engine version; used only to pack .pck files. -->
-    <GodotExe>E:\Tools\godot\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64_console.exe</GodotExe>
+    <!-- Godot (mono) editor matching the game's engine version. Optional for the build, which packs .pck files
+         with the game's own executable by default; required by the docs' `npm run extract-game-art`. -->
+    <!-- <GodotExe>C:\Tools\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64_console.exe</GodotExe> -->
 
-    <!-- Copy built mods into <Sts2GameDir>\mods after a Release/Debug build. -->
-    <DeployMods>true</DeployMods>
+    <!-- Copy built mods into <Sts2GameDir>\mods after a build. Default: true. -->
+    <!-- <DeployMods>false</DeployMods> -->
   </PropertyGroup>
 </Project>
