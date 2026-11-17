@@ -88,6 +88,7 @@ internal sealed class RulesSettingsTab
         page.Toggle("Tavern Cards", shown.Content.TavernCards, on => Edit(page, r => r with { Content = r.Content with { TavernCards = on } }), editable);
         page.Toggle("Character Cards", shown.Content.CharacterCards, on => Edit(page, r => r with { Content = r.Content with { CharacterCards = on } }), editable);
         page.Toggle("Tavern Potions", shown.Content.TavernPotions, on => Edit(page, r => r with { Content = r.Content with { TavernPotions = on } }), editable);
+        page.Toggle("Tavern Events", shown.Content.TavernEvents, on => Edit(page, r => r with { Content = r.Content with { TavernEvents = on } }), editable);
         var limits = Enum.GetValues<RestSiteTabLimit>();
         page.Choice("Rest Site Tabs", [.. limits.Select(LimitName)], Array.IndexOf(limits, shown.RestSiteTabs), i => Edit(page, r => r with { RestSiteTabs = limits[i] }), editable);
         var taverns = Enum.GetValues<TavernLimit>();

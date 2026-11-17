@@ -525,6 +525,44 @@ html:has(.sts-wiki-page, .sts-wide-page) .sl-markdown-content > :is(p, ul, ol, t
 	grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
 }
 
+/* Events: one wide row each, picture on the left, like the community wiki's events list. */
+.sts-compendium__items--list {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.sts-event-row {
+	display: grid;
+	grid-template-columns: 11rem minmax(0, 1fr);
+	gap: 1.1rem;
+	align-items: start;
+}
+
+.sts-event-row > img {
+	inline-size: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: 0.5rem;
+}
+
+.sts-event-row h3 {
+	margin: 0;
+}
+
+.sts-event-row p {
+	margin: 0.3rem 0 0;
+}
+
+.sts-event-row .sts-flavor {
+	font-style: italic;
+	color: var(--sl-color-gray-3);
+}
+
+@media (max-width: 40rem) {
+	.sts-event-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
 .sts-compendium__empty {
 	padding: 2rem;
 	border: 1px dashed var(--sl-color-gray-5);
@@ -703,6 +741,30 @@ html:has(.sts-wiki-page, .sts-wide-page) .sl-markdown-content > :is(p, ul, ol, t
 
 .sts-art--card:has(input[value='upgraded']:checked) .sts-art__face--upgraded {
 	display: block;
+}
+
+.sts-art--event {
+	padding: 0;
+}
+
+.sts-art--event img {
+	display: block;
+	inline-size: 100%;
+}
+
+/* An event's text, quoted the way the game shows it. */
+.sts-dialogue {
+	margin: 0.5rem 0 1rem;
+	padding: 0.6rem 1rem;
+	border-inline-start: 3px solid var(--sl-color-accent);
+	background: var(--sl-color-gray-6);
+	border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.sts-dialogue__label {
+	margin-block-end: 0 !important;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
 }
 
 .sts-art .sts-flavor {
@@ -1020,6 +1082,14 @@ h3 small {
 	--size: 4rem;
 }
 
+.sts-hub__scene {
+	display: block;
+	block-size: 4.5rem;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: 0.4rem;
+}
+
 .sts-hub__more {
 	margin-block-start: auto;
 	padding-block-start: 0.4rem;
@@ -1047,7 +1117,7 @@ h3 small {
 }
 
 /* --- Inline references ---------------------------------------------------------------------------------------------
-   A card, relic, potion, keyword or character named in text: its icon and name (src/lib/refs.mjs). */
+   A card, relic, potion, event, keyword or character named in text: its icon and name (src/lib/refs.mjs). */
 
 .sts-ref {
 	white-space: nowrap;
@@ -1138,6 +1208,19 @@ a.sts-ref.sts-gold {
 	object-fit: contain;
 }
 
+.sts-tooltip__event {
+	max-inline-size: 20rem;
+}
+
+.sts-tooltip__event > img {
+	display: block;
+	inline-size: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	margin-block-end: 0.5rem;
+	border-radius: 0.4rem;
+}
+
 .sts-tooltip__title {
 	font-family: Kreon, Georgia, serif;
 	font-size: var(--sl-text-lg);
@@ -1168,6 +1251,12 @@ a.sts-ref.sts-gold {
 }
 .sts-tooltip .sts-green {
 	color: #7fff00;
+}
+.sts-tooltip .sts-purple {
+	color: #e08cff;
+}
+.sts-tooltip .sts-aqua {
+	color: #7fffd4;
 }
 .sts-tooltip .sts-red {
 	color: #ff5555;

@@ -1,9 +1,10 @@
 ---
 // The picture in an entry's infobox. A card: its face, with Base and Upgraded tabs if it can be upgraded (plain radio
-// buttons, switched in CSS). A relic, potion or keyword: its icon above its text.
+// buttons, switched in CSS). An event: its picture (its text has sections of its own). A relic, potion or keyword:
+// its icon above its text.
 import CardFace from './CardFace.astro';
 import ItemIcon from './ItemIcon.astro';
-import { refs, type Card } from '../../lib/data';
+import { asset, refs, type Card } from '../../lib/data';
 import { kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
 
 interface Props {
@@ -40,6 +41,10 @@ const other = item as Entry & { image?: string | null; icon?: string | null; rar
 					<CardFace card={card} size="lg" upgraded />
 				</div>
 			)}
+		</div>
+	) : kind.key === 'events' ? (
+		<div class="sts-art sts-art--event">
+			{other.image && <img src={asset(other.image)} alt={item.title} />}
 		</div>
 	) : (
 		<div class="sts-art sts-art--icon">

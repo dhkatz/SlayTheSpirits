@@ -5,7 +5,7 @@
 			"key": "colorless",
 			"name": "Colorless",
 			"color": "#a3a3a3",
-			"found": "Found in colorless card rewards and shops while **Tavern Cards** is on, and offered when you open a tab at a [rest site](play/rest-sites/).",
+			"found": "Found in colorless card rewards and shops while **Tavern Cards** is on, offered when you open a tab at a [rest site](play/rest-sites/), and by the [Speakeasy](wiki/events/speakeasy/).",
 			"frame": "card_frame_colorless",
 			"energy": "colorless",
 			"energyOutline": "#5c5440"
@@ -84,8 +84,14 @@
 			"energyOutline": "#5c5440"
 		}
 	},
-	"characterFound": "Found in the :char[{name}]'s card rewards while **Character Cards** is on, and offered when you open a tab at a [rest site](play/rest-sites/) when playing the {name}.",
+	"characterFound": "Found in the :char[{name}]'s card rewards while **Character Cards** is on, and offered by a [rest site](play/rest-sites/)'s Open a Tab and the [Speakeasy](wiki/events/speakeasy/) when playing the {name}.",
 	"majorCurseFound": "Only from running up a tab at a [rest site](play/rest-sites/). Random curses never include it.",
+	"eventFound": "Can turn up in \"?\" rooms in any act of a multiplayer run, while **Tavern Events** is on. Each player gets their own copy and makes their own choice.",
+	"eventActs": "All Acts",
+	"$eventVarsComment": "Event vars set in CalculateVars from the player's stats, as the docs show them: {BouncerHpLoss} in \"lose {BouncerHpLoss} HP\".",
+	"eventVars": {
+		"SPIRITS_SPEAKEASY.BouncerHpLoss": "15% Max"
+	},
 	"relicPools": {
 		"EventRelicPool": {
 			"key": "tavern",

@@ -1,5 +1,6 @@
 ---
-// The hover box for a reference: a card's face (and its upgrade), or a relic, potion or keyword's icon and text.
+// The hover box for a reference: a card's face (and its upgrade), an event's picture and options, or a relic, potion
+// or keyword's icon and text.
 // Served on its own at /tips/<kind>/<slug>/ and fetched when a reference is hovered (src/scripts/tooltips.ts).
 import CardFace from './CardFace.astro';
 import { asset, refs, type Card } from '../../lib/data';
@@ -24,6 +25,13 @@ const meta = kind.facts(item)[0]?.value;
 		<div class="sts-tooltip__cards">
 			<CardFace card={card} size="md" />
 			{card.upgradable && <CardFace card={card} size="md" upgraded />}
+		</div>
+	) : kind.key === 'events' ? (
+		<div class="sts-tooltip__event">
+			{icon && <img src={asset(icon)} alt="" />}
+			<p class="sts-tooltip__title">{item.title}</p>
+			{meta && <p class="sts-tooltip__meta">{meta}</p>}
+			<p set:html={refs.terms(kind.text(item), 'hover')} />
 		</div>
 	) : (
 		<div class="sts-tooltip__entry">

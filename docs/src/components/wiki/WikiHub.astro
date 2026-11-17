@@ -3,7 +3,7 @@
 // entry's name to jump to.
 import CardFace from './CardFace.astro';
 import ItemIcon from './ItemIcon.astro';
-import { href, refs, type Card } from '../../lib/data';
+import { asset, href, refs, type Card } from '../../lib/data';
 import { entryHref, kinds, type Entry, type Kind } from '../../lib/wiki';
 
 const all = Object.values(kinds) as unknown as Kind<Entry>[];
@@ -34,6 +34,8 @@ type Pictured = Entry & { image?: string | null; icon?: string | null; rarity?: 
 						<a href={entryHref(kind.key, item.slug)} data-tip={`${kind.key}/${item.slug}`} aria-label={item.title}>
 							{kind.key === 'cards' ? (
 								<CardFace card={item as unknown as Card} />
+							) : kind.key === 'events' ? (
+								item.image && <img class="sts-hub__scene" src={asset(item.image)} alt="" loading="lazy" />
 							) : (
 								<ItemIcon image={item.image ?? item.icon ?? null} title={item.title} rarity={item.rarity} />
 							)}

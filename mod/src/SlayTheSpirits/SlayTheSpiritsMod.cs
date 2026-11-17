@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.Models.PotionPools;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using SlayTheSpirits.Cards;
+using SlayTheSpirits.Events;
 using SlayTheSpirits.Game;
 using SlayTheSpirits.Penalties;
 using SlayTheSpirits.Potions;
@@ -108,6 +109,9 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddPotion<SharedPotionPool, SpiritsLightBeer>()
             .AddPotion<SharedPotionPool, SpiritsTallboy>()
             .AddPotion<SharedPotionPool, SpiritsFirewater>()
+            // Tavern events join the shared "?" rooms; they only allow themselves in multiplayer runs.
+            .AddEvent<SpiritsSpeakeasy>()
+            .AddEvent<SpiritsSevenGrand>()
             .SetCardFilter(Rules.IsCardAllowed)
             .SetPotionFilter(potion => DrinkGame.IsMultiplayerRun && Rules.IsPotionAllowed(potion));
     }

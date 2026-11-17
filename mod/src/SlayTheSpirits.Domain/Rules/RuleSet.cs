@@ -133,6 +133,9 @@ public sealed record ContentToggles
     /// <summary>Tavern potions (Light Beer, Tallboy, Firewater) among random potions.</summary>
     public bool TavernPotions { get; init; } = true;
 
+    /// <summary>Tavern events (the Speakeasy, Seven Grand) among the "?" rooms.</summary>
+    public bool TavernEvents { get; init; } = true;
+
     /// <summary>Individual cards switched off, by card id.</summary>
     public IReadOnlyList<string> DisabledCards { get; init; } = [];
 }

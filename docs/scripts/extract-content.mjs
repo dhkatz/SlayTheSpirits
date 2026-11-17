@@ -1,14 +1,15 @@
 // Builds the wiki's data from the mod's own source, so the site can't drift from the game.
 //
 // Reads:  mod/src/SlayTheSpirits/SlayTheSpiritsMod.cs        (what's registered, and in which pool)
-//         mod/src/SlayTheSpirits/{Cards,Relics,Potions,Powers}/*.cs  (cost, rarity, keywords, numbers, upgrades, tooltips)
+//         mod/src/SlayTheSpirits/{Cards,Relics,Potions,Powers,Events}/*.cs (cost, rarity, keywords, numbers, upgrades,
+//                                                              tooltips, event options)
 //         mod/src/SlayTheSpirits/Assets/localization/eng/*.json (names and text)
 //         mod/src/SlayTheSpirits/Assets/images/**              (icons, copied into public/)
 //         src/generated/rules.json                            (the drink ladder, from mod/tools/SlayTheSpirits.DocsExport)
 //         src/lib/taxonomy.json                               (how the wiki names and colors pools, rarities, targets)
 //         game-assets/                                        (card pieces, keywords and characters from the game,
 //                                                              see extract-game-art.mjs)
-// Writes: src/generated/content.json (cards, relics, potions, glossary, characters),
+// Writes: src/generated/content.json (cards, relics, potions, events, glossary, characters),
 //         public/generated/images/**, public/generated/cards/** (tinted card layers and card icons)
 //
 // The C# is read with patterns, not a compiler. Anything it doesn't recognise fails the build with a message saying
@@ -31,6 +32,7 @@ import {
 	listProperty,
 	loc,
 	mod,
+	read,
 	normalizeTerm,
 	registered,
 	slugOf,
@@ -58,7 +60,7 @@ const game = json(join(gameAssets, 'glossary.json'));
 const publicDir = join(docs, 'public');
 const publicImages = join(publicDir, 'generated/images');
 rmSync(join(publicDir, 'generated'), { recursive: true, force: true });
-for (const folder of ['relics', 'potions', 'rest_site', 'powers', 'cards']) {
+for (const folder of ['relics', 'potions', 'rest_site', 'powers', 'cards', 'events']) {
 	const source = join(mod, 'Assets/images', folder);
 	if (existsSync(source)) cpSync(source, join(publicImages, folder), { recursive: true });
 }
@@ -90,12 +92,14 @@ const drinkIcons = new Map(
 const glossary = [];
 const termsById = new Map();
 const termsByPhrase = new Map();
+const termsBySlug = new Map();
 function addTerm(term, phrases = []) {
 	const slug = slugOf(term.title);
 	if (glossary.some((other) => other.slug === slug)) return null; // earlier keywords win (the mod's come first)
 	const entry = { ...term, slug, tips: term.tips ?? [], body: '', searchText: '' };
 	glossary.push(entry);
 	termsById.set(entry.id, entry);
+	termsBySlug.set(entry.slug, entry);
 	for (const phrase of [term.title, ...phrases]) if (!termsByPhrase.has(normalizeTerm(phrase))) termsByPhrase.set(normalizeTerm(phrase), entry);
 	return entry;
 }
@@ -166,8 +170,11 @@ function render(model, text, values = {}, upgraded = {}, mode = 'base', self = n
 			const term = termsByPhrase.get(normalizeTerm(phrase));
 			return term && term.slug !== self ? `<span class="sts-gold" data-term="${term.slug}">${phrase}</span>` : `<span class="sts-gold">${phrase}</span>`;
 		})
-		.replace(/\[(gold|blue|green|red|purple|orange)\]/g, '<span class="sts-$1">')
-		.replace(/\[\/(gold|blue|green|red|purple|orange)\]/g, '</span>')
+		// Colors, and the event text's effects: [jitter] shakes, [sine] sways (src/styles/custom.css).
+		.replace(/\[(gold|blue|green|red|purple|orange|aqua|jitter|sine)\]/g, '<span class="sts-$1">')
+		.replace(/\[\/(gold|blue|green|red|purple|orange|aqua|jitter|sine)\]/g, '</span>')
+		.replace(/\[(\/?)b\]/g, '<$1strong>')
+		.replace(/\[(\/?)i\]/g, '<$1em>')
 		.replace(/\n/g, '<br>');
 	if (/[{}[\]]/.test(html.replace(/<[^>]+>/g, ''))) fail(model, `text has markup the docs don't understand: ${text}`);
 	return html;
@@ -206,7 +213,8 @@ function vars(model, body) {
 		const parts = args.split(',').map((s) => s.trim());
 		let name;
 		let raw;
-		if (type === 'Dynamic') {
+		if (type === 'Dynamic' || (parts.length > 1 && /^[A-Za-z_"]/.test(parts[0]))) {
+			// DynamicVar(Name, 10m), or a typed var given a name: DamageVar(Name, 10m, ValueProp.Unblockable).
 			name = consts[parts[0]] ?? parts[0].replace(/"/g, '');
 			raw = parts[1];
 		} else if (type === 'String') {
@@ -471,9 +479,83 @@ const potions = registered('Potion').map(({ pool: poolClass, name }) => {
 	};
 });
 
+// --- Events -------------------------------------------------------------------------------------------------------
+//
+// From each event's GenerateInitialOptions: its options in order (new EventOption(this, Method, InitialOptionKey("X"))),
+// where a null method with an X_LOCKED key is the locked version of the option before it, and from each option's
+// method, the pages it can end on (FinishOn("PAGE")). Text comes from events.json; vars the event sets in
+// CalculateVars (from the player's stats) are described by eventVars in src/lib/taxonomy.json.
+
+const eventText = loc('events');
+const eventClasses = classes('Events');
+const modFile = read(join(mod, 'SlayTheSpiritsMod.cs'));
+/** "BLUFF_IN" after "BLUFF" -> "In": what tells an option's outcomes apart. */
+const outcomeLabel = (option, page) =>
+	page === option
+		? null
+		: page
+				.replace(new RegExp(`^${option}_`), '')
+				.toLowerCase()
+				.replace(/(^|_)(\w)/g, (_, gap, letter) => `${gap ? ' ' : ''}${letter.toUpperCase()}`);
+/** The keyword slugs an event's text marks, in order, with Tipsy after them if a drink adds it. */
+const termsIn = (html) => [...new Set([...html.matchAll(/data-term="([^"]+)"/g)].map((m) => m[1]))];
+
+const events = [...modFile.matchAll(/\.AddEvent<(\w+)>\(\)/g)].map(([, name]) => {
+	const found = eventClasses.get(name);
+	if (!found) return fail(name, 'registered but no class found in Events/');
+	if (/\bIsAllowed\b/.test(found.body)) fail(name, 'it has its own IsAllowed; say where it appears in the docs (eventFound in src/lib/taxonomy.json)');
+	const entry = entryOf(name);
+	const key = (rest) => `${entry}.pages.${rest}`;
+	const values = vars(name, found.body);
+	const calculated = found.body.match(/CalculateVars\(\)[\s\S]*?;\s*\n/)?.[0] ?? '';
+	for (const [, constant] of calculated.matchAll(/DynamicVars\[(\w+)\]\.BaseValue\s*=/g)) {
+		const varName = constants(found.body)[constant] ?? constant;
+		values[varName] = taxonomy.eventVars[`${entry}.${varName}`] ?? fail(name, `${varName} is set in CalculateVars; describe it in eventVars in src/lib/taxonomy.json`);
+	}
+	const text = (rest) => render(name, eventText[key(rest)], values);
+
+	const generate = found.body.match(/GenerateInitialOptions\(\)\s*=>\s*\[([\s\S]*?)\n    \];/)?.[1];
+	if (!generate) return fail(name, "can't read GenerateInitialOptions");
+	const options = [];
+	for (const [, method, option] of generate.matchAll(/new EventOption\(this, (\w+), InitialOptionKey\("(\w+)"\)\)/g)) {
+		if (method === 'null') {
+			const unlocked = options.find((other) => `${other.key}_LOCKED` === option);
+			if (!unlocked) fail(name, `locked option ${option} doesn't follow the option it locks`);
+			else unlocked.locked = { title: eventText[key(`INITIAL.options.${option}.title`)], text: text(`INITIAL.options.${option}.description`) };
+			continue;
+		}
+		const body = found.body.match(new RegExp(`Task ${method}\\(\\)\\s*\\{([\\s\\S]*?)\\n    \\}`))?.[1] ?? fail(name, `can't find the method ${method}`) ?? '';
+		const pages = [...body.matchAll(/FinishOn\("(\w+)"\)/g)].map((m) => m[1]);
+		if (pages.length === 0) fail(name, `${method} never calls FinishOn(...), so the docs can't show what happens`);
+		options.push({
+			key: option,
+			title: eventText[key(`INITIAL.options.${option}.title`)] ?? fail(name, `missing the title of option ${option}`),
+			text: text(`INITIAL.options.${option}.description`),
+			locked: null,
+			outcomes: pages.map((page) => ({ label: outcomeLabel(option, page), text: text(`${page}.description`) })),
+		});
+	}
+	if (options.length === 0) fail(name, "can't read any options in GenerateInitialOptions");
+
+	const intro = text('INITIAL.description');
+	const all = [intro, ...options.flatMap((option) => [option.text, ...option.outcomes.map((outcome) => outcome.text)])].join(' ');
+	const drinks = termsIn(options.map((option) => option.text).join(' '));
+	const addsTipsy = drinks.some((slug) => (termsBySlug.get(slug)?.tipsy ?? 0) > 0);
+	return {
+		...common(name, found, eventText, entry),
+		found: taxonomy.eventFound,
+		acts: taxonomy.eventActs,
+		intro,
+		options,
+		searchText: plain(all),
+		tips: [...drinks, ...(addsTipsy ? [slugOf(tipsyTerm.title)] : [])].filter((slug, i, list) => list.indexOf(slug) === i),
+		image: image('events', entry),
+	};
+});
+
 // --- Checks -------------------------------------------------------------------------------------------------------
 
-const kinds = { cards, relics, potions, keywords: glossary.filter((term) => term.local) };
+const kinds = { cards, relics, potions, events, keywords: glossary.filter((term) => term.local) };
 
 for (const [kind, list] of Object.entries(kinds)) {
 	const seen = new Map();
@@ -510,7 +592,7 @@ if (errors.length > 0) {
 
 const out = join(docs, 'src/generated/content.json');
 mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, JSON.stringify({ cards, relics, potions, glossary, characters }, null, '\t'));
+writeFileSync(out, JSON.stringify({ cards, relics, potions, events, glossary, characters }, null, '\t'));
 console.log(
-	`extract-content: ${cards.length} cards, ${relics.length} relics, ${potions.length} potions, ${glossary.length} keywords -> ${out}`
+	`extract-content: ${cards.length} cards, ${relics.length} relics, ${potions.length} potions, ${events.length} events, ${glossary.length} keywords -> ${out}`
 );

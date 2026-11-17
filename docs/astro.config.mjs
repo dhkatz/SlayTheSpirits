@@ -49,7 +49,14 @@ export default defineConfig({
 				},
 				{
 					label: 'Wiki',
-					items: [{ slug: 'wiki' }, { slug: 'wiki/cards' }, { slug: 'wiki/relics' }, { slug: 'wiki/potions' }, { slug: 'wiki/keywords' }],
+					items: [
+						{ slug: 'wiki' },
+						{ slug: 'wiki/cards' },
+						{ slug: 'wiki/relics' },
+						{ slug: 'wiki/potions' },
+						{ slug: 'wiki/events' },
+						{ slug: 'wiki/keywords' },
+					],
 				},
 				{
 					label: 'SpireKit',

@@ -1,14 +1,14 @@
-// Inline references: a card, relic, potion, keyword or character mentioned in text, drawn as its icon and name,
+// Inline references: a card, relic, potion, event, keyword or character mentioned in text, drawn as its icon and name,
 // linked to its page, with a hover box (the wiki's equivalent of the community wiki's {{C2}}, {{R2}} and {{KW2}}).
 //
 // Plain JavaScript with no Astro imports, because three things use it: components (through src/lib/data.ts), the
 // Markdown directives (src/lib/markdown-refs.mjs, which runs in astro.config.mjs) and nothing else should build one of
 // these by hand.
 
-/** @typedef {'card' | 'relic' | 'potion' | 'keyword' | 'character'} RefKind */
+/** @typedef {'card' | 'relic' | 'potion' | 'event' | 'keyword' | 'character'} RefKind */
 
 /** The names of the inline directives (:card[...], :kw[...]) and the kind of reference each makes. */
-export const directives = { card: 'card', relic: 'relic', potion: 'potion', kw: 'keyword', char: 'character' };
+export const directives = { card: 'card', relic: 'relic', potion: 'potion', event: 'event', kw: 'keyword', char: 'character' };
 
 const escapeHtml = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -26,6 +26,8 @@ export function createRefs(content, base) {
 		card: { list: content.cards, page: (c) => `wiki/cards/${c.slug}/`, tip: (c) => `cards/${c.slug}`, icon: (c) => c.look?.icon },
 		relic: { list: content.relics, page: (r) => `wiki/relics/${r.slug}/`, tip: (r) => `relics/${r.slug}`, icon: (r) => r.image },
 		potion: { list: content.potions, page: (p) => `wiki/potions/${p.slug}/`, tip: (p) => `potions/${p.slug}`, icon: (p) => p.image },
+		// An event's picture is a wide scene, not an icon, so its references are just its name.
+		event: { list: content.events, page: (e) => `wiki/events/${e.slug}/`, tip: (e) => `events/${e.slug}`, icon: () => null },
 		// The mod's keywords have a page here; the game's link to the community wiki, if it has one for them.
 		keyword: {
 			list: content.glossary,

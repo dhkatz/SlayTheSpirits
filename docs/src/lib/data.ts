@@ -10,6 +10,7 @@ export { content, rules, taxonomy };
 export type Card = (typeof content.cards)[number];
 export type Relic = (typeof content.relics)[number];
 export type Potion = (typeof content.potions)[number];
+export type GameEvent = (typeof content.events)[number];
 export type Term = (typeof content.glossary)[number];
 export type Character = (typeof content.characters)[number];
 export type Preset = (typeof rules.presets)[number];

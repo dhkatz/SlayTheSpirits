@@ -77,11 +77,7 @@ internal abstract class SpiritsRestSiteTab(Player owner, RestSiteTab tab) : Spir
     protected abstract Task<bool> GrantRewardAsync();
 }
 
-/// <summary>
-/// Open a Tab: choose 2 of 5 Tavern cards (the colorless set plus your character's), every card equally likely, for a
-/// minor Tavern curse. Follows the Tavern Cards / Character Cards switches like any other source; if they leave
-/// nothing, it offers normal cards.
-/// </summary>
+/// <summary>Open a Tab: choose 2 of 5 Tavern cards (<see cref="TavernCardOffer"/>), for a minor Tavern curse.</summary>
 /// <remarks>Keeps the old Chug option's id, which saved run histories refer to (and its icon).</remarks>
 internal sealed class SpiritsOpenTabRestSiteOption(Player owner) : SpiritsRestSiteTab(owner, RestSiteTab.Open)
 {
@@ -97,7 +93,7 @@ internal sealed class SpiritsOpenTabRestSiteOption(Player owner) : SpiritsRestSi
 
     protected override async Task<bool> GrantRewardAsync()
     {
-        _offer ??= Offer();
+        _offer ??= TavernCardOffer.For(Player, Offered);
         var prefs = new CardSelectorPrefs(new LocString(Table, $"{Id}.selectionScreenPrompt"), Math.Min(Picked, _offer.Count))
         {
             Cancelable = true,
@@ -118,18 +114,6 @@ internal sealed class SpiritsOpenTabRestSiteOption(Player owner) : SpiritsRestSi
         return true;
     }
 
-    private List<CardCreationResult> Offer()
-    {
-        var tavern = CardCreationOptions.ForNonCombatWithUniformOdds(
-            [ModelDb.CardPool<ColorlessCardPool>(), Player.Character.CardPool],
-            static card => card is SpiritsCard and not SpiritsCurse);
-        // Counted the way the game picks (it throws if asked for more cards than it can find).
-        var available = tavern.GetPossibleCards(Player)
-            .Count(c => c.IsAllowedInRun(Player.RunState) && c.Rarity is not (CardRarity.Basic or CardRarity.Ancient));
-        return available > 0
-            ? [.. CardFactory.CreateForReward(Player, Math.Min(Offered, available), tavern)]
-            : [.. CardFactory.CreateForReward(Player, Offered, CardCreationOptions.ForRoom(Player, RoomType.Elite))];
-    }
 }
 
 /// <summary>

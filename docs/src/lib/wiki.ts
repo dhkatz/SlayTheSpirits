@@ -1,4 +1,4 @@
-// The wiki's kinds of entry (cards, relics, potions, keywords), described once: their order, opening sentence,
+// The wiki's kinds of entry (cards, relics, potions, events, keywords), described once: their order, opening sentence,
 // infobox, navigation groups and how their compendium filters and sorts. Pages and components read these instead of
 // knowing about each kind.
 import { token, type Dimension, type Toggle } from './compendium';
@@ -13,6 +13,7 @@ import {
 	taxonomy,
 	term,
 	type Card,
+	type GameEvent,
 	type Potion,
 	type Relic,
 	type Term,
@@ -44,8 +45,15 @@ export interface Group {
 	html?: string;
 }
 
-export type KindKey = 'cards' | 'relics' | 'potions' | 'keywords';
-export type RefKind = 'card' | 'relic' | 'potion' | 'keyword';
+export type KindKey = 'cards' | 'relics' | 'potions' | 'events' | 'keywords';
+export type RefKind = 'card' | 'relic' | 'potion' | 'event' | 'keyword';
+
+/** A section of an entry's page beyond the usual ones (an event's options and dialogue). HTML. */
+export interface Section {
+	id: string;
+	title: string;
+	html: string;
+}
 
 export interface Kind<T extends Entry> {
 	key: KindKey;
@@ -75,8 +83,10 @@ export interface Kind<T extends Entry> {
 	dimensions: readonly Dimension<T>[];
 	/** Switches on the compendium (each sets data-t-<key> on it, for CSS). */
 	toggles?: Toggle[];
-	/** How the compendium lays items out. */
-	layout: 'cards' | 'tiles';
+	/** Extra sections of an entry's page, after "Obtaining". */
+	sections?: (item: T) => Section[];
+	/** How the compendium lays items out: card faces, tiles, or a list of wide rows (events, with their picture). */
+	layout: 'cards' | 'tiles' | 'list';
 }
 
 const byTitle = (a: Entry, b: Entry) => a.title.localeCompare(b.title);
@@ -290,6 +300,65 @@ export const potions: Kind<Potion> = {
 	],
 };
 
+// --- Events ---------------------------------------------------------------------------------------------------------
+
+const eventsPage = 'wiki/events/';
+type Option = GameEvent['options'][number];
+
+/** An option's name the way the community wiki writes them: bold, in brackets. */
+const optionName = (title: string) => `<strong>[${escape(title)}]</strong>`;
+/** An option's effect, with its locked version's reason if it has one. */
+const optionEffect = (option: Option) =>
+	refs.terms(option.text, 'link') +
+	(option.locked ? ` <span class="sts-muted">(${escape(option.locked.title)}: ${refs.terms(option.locked.text, 'link')})</span>` : '');
+/** The event's text, as the game shows it, in a quote. */
+const quote = (html: string) => `<blockquote class="sts-dialogue">${refs.terms(html, 'hover')}</blockquote>`;
+
+export const events: Kind<GameEvent> = {
+	key: 'events',
+	ref: 'event',
+	singular: 'event',
+	plural: 'events',
+	page: eventsPage,
+	blurb: 'Bars that turn up in "?" rooms, where the drinks are your choice.',
+	layout: 'list',
+	items: [...content.events].sort(byTitle),
+	summary: (event) => `${event.title}: an event from Slay the Spirits. ${event.options.map((o) => o.title).join(', ')}.`,
+	tagline: () => `Tavern ${link(eventsPage, 'Event')}`,
+	lead: (event) => `${self('event', event)} is a Tavern ${link(eventsPage, 'event')}. It has ${event.options.length} options.`,
+	obtain: (event) => refs.inline(event.found),
+	// For lists and hover boxes: each option and what it does.
+	text: (event) => event.options.map((option) => `<span class="sts-gold">${escape(option.title)}:</span> ${option.text}`).join('<br>'),
+	facts: (event) => [
+		{ label: 'Acts', value: event.acts },
+		{ label: 'Players', value: 'Multiplayer only' },
+		{ label: 'Setting', value: 'Tavern Events', href: href('play/rule-sets/') },
+		{ label: 'Options', value: String(event.options.length) },
+	],
+	sections: (event) => [
+		{
+			id: 'options',
+			title: 'Options',
+			html: `<ul>${event.options.map((option) => `<li>${optionName(option.title)} ${optionEffect(option)}</li>`).join('')}</ul>`,
+		},
+		{
+			id: 'dialogue',
+			title: 'Dialogue',
+			html:
+				quote(event.intro) +
+				event.options
+					.map(
+						(option) =>
+							`<p>${optionName(option.title)}</p>` +
+							option.outcomes.map((outcome) => (outcome.label ? `<p class="sts-dialogue__label">${escape(outcome.label)}:</p>` : '') + quote(outcome.text)).join('')
+					)
+					.join(''),
+		},
+	],
+	group: (event) => ({ title: event.acts }),
+	dimensions: [drinkDimension<GameEvent>(), nameDimension<GameEvent>()],
+};
+
 // --- Keywords -------------------------------------------------------------------------------------------------------
 
 const keywordsPage = 'wiki/keywords/';
@@ -326,7 +395,7 @@ export const keywords: Kind<Term> = {
 
 // --- All kinds ------------------------------------------------------------------------------------------------------
 
-export const kinds = { cards, relics, potions, keywords } as const;
+export const kinds = { cards, relics, potions, events, keywords } as const;
 
 /** The wiki's front page. */
 export const wikiPage = 'wiki/';
