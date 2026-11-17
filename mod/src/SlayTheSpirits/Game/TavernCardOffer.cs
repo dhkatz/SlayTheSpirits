@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Factories;
@@ -12,11 +13,30 @@ namespace SlayTheSpirits.Game;
 /// <summary>
 /// A pick of Tavern cards (the colorless set plus the player's character's), every card equally likely, for rest site
 /// tabs and Tavern events. Follows the Tavern Cards / Character Cards switches like any other source; if they leave
-/// nothing, it offers normal cards.
+/// nothing, it offers normal cards. Tavern cards are multiplayer-only, so a solo run (an event forced from the dev
+/// console) also gets normal cards.
 /// </summary>
 internal static class TavernCardOffer
 {
-    public static List<CardCreationResult> For(Player player, int count)
+    /// <summary>Creates <paramref name="count"/> cards for <paramref name="player"/> to choose from; with
+    /// <paramref name="upgraded"/>, every one is upgraded, so the pick shows (and adds) the upgraded version.</summary>
+    public static List<CardCreationResult> For(Player player, int count, bool upgraded = false)
+    {
+        var offer = Create(player, count);
+        if (upgraded)
+        {
+            // What the game does for reward cards that roll an upgrade: the card isn't in a pile yet, so this only
+            // changes the card.
+            foreach (var result in offer)
+            {
+                CardCmd.Upgrade(result.Card);
+            }
+        }
+
+        return offer;
+    }
+
+    private static List<CardCreationResult> Create(Player player, int count)
     {
         var tavern = CardCreationOptions.ForNonCombatWithUniformOdds(
             [ModelDb.CardPool<ColorlessCardPool>(), player.Character.CardPool],

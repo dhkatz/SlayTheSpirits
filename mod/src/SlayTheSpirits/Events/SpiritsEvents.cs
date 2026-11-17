@@ -39,11 +39,11 @@ public abstract class SpiritsEvent : SpireEvent
     /// <summary>Ends the event on the page <paramref name="page"/> (its <c>.pages.&lt;PAGE&gt;.description</c> text).</summary>
     protected void FinishOn(string page) => SetEventFinished(L10NLookup($"{Id.Entry}.pages.{page}.description"));
 
-    /// <summary>Lets the owner add 1 of <paramref name="offered"/> Tavern cards to their deck.</summary>
-    protected async Task ChooseTavernCardAsync(int offered, string page)
+    /// <summary>Lets the owner add 1 of <paramref name="offered"/> Tavern cards (all upgraded, if <paramref name="upgraded"/>) to their deck.</summary>
+    protected async Task ChooseTavernCardAsync(int offered, string page, bool upgraded = false)
     {
         var prefs = new CardSelectorPrefs(L10NLookup($"{Id.Entry}.pages.{page}.selectionScreenPrompt"), 1) { Cancelable = false };
-        await SelectCardsToAddToDeckFromGrid(TavernCardOffer.For(Owner!, offered), prefs);
+        await SelectCardsToAddToDeckFromGrid(TavernCardOffer.For(Owner!, offered, upgraded), prefs);
     }
 
     /// <summary>Lets the owner upgrade up to <paramref name="count"/> cards in their deck.</summary>
@@ -60,8 +60,8 @@ public abstract class SpiritsEvent : SpireEvent
 }
 
 /// <summary>
-/// The Speakeasy: a door in an alley, a slot at eye level. "Password?" Know it (Finish your drink: a Tavern card and an
-/// upgrade), bluff (a coin flip between getting in free and the bouncer), or walk away.
+/// The Speakeasy: a door in an alley, a slot at eye level. "Password?" Know it (Finish your drink: 1 of 3 upgraded
+/// Tavern cards), bluff (a coin flip between getting in free and the bouncer), or walk away.
 /// </summary>
 public sealed class SpiritsSpeakeasy : SpiritsEvent
 {
@@ -86,12 +86,7 @@ public sealed class SpiritsSpeakeasy : SpiritsEvent
 
     private async Task Swordfish()
     {
-        await ChooseTavernCardAsync(Offered, "SWORDFISH");
-        if (HasUpgradableCards)
-        {
-            await UpgradeCardsAsync(1);
-        }
-
+        await ChooseTavernCardAsync(Offered, "SWORDFISH", upgraded: true);
         await DrinkAsync(Penalty.Of(PenaltyKind.Finish));
         FinishOn("SWORDFISH");
     }

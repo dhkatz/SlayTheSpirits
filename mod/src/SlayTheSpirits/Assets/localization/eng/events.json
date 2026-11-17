@@ -2,7 +2,7 @@
   "SPIRITS_SPEAKEASY.title": "Speakeasy",
   "SPIRITS_SPEAKEASY.pages.INITIAL.description": "A plain door at the end of an alley. Music leaks up from somewhere below. A slot at eye level slides open, and two eyes look you over.\n\n\"Password?\"",
   "SPIRITS_SPEAKEASY.pages.INITIAL.options.SWORDFISH.title": "\"Swordfish.\"",
-  "SPIRITS_SPEAKEASY.pages.INITIAL.options.SWORDFISH.description": "[gold]Finish your drink[/gold]. Choose 1 of [blue]3[/blue] Tavern cards, then [gold]Upgrade[/gold] a card.",
+  "SPIRITS_SPEAKEASY.pages.INITIAL.options.SWORDFISH.description": "[gold]Finish your drink[/gold]. Choose 1 of [blue]3[/blue] [gold]Upgraded[/gold] Tavern cards.",
   "SPIRITS_SPEAKEASY.pages.INITIAL.options.BLUFF.title": "Bluff.",
   "SPIRITS_SPEAKEASY.pages.INITIAL.options.BLUFF.description": "Even odds: get in free and choose 1 of [blue]3[/blue] Tavern cards, or get thrown out and lose [red]{BouncerHpLoss}[/red] HP.",
   "SPIRITS_SPEAKEASY.pages.INITIAL.options.LEAVE.title": "Leave.",
