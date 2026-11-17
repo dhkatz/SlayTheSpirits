@@ -37,6 +37,22 @@ public static class Taverns
         return rules.Taverns == TavernLimit.EveryShop || Pick(runSeed, actIndex, shops) == spot;
     }
 
+    /// <summary>
+    /// Where the Tavern goes in Blitz. A Blitz act is one line of floors, and its only shop is too important to
+    /// replace, so the Tavern gets a floor of its own instead, whatever <see cref="RuleSet.Taverns"/> says.
+    /// It goes after the treasure (the act's elite and chest have paid out by then) and before whatever came next,
+    /// or at the end of the line if there's no treasure.
+    /// </summary>
+    /// <param name="floors">The game's Blitz floors, in order (not counting the act's Ancient and boss).</param>
+    /// <param name="treasure">The treasure floor's kind.</param>
+    /// <returns>The index the Tavern is inserted at.</returns>
+    public static int BlitzTavernIndex<T>(IReadOnlyList<T> floors, T treasure)
+    {
+        ArgumentNullException.ThrowIfNull(floors);
+        var index = floors.ToList().IndexOf(treasure);
+        return index < 0 ? floors.Count : index + 1;
+    }
+
     /// <summary>The act's Tavern under <see cref="TavernLimit.OncePerAct"/>.</summary>
     internal static MapSpot Pick(string runSeed, int actIndex, IReadOnlyCollection<MapSpot> shops)
     {

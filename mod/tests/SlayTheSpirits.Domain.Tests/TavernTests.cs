@@ -55,6 +55,13 @@ public sealed class TavernTests
     }
 
     [Fact]
+    public void Blitz_gets_its_tavern_after_the_treasure()
+    {
+        Assert.Equal(5, Taverns.BlitzTavernIndex(["Monster", "Monster", "Shop", "Elite", "Treasure", "RestSite"], "Treasure"));
+        Assert.Equal(3, Taverns.BlitzTavernIndex(["Monster", "Shop", "Elite"], "Treasure"));
+    }
+
+    [Fact]
     public void Presets_scale_with_how_much_drinking_they_want()
     {
         Assert.False(Taverns.IsOffered(Presets.Casual));
