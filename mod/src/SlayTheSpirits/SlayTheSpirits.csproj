@@ -8,7 +8,7 @@
     <RootNamespace>SlayTheSpirits</RootNamespace>
     <AssemblyName>SlayTheSpirits</AssemblyName>
     <ModId>SlayTheSpirits</ModId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <UsesSts2Game>true</UsesSts2Game>
     <IsSts2Mod>true</IsSts2Mod>
   </PropertyGroup>
