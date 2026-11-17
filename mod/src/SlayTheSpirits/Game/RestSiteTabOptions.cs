@@ -37,6 +37,9 @@ internal abstract class SpiritsRestSiteTab(Player owner, RestSiteTab tab) : Spir
 {
     public const string Table = "rest_site_ui";
 
+    private bool _rewarded;
+    private bool _cursed;
+
     public RestSiteTab Tab => tab;
 
     public override string IconPath => $"res://SlayTheSpirits/images/rest_site/{OptionId.ToLowerInvariant()}.png";
@@ -59,15 +62,28 @@ internal abstract class SpiritsRestSiteTab(Player owner, RestSiteTab tab) : Spir
 
     public override async Task<bool> OnSelect()
     {
-        if (!await GrantRewardAsync())
+        // If anything here throws, the game leaves the option on the rest site, so picking it again must never give a
+        // second reward: each step happens once, and a retry only does what's left.
+        if (!_rewarded)
         {
-            return false;
+            if (!await GrantRewardAsync())
+            {
+                return false;
+            }
+
+            _rewarded = true;
+            SlayTheSpiritsMod.Game?.TakeRestSiteTab(Player, tab);
         }
 
-        SlayTheSpiritsMod.Game?.TakeRestSiteTab(Player, tab);
-        if (Player.PlayerRng.Rewards.NextItem(Curses) is { } curse)
+        if (!_cursed)
         {
-            await CardPileCmd.AddCursesToDeck([curse.ToMutable()], Player);
+            // The game makes the deck's copy itself: it wants the canonical card.
+            if (Player.PlayerRng.Rewards.NextItem(Curses) is { } curse)
+            {
+                await CardPileCmd.AddCursesToDeck([curse], Player);
+            }
+
+            _cursed = true;
         }
 
         return true;
