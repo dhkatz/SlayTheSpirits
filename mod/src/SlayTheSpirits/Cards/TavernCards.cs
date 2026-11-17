@@ -31,7 +31,7 @@ public sealed class SpiritsCheers() : SpiritsCard(0, CardType.Skill, CardRarity.
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target?.Player);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
-        await GiveDrinkAsync(choiceContext, cardPlay.Target.Player, PenaltyKind.Sip);
+        await GiveSipsAsync(choiceContext, cardPlay.Target.Player);
     }
 
     protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1m);
@@ -48,7 +48,7 @@ public sealed class SpiritsPeerPressure() : SpiritsCard(1, CardType.Skill, CardR
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target?.Player);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
-        await GiveDrinkAsync(choiceContext, cardPlay.Target.Player, PenaltyKind.Sip);
+        await GiveSipsAsync(choiceContext, cardPlay.Target.Player);
     }
 
     protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1m);
@@ -65,7 +65,7 @@ public sealed class SpiritsPassTheBottle() : SpiritsCard(1, CardType.Skill, Card
     {
         foreach (var teammate in CombatState!.Players.Where(p => p != Owner && p.Creature.IsAlive).ToList())
         {
-            await ShuffleDrinksAsync(teammate, PenaltyKind.Sip, 1);
+            await ShuffleSipsAsync(teammate, 1);
         }
 
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
@@ -83,7 +83,7 @@ public sealed class SpiritsPregame() : SpiritsCard(0, CardType.Skill, CardRarity
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await ShuffleDrinksAsync(Owner, PenaltyKind.Sip, 2);
+        await ShuffleSipsAsync(Owner, 2);
         await PlayerCmd.GainEnergy(DynamicVars.Energy.IntValue, Owner);
     }
 
@@ -101,7 +101,7 @@ public sealed class SpiritsLiquidCourage() : SpiritsCard(1, CardType.Skill, Card
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Sip);
+        await GiveSipsAsync(choiceContext, Owner);
         await PowerCmd.Apply<StrengthPower>(choiceContext, Owner.Creature, DynamicVars.Strength.BaseValue, Owner.Creature, this);
     }
 
@@ -149,7 +149,7 @@ public sealed class SpiritsRoundOnMe() : SpiritsCard(2, CardType.Skill, CardRari
             await CreatureCmd.GainBlock(creature, DynamicVars.Block, cardPlay);
         }
 
-        await GiveEveryoneAsync(choiceContext, PenaltyKind.Sip);
+        await GiveEveryoneSipsAsync(choiceContext);
     }
 
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3m);
@@ -171,34 +171,38 @@ public sealed class SpiritsDesignatedDriver() : SpiritsCard(1, CardType.Skill, C
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
 
-/// <summary>3 (2): Draw 3 cards. Gain 1 Energy. Choose a teammate; they Finish their drink. Exhaust.</summary>
-public sealed class SpiritsBottomsUp() : SpiritsCard(3, CardType.Skill, CardRarity.Rare, TargetType.AnyAlly)
+/// <summary>2 (1): Draw 3 cards. Gain 1 Energy. Choose a teammate; they take 2 Sips. Exhaust.</summary>
+public sealed class SpiritsBottomsUp() : SpiritsCard(2, CardType.Skill, CardRarity.Rare, TargetType.AnyAlly)
 {
+    private const string Sips = "Sips";
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(3), new EnergyVar(1)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(3), new EnergyVar(1), new DynamicVar(Sips, 2m)];
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Finish];
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target?.Player);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
         await PlayerCmd.GainEnergy(DynamicVars.Energy.IntValue, Owner);
-        await GiveDrinkAsync(choiceContext, cardPlay.Target.Player, PenaltyKind.Finish);
+        await GiveSipsAsync(choiceContext, cardPlay.Target.Player, DynamicVars[Sips].IntValue);
     }
 
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
 
-/// <summary>6 (5): Retain. Exhaust. All players gain 3 Strength. Everyone finishes their drink.</summary>
-public sealed class SpiritsLastCall() : SpiritsCard(6, CardType.Skill, CardRarity.Rare, TargetType.AllAllies)
+/// <summary>5 (4): Retain. Exhaust. All players gain 3 Strength. Everyone takes 2 Sips.</summary>
+public sealed class SpiritsLastCall() : SpiritsCard(5, CardType.Skill, CardRarity.Rare, TargetType.AllAllies)
 {
+    private const string Sips = "Sips";
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Retain, CardKeyword.Exhaust];
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<StrengthPower>(3m)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<StrengthPower>(3m), new DynamicVar(Sips, 2m)];
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Finish];
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<StrengthPower>()];
 
@@ -209,20 +213,20 @@ public sealed class SpiritsLastCall() : SpiritsCard(6, CardType.Skill, CardRarit
             await PowerCmd.Apply<StrengthPower>(choiceContext, creature, DynamicVars.Strength.BaseValue, Owner.Creature, this);
         }
 
-        await GiveEveryoneAsync(choiceContext, PenaltyKind.Finish);
+        await GiveEveryoneSipsAsync(choiceContext, DynamicVars[Sips].IntValue);
     }
 
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
 
 /// <summary>
-/// "Take the Shot". 3 (2): Retain. Exhaust. Take a Shot. Deal damage equal to 2x your Tipsy to ALL enemies.
-/// A Shot is a full drink, so the payoff is huge: the Shot's own Tipsy lands before the damage is counted.
+/// "Take the Shot". 3 (2): Retain. Exhaust. Take 3 Sips. Deal damage equal to 2x your Tipsy to ALL enemies.
 /// </summary>
 /// <remarks>
 /// Retired: no longer in any card pool, since nobody takes a Shot voluntarily more than once an act and a card
 /// would just sit in the deck. Shots now come from rest sites instead. Still registered (every model in the DLL
-/// is) so runs saved with it load; it keeps Double Shot's id for the same reason.
+/// is) so runs saved with it load; it keeps Double Shot's id for the same reason. Like every combat card it only
+/// hands out Sips now.
 /// </remarks>
 public sealed class SpiritsDoubleShot() : SpiritsCard(3, CardType.Attack, CardRarity.Rare, TargetType.AllEnemies)
 {
@@ -232,11 +236,11 @@ public sealed class SpiritsDoubleShot() : SpiritsCard(3, CardType.Attack, CardRa
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar(Multiplier, 2m)];
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Shot];
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Shot);
+        await GiveSipsAsync(choiceContext, Owner, 3);
         var damage = OwnerTipsy * DynamicVars[Multiplier].IntValue;
         if (damage > 0)
         {
@@ -262,7 +266,7 @@ public sealed class SpiritsSpill() : SpiritsCard(-1, CardType.Curse, CardRarity.
     {
         if (card == this)
         {
-            await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Sip);
+            await GiveSipsAsync(choiceContext, Owner);
         }
     }
 }

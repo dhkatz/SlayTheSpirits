@@ -20,13 +20,18 @@ public sealed record PenaltyCause(string SourceId, string? Label = null);
 /// isn't redirected, skipped for immunity or downgraded by caps, since that would change the price of what they
 /// chose. It still counts toward the caps for drinks they didn't choose.
 /// </param>
+/// <param name="Batch">
+/// Groups the drinks from one card play ("take 2 Sips" is two drink cards, each played on its own). Drinks in one
+/// batch are redirected together: if the first one is passed on, the rest follow it to the same player.
+/// </param>
 public sealed record PenaltyRequest(
     Penalty Penalty,
     TargetKind Target,
     PlayerId? Subject,
     PlayerId? Instigator,
     PenaltyCause Cause,
-    bool Voluntary = false);
+    bool Voluntary = false,
+    string? Batch = null);
 
 /// <summary>Annotations explaining how policies changed an assignment, for announcements and the bar tab.</summary>
 public enum AssignmentNote
@@ -46,6 +51,7 @@ public enum AssignmentNote
 /// <param name="OriginalPlayer">For redirected penalties, who it was originally for.</param>
 /// <param name="OriginalPenalty">For downgraded penalties, what it was before capping.</param>
 /// <param name="Tipsy">Tipsy the player gained from this penalty (set by the engine).</param>
+/// <param name="Batch">The request's <see cref="PenaltyRequest.Batch"/>, if any.</param>
 public sealed record PenaltyAssignment(
     PlayerId Player,
     Penalty Penalty,
@@ -53,7 +59,9 @@ public sealed record PenaltyAssignment(
     IReadOnlyList<AssignmentNote> Notes,
     PlayerId? OriginalPlayer = null,
     Penalty? OriginalPenalty = null,
-    int Tipsy = 0)
+    int Tipsy = 0,
+    string? Batch = null)
 {
-    public static PenaltyAssignment Plain(PlayerId player, Penalty penalty, PenaltyCause cause) => new(player, penalty, cause, []);
+    public static PenaltyAssignment Plain(PlayerId player, Penalty penalty, PenaltyCause cause, string? batch = null) =>
+        new(player, penalty, cause, [], Batch: batch);
 }

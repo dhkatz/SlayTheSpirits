@@ -13,20 +13,22 @@ namespace SlayTheSpirits.Cards;
 // Registered into the character's pool, so they appear in that character's normal rewards (multiplayer only).
 
 /// <summary>
-/// "Down the Hatch" (Ironclad). 2: Finish your drink. Deal 8 (12) + your Tipsy damage. Keeps Keg Stand's id so
-/// saved runs load; Chugs come from boss fights and rest sites rather than a card played every combat.
+/// "Down the Hatch" (Ironclad). 2: Take 2 Sips. Deal 8 (12) + half your Tipsy damage. Keeps Keg Stand's id so saved
+/// runs load. The Sips land first, so they count toward the damage.
 /// </summary>
 public sealed class SpiritsKegStand() : SpiritsCard(2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy), ISpiritsCharacterCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(8m, ValueProp.Move)];
+    private const string Sips = "Sips";
 
-    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Finish];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(8m, ValueProp.Move), new DynamicVar(Sips, 2m)];
+
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Finish);
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue + OwnerTipsy)
+        await GiveSipsAsync(choiceContext, Owner, DynamicVars[Sips].IntValue);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue + (OwnerTipsy / 2))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
             .WithHitFx("vfx/vfx_attack_blunt", null, "blunt_attack.mp3")
@@ -61,7 +63,7 @@ public sealed class SpiritsLiquidCooling() : SpiritsCard(1, CardType.Skill, Card
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await GiveDrinkAsync(choiceContext, Owner, PenaltyKind.Sip);
+        await GiveSipsAsync(choiceContext, Owner);
         for (var i = 0; i < DynamicVars[Frost].IntValue; i++)
         {
             await OrbCmd.Channel<FrostOrb>(choiceContext, Owner);
@@ -82,7 +84,7 @@ public sealed class SpiritsRoyalDecree() : SpiritsCard(1, CardType.Skill, CardRa
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target?.Player);
         await PlayerCmd.GainStars(DynamicVars.Stars.BaseValue, Owner);
-        await GiveDrinkAsync(choiceContext, cardPlay.Target.Player, PenaltyKind.Sip);
+        await GiveSipsAsync(choiceContext, cardPlay.Target.Player);
     }
 
     protected override void OnUpgrade() => DynamicVars.Stars.UpgradeValueBy(1m);
@@ -102,7 +104,7 @@ public sealed class SpiritsPourOneOut() : SpiritsCard(0, CardType.Skill, CardRar
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await OstyCmd.Summon(choiceContext, Owner, DynamicVars["Summon"].BaseValue, this);
-        await GiveEveryoneAsync(choiceContext, PenaltyKind.Sip);
+        await GiveEveryoneSipsAsync(choiceContext);
     }
 
     protected override void OnUpgrade() => DynamicVars["Summon"].UpgradeValueBy(3m);
@@ -124,7 +126,7 @@ public sealed class SpiritsDrinkingSong() : SpiritsCard(1, CardType.Skill, CardR
             await CreatureCmd.GainBlock(creature, DynamicVars.Block, cardPlay);
         }
 
-        await GiveEveryoneAsync(choiceContext, PenaltyKind.Sip);
+        await GiveEveryoneSipsAsync(choiceContext);
     }
 
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(2m);

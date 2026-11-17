@@ -8,12 +8,17 @@ public static class TipsyWeights
     /// <summary>Upper bound per unit, to keep Tipsy-scaling cards sane.</summary>
     public const int MaxPerUnit = 20;
 
+    /// <summary>
+    /// Roughly how many sips each drink is worth, with a can at about 12 sips: a Finish is about half a can, a Chug a
+    /// whole one, a Shot a full standard drink. The heavy drinks are rare, so they're worth a lot.
+    /// </summary>
+    /// <remarks>Schema v3 and earlier defaulted to 1 / 3 / 5 / 10 (see <see cref="TipsyWeightsMigration"/>).</remarks>
     public static IReadOnlyDictionary<PenaltyKind, int> Defaults { get; } = new Dictionary<PenaltyKind, int>
     {
         [PenaltyKind.Water] = 0,
         [PenaltyKind.Sip] = 1,
-        [PenaltyKind.Finish] = 3,
-        [PenaltyKind.Chug] = 5,
+        [PenaltyKind.Finish] = 6,
+        [PenaltyKind.Chug] = 8,
         [PenaltyKind.Shot] = 10,
     };
 

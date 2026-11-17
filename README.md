@@ -6,10 +6,10 @@ test-first modding SDK that lives in this repo (and is designed to be split out 
 **Docs and wiki: https://dhkatz.github.io/SlayTheSpirits/** (how to play, rule sets, every card, relic and potion).
 
 - Penalties for game moments: boss/elite fights, specific enemies, deaths, big hits, curses, potions, wasted energy, rest-site water breaks, winning and losing.
-- **Tavern cards** (colorless, plus one per character) that make your friends drink: *Cheers!*, *Round on Me*, *Bottoms Up*, *Last Call* (6 cost).
+- **Tavern cards** (colorless, plus one per character) that make your friends drink: *Cheers!*, *Round on Me*, *Bottoms Up*, *Last Call*. Cards only ever hand out Sips; stronger ones cost more.
 - Drinks are **status cards** (Sip, Shot, Finish Your Drink…) that play automatically, with speech-bubble banter.
 - **Rest site drinks**: Chug to pick 2 of 5 Tavern cards, or take a Shot to choose one of the **Tavern relics**, found nowhere else (Hip Flask, Beer Belly, Tip Jar, Drinking Buddy, Pint Glass). Off, once per act, or at every rest site.
-- **Tavern potions** that you drink for real: *Light Beer* (Sip), *Tallboy* (Chug), *Firewater* (Shot).
+- **Tavern potions** that you drink for real: *Light Beer* (1 Sip), *Tallboy* (2 Sips), *Firewater* (3 Sips).
 - **Tipsy**: a run-long buff that some cards scale with. A per-combat **bar tab** under each player shows what they owe.
 - **Host-authoritative rules**: the host's profile is sent to everyone and locked for the run. Clients never use local settings.
 - Presets (Casual / Standard / Degenerate / Sober), per-act caps that downgrade penalties, custom labels, share codes.

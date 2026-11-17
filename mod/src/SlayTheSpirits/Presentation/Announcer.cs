@@ -75,7 +75,11 @@ internal sealed class Announcer(ToastOverlay toasts, Func<RuleSet?> rules)
         ? new Toast("SLAY THE SPIRITS", "Waiting for the host's rules…", ToastOverlay.Cream)
         : new Toast("SLAY THE SPIRITS", ruleSet.Enabled ? $"Playing '{ruleSet.Name}' rules. Drink responsibly-ish." : $"'{ruleSet.Name}' rules loaded, but penalties are OFF.", ToastOverlay.Gold, Seconds: 6));
 
-    public void AnnounceBarTab(RunTally tally, PartySnapshot party)
+    /// <summary>Everyone's drinks and Tipsy so far, heaviest drinker first.</summary>
+    /// <param name="tally">The run's tally.</param>
+    /// <param name="party">Who's at the table.</param>
+    /// <param name="heading">Shown before who drank the most; the run's final bar tab by default.</param>
+    public void AnnounceBarTab(RunTally tally, PartySnapshot party, string heading = "BAR TAB")
     {
         var ranked = party.Members.OrderByDescending(m => tally.TipsyOf(m.Id)).ToList();
         if (ranked.Count == 0 || rules() is not { } ruleSet)
@@ -96,7 +100,7 @@ internal sealed class Announcer(ToastOverlay toasts, Func<RuleSet?> rules)
             return $"{m.DisplayName} (Tipsy {tally.TipsyOf(m.Id)}): {string.Join(", ", parts.DefaultIfEmpty("stone cold sober"))}";
         });
 
-        toasts.Show(new Toast($"BAR TAB — {ranked[0].DisplayName} drank the most", string.Join("\n", lines), ToastOverlay.Gold, Seconds: 12));
+        toasts.Show(new Toast($"{heading} — {ranked[0].DisplayName} drank the most", string.Join("\n", lines), ToastOverlay.Gold, Seconds: 12));
     }
 
     /// <summary>The drinker reacts in a speech bubble ("Here goes nothing!"), styled by how heavy the drink is.</summary>

@@ -125,6 +125,33 @@ public sealed class PenaltyEngineTests
     }
 
     [Fact]
+    public void A_redirected_batch_moves_together_and_uses_one_redirect()
+    {
+        var engine = NewEngine();
+        engine.AddRedirects(Alice);
+        var sip = Request(PenaltyKind.Sip, TargetKind.Subject, Alice) with { Batch = "down-the-hatch#1" };
+
+        var first = engine.Handle(sip, Four).Single();
+        var second = engine.Handle(sip, Four).Single();
+        var nextCard = engine.Handle(sip with { Batch = "down-the-hatch#2" }, Four).Single();
+
+        Assert.NotEqual(Alice, first.Player);
+        Assert.Equal(first.Player, second.Player);
+        Assert.Equal(Alice, second.OriginalPlayer);
+        Assert.Equal(Alice, nextCard.Player);
+    }
+
+    [Fact]
+    public void Entering_an_act_reports_whether_it_changed()
+    {
+        var engine = NewEngine();
+
+        Assert.False(engine.EnterAct(1));
+        Assert.True(engine.EnterAct(2));
+        Assert.False(engine.EnterAct(2));
+    }
+
+    [Fact]
     public void Tally_tracks_totals_and_worst_moment()
     {
         var engine = NewEngine();
@@ -135,7 +162,7 @@ public sealed class PenaltyEngineTests
         var tally = engine.State.Tally;
         Assert.Equal(3, tally.Count(Alice, PenaltyKind.Sip));
         Assert.Equal(1, tally.Count(Alice, PenaltyKind.Finish));
-        Assert.Equal((3 * 1) + 3, tally.TipsyOf(Alice));
+        Assert.Equal((3 * 1) + 6, tally.TipsyOf(Alice));
         Assert.Equal(PenaltyKind.Finish, tally.WorstMoments[Alice.Value].Penalty.Kind);
         Assert.Equal("Gremlin Nob", tally.WorstMoments[Alice.Value].Label);
     }

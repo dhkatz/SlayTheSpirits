@@ -63,13 +63,13 @@ internal sealed class DrinkGame
             : Task.CompletedTask;
 
     /// <summary>
-    /// A drink <paramref name="player"/> chose in exchange for something (a Tavern potion): never redirected, skipped
-    /// or downgraded (<see cref="PenaltyRequest.Voluntary"/>).
+    /// A drink <paramref name="player"/> chose in exchange for something (a Tavern potion, a Tavern menu item): never
+    /// redirected, skipped or downgraded (<see cref="PenaltyRequest.Voluntary"/>).
     /// </summary>
-    public Task DrinkAsync(Player player, PenaltyKind kind, PenaltyCause cause, PlayerChoiceContext? choiceContext)
+    public Task DrinkAsync(Player player, Penalty penalty, PenaltyCause cause, PlayerChoiceContext? choiceContext)
     {
         var id = GameTriggers.Id(player);
-        return PenalizeAsync(new PenaltyRequest(new Penalty(kind), TargetKind.Subject, id, id, cause, Voluntary: true), choiceContext);
+        return PenalizeAsync(new PenaltyRequest(penalty, TargetKind.Subject, id, id, cause, Voluntary: true), choiceContext);
     }
 
     /// <summary>Takes a rest site drink: uses up the option for this act and hands out the drink.</summary>
@@ -105,7 +105,11 @@ internal sealed class DrinkGame
                 OnRunEnded();
                 return;
             case ActEntered act:
-                _engine?.EnterAct(act.ActIndex + 1);
+                if (_engine is { } current && _run is { } inRun && current.EnterAct(act.ActIndex + 1) && act.ActIndex > 0)
+                {
+                    SummarizeAct(act.ActIndex, current, inRun);
+                }
+
                 return;
             case CombatStarted:
                 if (EnsureEngine() is { } engine && _run is { } run)
@@ -165,6 +169,21 @@ internal sealed class DrinkGame
         {
             _log.Warn("Saved drinking-game state was unreadable; this run continues from zero.");
         }
+    }
+
+    /// <summary>
+    /// The bar tab so far, between acts: a toast for the table and a log line for tuning (how much Tipsy each act
+    /// really adds up to).
+    /// </summary>
+    private void SummarizeAct(int finishedAct, PenaltyEngine engine, IRunState run)
+    {
+        var party = Party(run);
+        var tally = engine.State.Tally;
+        _announcer.AnnounceBarTab(tally, party, $"BAR TAB AFTER ACT {finishedAct}");
+        _log.Info($"After act {finishedAct}: " + string.Join("; ", party.Members.Select(m =>
+            $"{m.DisplayName} Tipsy {tally.TipsyOf(m.Id)} (" + string.Join(", ", Enum.GetValues<PenaltyKind>()
+                .Where(k => tally.Count(m.Id, k) > 0)
+                .Select(k => $"{k} {tally.Count(m.Id, k)}")) + ")")));
     }
 
     private void OnRunEnded()

@@ -33,6 +33,9 @@ public abstract class SpiritsDrinkCard(PenaltyKind kind) : SpiritsCard(-1, CardT
     /// <summary>Who handed it out, if not the drinker.</summary>
     internal PlayerId? GivenBy { get; set; }
 
+    /// <summary>The card play it came from, when that play handed out several (<see cref="PenaltyRequest.Batch"/>).</summary>
+    internal string? Batch { get; set; }
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
@@ -64,7 +67,7 @@ public abstract class SpiritsDrinkCard(PenaltyKind kind) : SpiritsCard(-1, CardT
         if (SlayTheSpiritsMod.Game is { } game)
         {
             await game.PenalizeAsync(
-                new PenaltyRequest(Penalty.Of(Kind), TargetKind.Subject, new PlayerId(Owner.NetId), GivenBy, Cause ?? new PenaltyCause(Id.ToString(), Title)),
+                new PenaltyRequest(Penalty.Of(Kind), TargetKind.Subject, new PlayerId(Owner.NetId), GivenBy, Cause ?? new PenaltyCause(Id.ToString(), Title), Batch: Batch),
                 choiceContext);
         }
     }
@@ -89,7 +92,7 @@ internal static class DrinkCards
         [typeof(SpiritsSip), typeof(SpiritsFinishYourDrink), typeof(SpiritsChug), typeof(SpiritsShot)];
 
     /// <summary>Creates a drink card owned by <paramref name="drinker"/>, its text reflecting the current rules.</summary>
-    public static SpiritsDrinkCard Create(ICombatState combat, Player drinker, PenaltyKind kind, PenaltyCause cause, Player? giver)
+    public static SpiritsDrinkCard Create(ICombatState combat, Player drinker, PenaltyKind kind, PenaltyCause cause, Player? giver, string? batch = null)
     {
         var type = kind switch
         {
@@ -103,6 +106,7 @@ internal static class DrinkCards
         var card = (SpiritsDrinkCard)combat.CreateCard(ModelDb.GetById<CardModel>(ModelDb.GetId(type)), drinker);
         card.Cause = cause;
         card.GivenBy = giver is null || giver == drinker ? null : new PlayerId(giver.NetId);
+        card.Batch = batch;
         ((StringVar)card.DynamicVars[SpiritsDrinkCard.DrinkVar]).StringValue = PenaltyLabels.For(Rules, kind).Singular;
         card.DynamicVars[SpiritsDrinkCard.TipsyVar].BaseValue = TipsyWeights.PerUnit(Rules, kind);
         return card;

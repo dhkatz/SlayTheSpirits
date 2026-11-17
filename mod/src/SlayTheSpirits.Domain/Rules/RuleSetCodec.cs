@@ -13,7 +13,7 @@ public static class RuleSetCodec
     /// Bump when the RuleSet JSON shape changes incompatibly (renames, meaning changes), and register a migration in
     /// <see cref="Format"/>. Adding a setting needs neither: files without it get the <see cref="RuleSet"/> default.
     /// </summary>
-    public const int SchemaVersion = 3;
+    public const int SchemaVersion = 4;
 
     /// <summary>Prefix for share codes. Bump the digit only if old codes can no longer be read.</summary>
     public const string ShareCodePrefix = "SPIRITS1";
@@ -25,6 +25,7 @@ public static class RuleSetCodec
         [
             new JsonMigration(1, DrinkStepMigration.MigrateRuleSet),
             new JsonMigration(2, RestSiteLimitMigration.MigrateRuleSet),
+            new JsonMigration(3, TipsyWeightsMigration.MigrateRuleSet),
         ],
         validate: RuleSetValidator.Validate,
         defaults: static () => new RuleSet());
