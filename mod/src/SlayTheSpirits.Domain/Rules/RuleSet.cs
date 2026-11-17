@@ -110,7 +110,8 @@ public sealed record RuleSet
 
     /// <summary>
     /// Shops that become the Tavern: a bar whose menu is paid for in gold and drinks (see <see cref="Engine.TavernMenu"/>).
-    /// Multiplayer runs only, like the rest of the Tavern content.
+    /// Multiplayer runs only, like the rest of the Tavern content. Blitz's map has a single shop, so there the Tavern
+    /// is a floor of its own instead, once per act, whenever this isn't <see cref="TavernLimit.Off"/>.
     /// </summary>
     public TavernLimit Taverns { get; init; } = TavernLimit.OncePerAct;
 
