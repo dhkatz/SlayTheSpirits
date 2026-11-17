@@ -32,6 +32,15 @@
     <GodotDisabledSourceGenerators>ScriptPathAttribute;GodotPluginsInitializer</GodotDisabledSourceGenerators>
   </PropertyGroup>
 
+  <!--
+    Game commands that throw when handed the wrong kind of model (canonical or a player's copy) are banned (RS0030);
+    SpireKit.Runs.SpireCmd wraps them so either kind works.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(BuildDir)BannedSymbols.txt" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Game code is not annotated for our analyzers; keep strictness for our code without drowning in noise. -->
     <NoWarn>$(NoWarn);CA1848;CA2007</NoWarn>

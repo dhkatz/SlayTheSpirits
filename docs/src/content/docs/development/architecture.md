@@ -62,6 +62,8 @@ reference into the mod DLL with ILRepack. Consequences:
 | Run saves drop unknown JSON fields | Mod run data lives in sidecar files in the mod's storage folder |
 | Only the host (or solo player) saves; the save is snapshotted (`RunManager.ToSave`) before entering each room and after each victory | `RunData` captures mod state at that same moment |
 | A rest site choice runs `RestSiteOption.OnSelect` on every peer (`RestSiteSynchronizer`); card picks inside it are synced by the game | Rest site drinks record the reward and the penalty in lockstep, like any hook |
+| If `RestSiteOption.OnSelect` throws, the game leaves the option on the rest site with whatever it had already handed out | `SpireRestSiteOption` seals `OnSelect`: a `SelectAsync` that throws is logged and uses the option up |
+| One type (`CardModel`, `RelicModel`, `PotionModel`) is both the canonical model and a player's copy; each command throws on the wrong one, and the signatures don't say which (`CardPileCmd.AddCursesToDeck` wants canonical, `RelicCmd.Obtain` a copy) | `SpireCmd` takes either; the game's versions are banned in our builds (`build/BannedSymbols.txt`, RS0030) |
 | Rest site icons are read from `images/ui/rest_site/option_<id>.png` in the game's own files | `RestSiteIconPatch` serves `SpireRestSiteOption.IconPath` instead |
 | Relic and potion icons come from the game's atlases through non-virtual getters (`RelicModel.Icon`/`IconOutline`/`BigIcon`, `PotionModel.Image`/`Outline`/`LargeImage`); the scenes scale whatever texture they get | SDK patches serve one raw PNG per relic or potion, with a generated outline |
 | The relic grab bag only holds Common/Uncommon/Rare/Shop relics; nothing draws from `EventRelicPool` at random | Event-rarity mod relics drop only where mod code hands them out |
@@ -93,7 +95,8 @@ reference into the mod DLL with ILRepack. Consequences:
 | Custom controls | `SpireKit.UI.Controls` (`NumberStepper`, `ChoiceStepper`, `ControlsGallery`) | real Godot node classes in SDK/mod code (see "Write a custom control"); a startup probe reports feature `ui.controls` |
 | Settings tabs | `ModContext.SettingsTabs.Add(title, page => …)`, `SettingsPage`, `SettingsToggle`, `SettingsChoice` | a tab on the game's Settings screen (main menu and pause menu) built from the game's own tab, tickbox, picker, row and divider; page rebuilt on each show; `handle.Refresh()` for outside changes |
 | Game scenes | `GameScenes.Graft`, `GameScenes.CopyProperties`, `SceneDump` | subclass a game widget whose parts live in a `.tscn`; dump any scene's node tree (`launch.ps1 -DumpScenes`) |
-| Rest sites | `ModContext.RestSite.Add(player => option)`, `SpireRestSiteOption` | options next to Rest and Smith, with the mod's own icon; text from the `rest_site_ui` table |
+| Rest sites | `ModContext.RestSite.Add(player => option)`, `SpireRestSiteOption` | options next to Rest and Smith, with the mod's own icon; text from the `rest_site_ui` table; an option that throws is used up, never left to pick again |
+| Giving things | `SpireCmd.AddCursesToDeck`, `AddToDeck`, `ObtainRelic`, `TryToProcurePotion` | take a canonical model or a player's copy and pass the game the one it wants |
 | Sharing | `ShareCode` | `PREFIX:base64url(deflate(json))` |
 | Run data | `ModContext.RunData.Register(slot, capture, restore)` | per-run state that survives save/quit: captured when the game snapshots the run, stored beside its save (`rundata/profile<N>/current_run[_mp].json`, stamped with seed + start time), sent to clients inside the loaded save, restored before `RunStarted` |
 
@@ -244,9 +247,10 @@ children (`AddChild(part, @internal: InternalMode.Front)`) so callers' `GetChild
 them. Style text with `GameStyle`. Handle `MegaInput.left`/`right`/`confirm` in `_GuiInput` so controllers work.
 
 **Add a rest site option.** Subclass `SpireRestSiteOption` (prefixed `OptionId`, `IconPath` under
-`res://<ModId>/images/rest_site/`), implement `OnSelect` (return false if the player backed out), set
+`res://<ModId>/images/rest_site/`), implement `SelectAsync` (return false if the player backed out), set
 `OPTION_<id>.name`/`.description`/`.descriptionDisabled` in the `rest_site_ui` table, and register a factory with
-`context.RestSite.Add(...)`. The factory and `IsEnabled` run on every peer: read only synced state.
+`context.RestSite.Add(...)`. The factory and `IsEnabled` run on every peer: read only synced state. This mod's
+rest site tabs only appear in multiplayer; `tools/launch.ps1 -Tabs` offers them in solo runs for testing.
 
 **Add a Settings tab.** `context.SettingsTabs.Add("Title", page => { page.Header(...); page.Toggle(...); ... })`.
 The callback runs every time the tab is shown, so read current state and write changes straight back. Show

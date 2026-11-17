@@ -1,3 +1,4 @@
+using Godot;
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -14,6 +15,7 @@ using SlayTheSpirits.Cards;
 using SlayTheSpirits.Engine;
 using SlayTheSpirits.Relics;
 using SpireKit.Content;
+using SpireKit.Runs;
 
 namespace SlayTheSpirits.Game;
 
@@ -37,8 +39,14 @@ internal abstract class SpiritsRestSiteTab(Player owner, RestSiteTab tab) : Spir
 {
     public const string Table = "rest_site_ui";
 
-    private bool _rewarded;
-    private bool _cursed;
+    /// <summary>
+    /// Developer flag: rest sites offer tabs in solo runs too, so they can be tried without a second player (the dev
+    /// console's <c>room restsite</c> opens one). Solo runs have no Tavern cards, so Open a Tab offers normal ones
+    /// (<see cref="TavernCardOffer"/>). <c>tools/launch.ps1 -Tabs</c>.
+    /// </summary>
+    public const string DevFlag = "--spirits-tabs";
+
+    private static readonly bool Forced = OS.GetCmdlineArgs().Contains(DevFlag);
 
     public RestSiteTab Tab => tab;
 
@@ -51,7 +59,7 @@ internal abstract class SpiritsRestSiteTab(Player owner, RestSiteTab tab) : Spir
 
     /// <summary>Offers <paramref name="tab"/> to <paramref name="player"/> if the rules in effect allow it.</summary>
     public static RestSiteOption? For(Player player, RestSiteTab tab) =>
-        SlayTheSpiritsMod.Game is { IsRestSiteTabOffered: true, IsMultiplayerRun: true }
+        SlayTheSpiritsMod.Game is { IsRestSiteTabOffered: true } game && (game.IsMultiplayerRun || Forced)
             ? tab switch
             {
                 RestSiteTab.Open => new SpiritsOpenTabRestSiteOption(player),
@@ -60,30 +68,17 @@ internal abstract class SpiritsRestSiteTab(Player owner, RestSiteTab tab) : Spir
             }
             : null;
 
-    public override async Task<bool> OnSelect()
+    protected override async Task<bool> SelectAsync()
     {
-        // If anything here throws, the game leaves the option on the rest site, so picking it again must never give a
-        // second reward: each step happens once, and a retry only does what's left.
-        if (!_rewarded)
+        if (!await GrantRewardAsync())
         {
-            if (!await GrantRewardAsync())
-            {
-                return false;
-            }
-
-            _rewarded = true;
-            SlayTheSpiritsMod.Game?.TakeRestSiteTab(Player, tab);
+            return false;
         }
 
-        if (!_cursed)
+        SlayTheSpiritsMod.Game?.TakeRestSiteTab(Player, tab);
+        if (Player.PlayerRng.Rewards.NextItem(Curses) is { } curse)
         {
-            // The game makes the deck's copy itself: it wants the canonical card.
-            if (Player.PlayerRng.Rewards.NextItem(Curses) is { } curse)
-            {
-                await CardPileCmd.AddCursesToDeck([curse], Player);
-            }
-
-            _cursed = true;
+            await SpireCmd.AddCurseToDeck(Player, curse);
         }
 
         return true;
@@ -124,7 +119,7 @@ internal sealed class SpiritsOpenTabRestSiteOption(Player owner) : SpiritsRestSi
 
         foreach (var card in picked)
         {
-            CardCmd.PreviewCardPileAdd(await CardPileCmd.Add(card, PileType.Deck));
+            CardCmd.PreviewCardPileAdd(await SpireCmd.AddToDeck(Player, card));
         }
 
         return true;
@@ -163,7 +158,7 @@ internal sealed class SpiritsRunUpTabRestSiteOption(Player owner) : SpiritsRestS
             return false;
         }
 
-        await RelicCmd.Obtain(chosen.ToMutable(), player);
+        await SpireCmd.ObtainRelic(player, chosen);
         return true;
     }
 
