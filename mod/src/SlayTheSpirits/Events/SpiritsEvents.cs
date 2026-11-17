@@ -13,6 +13,7 @@ using SlayTheSpirits.Engine;
 using SlayTheSpirits.Game;
 using SlayTheSpirits.Penalties;
 using SpireKit.Content;
+using SpireKit.Runs;
 
 namespace SlayTheSpirits.Events;
 
@@ -139,7 +140,7 @@ public sealed class SpiritsSevenGrand : SpiritsEvent
 
     private async Task BartendersPick()
     {
-        await RelicCmd.Obtain(RelicFactory.PullNextRelicFromFront(Owner!, RelicRarity.Rare).ToMutable(), Owner!);
+        await SpireCmd.ObtainRelic(Owner!, RelicFactory.PullNextRelicFromFront(Owner!, RelicRarity.Rare));
         await DrinkAsync(Penalty.Of(PenaltyKind.Shot));
         FinishOn("BARTENDERS_PICK");
     }

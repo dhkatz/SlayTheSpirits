@@ -20,8 +20,12 @@ namespace SpireKit.Content;
 /// Prefix <see cref="RestSiteOption.OptionId"/> with the mod's model prefix so ids never collide.
 /// </para>
 /// <para>
-/// <see cref="RestSiteOption.OnSelect"/> runs for the player who picked it; return false if they backed out
-/// (e.g. cancelled a card choice) so the option isn't used up.
+/// <see cref="SelectAsync"/> runs for the player who picked it; return false if they backed out (e.g. cancelled a
+/// card choice) so the option isn't used up.
+/// </para>
+/// <para>
+/// If it throws, the option is used up anyway (and the error logged). The game would leave a failed option on the
+/// rest site with whatever it had already handed out, so it could be picked again and again.
 /// </para>
 /// </remarks>
 public abstract class SpireRestSiteOption(Player owner) : RestSiteOption(owner)
@@ -40,6 +44,28 @@ public abstract class SpireRestSiteOption(Player owner) : RestSiteOption(owner)
 
     /// <summary>The player this option is for.</summary>
     protected Player Player => Owner;
+
+    /// <summary>Where a failed <see cref="SelectAsync"/> is reported; set when the option is offered.</summary>
+    internal IModLog? Log { get; set; }
+
+    /// <summary>Runs <see cref="SelectAsync"/>, using the option up if it throws.</summary>
+    public sealed override async Task<bool> OnSelect()
+    {
+        try
+        {
+            return await SelectAsync();
+        }
+#pragma warning disable CA1031 // A failure must use the option up, or it could be picked again for another reward.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            (Log ?? SpireRuntime.Current?.Log)?.Error($"Rest site option {OptionId} failed; it's used up.", ex);
+            return true;
+        }
+    }
+
+    /// <summary>What picking the option does; false if the player backed out, so the option isn't used up.</summary>
+    protected abstract Task<bool> SelectAsync();
 
     /// <summary>Never null: the game's rest site UI throws on a missing icon.</summary>
     internal Texture2D LoadIcon() => ModArt.Load(IconPath) ?? ResourceLoader.Load<Texture2D>(FallbackIconPath);
@@ -69,6 +95,11 @@ public sealed class RestSiteOptionRegistry
             {
                 if (factory(player) is { } option)
                 {
+                    if (option is SpireRestSiteOption mine)
+                    {
+                        mine.Log = log;
+                    }
+
                     options.Add(option);
                     added = true;
                 }
