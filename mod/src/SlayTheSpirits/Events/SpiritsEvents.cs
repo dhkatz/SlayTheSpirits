@@ -128,8 +128,12 @@ public sealed class SpiritsSevenGrand : SpiritsEvent
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
     [
         new EventOption(this, BartendersPick, InitialOptionKey("BARTENDERS_PICK")),
-        new EventOption(this, HasUpgradableCards ? WhiskeyFlight : null, InitialOptionKey("FLIGHT")),
-        new EventOption(this, Owner!.Gold >= Bet ? RackEmUp : null, InitialOptionKey("POOL")),
+        HasUpgradableCards
+            ? new EventOption(this, WhiskeyFlight, InitialOptionKey("FLIGHT"))
+            : new EventOption(this, null, InitialOptionKey("FLIGHT_LOCKED")),
+        Owner!.Gold >= Bet
+            ? new EventOption(this, RackEmUp, InitialOptionKey("POOL"))
+            : new EventOption(this, null, InitialOptionKey("POOL_LOCKED")),
         new EventOption(this, Leave, InitialOptionKey("LEAVE")),
     ];
 
