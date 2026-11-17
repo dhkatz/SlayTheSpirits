@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
@@ -35,6 +36,7 @@ public abstract class SpiritsRelic : SpireRelic
         ModelDb.Relic<SpiritsTipJar>(),
         ModelDb.Relic<SpiritsDrinkingBuddy>(),
         ModelDb.Relic<SpiritsPintGlass>(),
+        ModelDb.Relic<SpiritsJungleJuice>(),
     ];
 
     public override RelicRarity Rarity => RelicRarity.Event;
@@ -188,6 +190,55 @@ public sealed class SpiritsPintGlass : SpiritsRelic
         {
             Flash();
             await CreatureCmd.Heal(Owner.Creature, Heal * drink.Penalty.Count);
+        }
+    }
+}
+
+/// <summary>
+/// At the start of each combat, gain a random buff, plus another for every 20 Tipsy (up to 4). Nobody knows what's in
+/// it. Rolled on the run's Niche RNG when the combat room is entered, which every peer does in the same order.
+/// </summary>
+public sealed class SpiritsJungleJuice : SpiritsRelic
+{
+    public const int TipsyPerBuff = 20;
+
+    public const int MaxBuffs = 4;
+
+    /// <summary>What a roll can give.</summary>
+    private static readonly IReadOnlyList<Func<Creature, Task>> Buffs =
+    [
+        c => PowerCmd.Apply<StrengthPower>(new ThrowingPlayerChoiceContext(), c, 1, c, null),
+        c => PowerCmd.Apply<DexterityPower>(new ThrowingPlayerChoiceContext(), c, 1, c, null),
+        c => PowerCmd.Apply<ThornsPower>(new ThrowingPlayerChoiceContext(), c, 3, c, null),
+        c => PowerCmd.Apply<PlatingPower>(new ThrowingPlayerChoiceContext(), c, 4, c, null),
+        c => PowerCmd.Apply<VigorPower>(new ThrowingPlayerChoiceContext(), c, 6, c, null),
+        c => PowerCmd.Apply<RegenPower>(new ThrowingPlayerChoiceContext(), c, 3, c, null),
+    ];
+
+    protected override bool MentionsTipsy => true;
+
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+    [
+        HoverTipFactory.FromPower<StrengthPower>(),
+        HoverTipFactory.FromPower<DexterityPower>(),
+        HoverTipFactory.FromPower<ThornsPower>(),
+        HoverTipFactory.FromPower<PlatingPower>(),
+        HoverTipFactory.FromPower<VigorPower>(),
+        HoverTipFactory.FromPower<RegenPower>(),
+    ];
+
+    public override async Task AfterRoomEntered(AbstractRoom room)
+    {
+        if (room is not CombatRoom || Owner.Creature is not { IsAlive: true } creature)
+        {
+            return;
+        }
+
+        Flash();
+        var rolls = Math.Min(1 + (OwnerTipsy / TipsyPerBuff), MaxBuffs);
+        for (var i = 0; i < rolls; i++)
+        {
+            await Owner.RunState.Rng.Niche.NextItem(Buffs)!(creature);
         }
     }
 }

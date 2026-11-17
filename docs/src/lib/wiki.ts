@@ -127,6 +127,9 @@ function poolLink(card: Card) {
 	return `<a class="sts-ref" href="${filteredHref(cardsPage, 'pool', card.pool)}">${image}${escape(card.poolName)}</a>`;
 }
 
+/** Cards in cost order: X after numbers, unplayable last. */
+const costRank = (card: Card) => (typeof card.cost === 'number' ? card.cost : card.cost === 'X' ? 98 : 99);
+
 export const cards: Kind<Card> = {
 	key: 'cards',
 	ref: 'card',
@@ -140,7 +143,7 @@ export const cards: Kind<Card> = {
 		(a, b) =>
 			rank(cardPoolOrder, a.pool) - rank(cardPoolOrder, b.pool) ||
 			rank(rarityOrder, a.rarity) - rank(rarityOrder, b.rarity) ||
-			(a.cost ?? 99) - (b.cost ?? 99) ||
+			costRank(a) - costRank(b) ||
 			byTitle(a, b)
 	),
 	summary: (card) =>
@@ -214,7 +217,7 @@ export const cards: Kind<Card> = {
 			key: 'cost',
 			label: 'Cost',
 			facet: (card) => (card.cost === null ? 'Unplayable' : String(card.cost)),
-			sort: (card) => card.cost ?? 99,
+			sort: costRank,
 		},
 		drinkDimension<Card>(),
 		{ key: 'keyword', label: 'Keyword', facet: (card) => card.keywords, order: [...taxonomy.cardKeywords.before, ...taxonomy.cardKeywords.after] },

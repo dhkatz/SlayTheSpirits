@@ -135,7 +135,8 @@ toward the caps for drinks nobody chose.
 
 **Tavern relics** (`SpiritsRelic`, Event rarity, only from running up a rest site tab and the Tavern's Top Shelf): Hip Flask (Strength per 15 Tipsy at
 combat start), Beer Belly (+8 Max HP; Block = a quarter of Tipsy at combat start, max 15), Tip Jar (2 Gold per Tipsy
-from your drinks), Drinking Buddy (3 Block when a teammate drinks in combat), Pint Glass (heal 6 on a Finish, Chug or Shot).
+from your drinks), Drinking Buddy (3 Block when a teammate drinks in combat), Pint Glass (heal 6 on a Finish, Chug or Shot), Jungle
+Juice (a random buff at combat start, plus one per 20 Tipsy, up to 4; rolled on the run's Niche RNG).
 `DrinkGame` calls `SpiritsRelic.AfterDrinkAsync` for every delivered drink, in seat order, so effects stay in
 lockstep. **Tavern potions** (`SpiritsPotion`, shared pool, multiplayer runs, `ContentToggles.TavernPotions`): Light
 Beer (1 Sip; 2 Strength, 2 Dexterity), Tallboy (2 Sips; 15 Block, 3 Strength), Firewater (3 Sips; 25 to all

@@ -365,6 +365,8 @@ const cards = registered('Card')
 		const up = upgrade(name, found.body);
 		const upVars = up?.vars ?? {};
 		const cost = Number(ctor[1]);
+		// X cards (HasEnergyCostX) are declared with cost 0 and spend all your energy.
+		const costsX = flag(cardClasses, found, 'HasEnergyCostX');
 		const keywords = listProperty(cardClasses, found, 'CanonicalKeywords', 'CardKeyword');
 		const raw = cardText[`${entry}.description`];
 		const text = {
@@ -386,8 +388,8 @@ const cards = registered('Card')
 			type: known(name, ctor[2], taxonomy.cardTypes, 'card type'),
 			rarity: known(name, ctor[3], taxonomy.rarities, 'rarity'),
 			target: taxonomy.targets[ctor[4]] ?? fail(name, `unknown target ${ctor[4]}; add it to src/lib/taxonomy.json`),
-			cost: cost < 0 ? null : cost,
-			upgradedCost: cost >= 0 && up && up.cost !== 0 ? cost + up.cost : null,
+			cost: cost < 0 ? null : costsX ? 'X' : cost,
+			upgradedCost: !costsX && cost >= 0 && up && up.cost !== 0 ? cost + up.cost : null,
 			upgradable: up !== null,
 			// What upgrading changes, for the infobox: "Damage 8 → 12".
 			upgrade: [

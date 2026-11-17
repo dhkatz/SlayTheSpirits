@@ -13,5 +13,8 @@
   "SPIRITS_DRINKING_BUDDY.flavor": "Never let a friend drink alone. Just watch their back.",
   "SPIRITS_PINT_GLASS.title": "Pint Glass",
   "SPIRITS_PINT_GLASS.description": "Whenever you [gold]Finish your drink[/gold], [gold]Chug[/gold] or take a [gold]Shot[/gold], heal [green]6[/green] HP.",
-  "SPIRITS_PINT_GLASS.flavor": "Empty is just another word for ready."
+  "SPIRITS_PINT_GLASS.flavor": "Empty is just another word for ready.",
+  "SPIRITS_JUNGLE_JUICE.title": "Jungle Juice",
+  "SPIRITS_JUNGLE_JUICE.description": "At the start of each combat, gain a random buff, plus another for every [blue]20[/blue] [gold]Tipsy[/gold] you have (up to [blue]4[/blue]).",
+  "SPIRITS_JUNGLE_JUICE.flavor": "Nobody knows what's in it. Nobody asks."
 }

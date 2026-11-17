@@ -1,5 +1,9 @@
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheSpirits.Party;
 using SlayTheSpirits.Penalties;
 using SlayTheSpirits.Presentation;
@@ -38,6 +42,37 @@ public sealed class SpiritsDesignatedDriverPower : SpirePower
     public override PowerType Type => PowerType.Buff;
 
     public override PowerStackType StackType => PowerStackType.Single;
+}
+
+/// <summary>
+/// Drunk Driver: at the start of its owner's turn, deals a quarter of their Tipsy (up to <c>Amount</c>) to a random
+/// enemy. Turn starts run in lockstep, so the combat targets RNG picks the same enemy on every peer.
+/// </summary>
+public sealed class SpiritsDrunkDriverPower : SpirePower
+{
+    public const int TipsyPerDamage = 4;
+
+    public override PowerType Type => PowerType.Buff;
+
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (player.Creature != Owner || Owner.CombatState is not { } combat)
+        {
+            return;
+        }
+
+        var damage = Math.Min(Owner.GetPowerAmount<SpiritsTipsyPower>() / TipsyPerDamage, Amount);
+        var enemies = combat.HittableEnemies.ToList();
+        if (damage <= 0 || player.RunState.Rng.CombatTargets.NextItem(enemies) is not { } target)
+        {
+            return;
+        }
+
+        Flash();
+        await CreatureCmd.Damage(choiceContext, target, damage, ValueProp.Unpowered, Owner, null, null);
+    }
 }
 
 /// <summary>
