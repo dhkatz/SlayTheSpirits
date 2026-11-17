@@ -24,7 +24,7 @@ const cards = rules.presets.map((preset) => {
 		on: on.length,
 		total: preset.triggers.length,
 		heaviest: heaviest && { kind: heaviest.kind, label: (preset.labels as Record<string, { singular: string }>)[heaviest.kind].singular },
-		restSites: restSiteLimitNames[preset.restSiteDrinks] ?? preset.restSiteDrinks,
+		restSites: restSiteLimitNames[preset.restSiteTabs] ?? preset.restSiteTabs,
 	};
 });
 ---
@@ -47,7 +47,7 @@ const cards = rules.presets.map((preset) => {
 						<dd>{card.heaviest ? <DrinkPill kind={card.heaviest.kind} label={card.heaviest.label} /> : 'None'}</dd>
 					</div>
 					<div>
-						<dt>Rest Site Drinks</dt>
+						<dt>Rest Site Tabs</dt>
 						<dd>{card.restSites}</dd>
 					</div>
 				</dl>

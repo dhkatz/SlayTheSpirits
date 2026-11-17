@@ -71,17 +71,10 @@ public sealed class PenaltyEngine
         return results;
     }
 
-    /// <summary>
-    /// A player takes a rest site drink (<see cref="RestSiteDrinks"/>): uses up that option for the act and hands out
-    /// the drink as a <see cref="PenaltyRequest.Voluntary"/> penalty.
-    /// </summary>
-    public IReadOnlyList<PenaltyAssignment> TakeRestSiteDrink(PlayerId player, PenaltyKind kind, PenaltyCause cause, IPartyView party)
-    {
-        State.RecordRestSiteDrink(player, kind);
-        return Handle(new PenaltyRequest(new Penalty(kind), TargetKind.Subject, player, player, cause, Voluntary: true), party);
-    }
+    /// <summary>A player took a rest site tab (<see cref="RestSiteTabs"/>): uses up that option for the act.</summary>
+    public void TakeRestSiteTab(PlayerId player, RestSiteTab tab) => State.RecordRestSiteTab(player, tab);
 
-    /// <summary>Moves to a new act, resetting per-act caps and rest site drinks. False if already in that act.</summary>
+    /// <summary>Moves to a new act, resetting per-act caps and rest site tabs. False if already in that act.</summary>
     public bool EnterAct(int act)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(act, 1);
@@ -92,7 +85,7 @@ public sealed class PenaltyEngine
 
         State.Act = act;
         State.ActCounts.Clear();
-        State.RestSiteDrinksThisAct.Clear();
+        State.RestSiteTabsThisAct.Clear();
         return true;
     }
 

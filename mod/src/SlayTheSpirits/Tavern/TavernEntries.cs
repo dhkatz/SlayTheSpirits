@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Ascension;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -8,6 +9,7 @@ using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using SlayTheSpirits.Cards;
 using SlayTheSpirits.Engine;
 using SlayTheSpirits.Game;
 using SlayTheSpirits.Penalties;
@@ -85,6 +87,7 @@ internal abstract class TavernEntry : MerchantEntry
         new GlassOfWaterEntry(player),
         new BuyARoundEntry(player),
         new TheBouncerEntry(player),
+        new SettleUpEntry(player),
     ];
 }
 
@@ -123,8 +126,8 @@ internal sealed class TopShelfEntry(Player player) : TavernEntry(player, TavernM
     protected override async Task<bool> GrantAsync()
     {
         // Rolled once and kept, so backing out and coming back shows the same bottles.
-        _offer ??= SpiritsShotRestSiteOption.Offer(_player);
-        return await SpiritsShotRestSiteOption.ChooseAsync(_player, _offer);
+        _offer ??= SpiritsRunUpTabRestSiteOption.Offer(_player);
+        return await SpiritsRunUpTabRestSiteOption.ChooseAsync(_player, _offer);
     }
 }
 
@@ -168,4 +171,23 @@ internal sealed class TheBouncerEntry(Player player) : TavernEntry(player, Taver
             + (MerchantCardRemovalEntry.PriceIncrease * _player.ExtraFields.CardShopRemovalsUsed);
 
     protected override Task<bool> GrantAsync() => MerchantCardRemovalEntry.DoCardRemoval(_player, isCancelable: true);
+}
+
+/// <summary>Pays off a rest site tab: Finish your drink to remove a Tavern curse from your deck.</summary>
+internal sealed class SettleUpEntry(Player player) : TavernEntry(player, TavernMenu.SettleUp)
+{
+    public override bool IsAvailable => PileType.Deck.GetPile(_player).Cards.Any(static c => c is SpiritsCurse);
+
+    protected override async Task<bool> GrantAsync()
+    {
+        var prefs = new CardSelectorPrefs(CardSelectorPrefs.RemoveSelectionPrompt, 1) { Cancelable = true };
+        var picked = (await CardSelectCmd.FromDeckForRemoval(_player, prefs, static c => c is SpiritsCurse)).ToList();
+        if (picked.Count == 0)
+        {
+            return false;
+        }
+
+        await CardPileCmd.RemoveFromDeck(picked);
+        return true;
+    }
 }

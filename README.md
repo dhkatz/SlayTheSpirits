@@ -8,7 +8,7 @@ test-first modding SDK that lives in this repo (and is designed to be split out 
 - Penalties for game moments: boss/elite fights, specific enemies, deaths, big hits, curses, potions, wasted energy, rest-site water breaks, winning and losing.
 - **Tavern cards** (colorless, plus one per character) that make your friends drink: *Cheers!*, *Round on Me*, *Bottoms Up*, *Last Call*. Cards only ever hand out Sips; stronger ones cost more.
 - Drinks are **status cards** (Sip, Shot, Finish Your Drink…) that play automatically, with speech-bubble banter.
-- **Rest site drinks**: Chug to pick 2 of 5 Tavern cards, or take a Shot to choose one of the **Tavern relics**, found nowhere else (Hip Flask, Beer Belly, Tip Jar, Drinking Buddy, Pint Glass). Off, once per act, or at every rest site.
+- **Rest site tabs**: open a tab to pick 2 of 5 Tavern cards, or run one up to choose one of the **Tavern relics** (Hip Flask, Beer Belly, Tip Jar, Drinking Buddy, Pint Glass). You pay with a **Tavern curse** in your deck (Hiccups, Bar Fly, Hangover, Beer Goggles…) that makes you drink later. Settle up at the Tavern. Off, once per act, or at every rest site.
 - **Tavern potions** that you drink for real: *Light Beer* (1 Sip), *Tallboy* (2 Sips), *Firewater* (3 Sips).
 - **Tipsy**: a run-long buff that some cards scale with. A per-combat **bar tab** under each player shows what they owe.
 - **Host-authoritative rules**: the host's profile is sent to everyone and locked for the run. Clients never use local settings.

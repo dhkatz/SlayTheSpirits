@@ -88,8 +88,8 @@ internal sealed class RulesSettingsTab
         page.Toggle("Tavern Cards", shown.Content.TavernCards, on => Edit(page, r => r with { Content = r.Content with { TavernCards = on } }), editable);
         page.Toggle("Character Cards", shown.Content.CharacterCards, on => Edit(page, r => r with { Content = r.Content with { CharacterCards = on } }), editable);
         page.Toggle("Tavern Potions", shown.Content.TavernPotions, on => Edit(page, r => r with { Content = r.Content with { TavernPotions = on } }), editable);
-        var limits = Enum.GetValues<RestSiteDrinkLimit>();
-        page.Choice("Rest Site Drinks", [.. limits.Select(LimitName)], Array.IndexOf(limits, shown.RestSiteDrinks), i => Edit(page, r => r with { RestSiteDrinks = limits[i] }), editable);
+        var limits = Enum.GetValues<RestSiteTabLimit>();
+        page.Choice("Rest Site Tabs", [.. limits.Select(LimitName)], Array.IndexOf(limits, shown.RestSiteTabs), i => Edit(page, r => r with { RestSiteTabs = limits[i] }), editable);
         var taverns = Enum.GetValues<TavernLimit>();
         page.Choice("Taverns", [.. taverns.Select(TavernName)], Array.IndexOf(taverns, shown.Taverns), i => Edit(page, r => r with { Taverns = taverns[i] }), editable);
     }
@@ -225,11 +225,11 @@ internal sealed class RulesSettingsTab
         _ => limit.ToString(),
     };
 
-    private static string LimitName(RestSiteDrinkLimit limit) => limit switch
+    private static string LimitName(RestSiteTabLimit limit) => limit switch
     {
-        RestSiteDrinkLimit.Off => "Off",
-        RestSiteDrinkLimit.OncePerAct => "Once per Act",
-        RestSiteDrinkLimit.Unlimited => "Every Rest Site",
+        RestSiteTabLimit.Off => "Off",
+        RestSiteTabLimit.OncePerAct => "Once per Act",
+        RestSiteTabLimit.Unlimited => "Every Rest Site",
         _ => limit.ToString(),
     };
 

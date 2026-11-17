@@ -46,7 +46,7 @@ public static class Presets
             (BuiltInTriggers.RunWon, On(PenaltyKind.Finish, TargetKind.Everyone)),
             (BuiltInTriggers.RunLost, On(PenaltyKind.Finish, TargetKind.Everyone))),
         CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 1, [PenaltyKind.Chug] = 0, [PenaltyKind.Shot] = 0 },
-        RestSiteDrinks = RestSiteDrinkLimit.Off,
+        RestSiteTabs = RestSiteTabLimit.Off,
         Taverns = TavernLimit.Off,
     };
 
@@ -67,7 +67,7 @@ public static class Presets
             (BuiltInTriggers.RunWon, On(PenaltyKind.Shot, TargetKind.Everyone)),
             (BuiltInTriggers.RunLost, On(PenaltyKind.Shot, TargetKind.Everyone))),
         CapsPerAct = new Dictionary<PenaltyKind, int> { [PenaltyKind.Finish] = 4, [PenaltyKind.Chug] = 3, [PenaltyKind.Shot] = 2 },
-        RestSiteDrinks = RestSiteDrinkLimit.Unlimited,
+        RestSiteTabs = RestSiteTabLimit.Unlimited,
         Taverns = TavernLimit.EveryShop,
     };
 

@@ -40,8 +40,12 @@ public static class TavernMenu
     public static TavernItem TheBouncer { get; } = new(
         "the_bouncer", "The Bouncer", "Remove a card from your deck.", 75, null);
 
+    /// <summary>Pay off a rest site tab: Finish your drink to remove a Tavern curse.</summary>
+    public static TavernItem SettleUp { get; } = new(
+        "settle_up", "Settle Up", "Remove a Tavern curse from your deck.", 0, PenaltyKind.Finish);
+
     /// <summary>The menu, in display order.</summary>
-    public static IReadOnlyList<TavernItem> Items { get; } = [HouseLager, TheSpecial, TopShelf, GlassOfWater, BuyARound, TheBouncer];
+    public static IReadOnlyList<TavernItem> Items { get; } = [HouseLager, TheSpecial, TopShelf, GlassOfWater, BuyARound, TheBouncer, SettleUp];
 
     /// <summary>The gold price for a party of <paramref name="players"/> (before the game's shop discounts).</summary>
     public static int GoldFor(TavernItem item, int players)

@@ -17,8 +17,9 @@ using SpireKit.Content;
 namespace SlayTheSpirits.Relics;
 
 /// <summary>
-/// Base for Tavern relics: Event rarity, so they never drop on their own. The only way to get one is the Shot at a
-/// rest site (<see cref="SpiritsShotRestSiteOption"/>), which makes them the payoff for the night's rarest drink.
+/// Base for Tavern relics: Event rarity, so they never drop on their own. The only ways to get one are running up a
+/// tab at a rest site (<see cref="SpiritsRunUpTabRestSiteOption"/>, for a major Tavern curse) and the Tavern's Top
+/// Shelf (for a Shot).
 /// </summary>
 /// <remarks>
 /// <see cref="AfterDrinkAsync"/> is called for every drink anyone takes, from inside the drinking game's delivery,

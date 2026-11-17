@@ -1,6 +1,6 @@
 ---
 title: Rest Sites
-description: Chug or take a Shot at a rest site for a permanent reward.
+description: Open a tab at a rest site for a permanent reward, and pay for it with a curse.
 ---
 
 import Panel from '../../../components/Panel.astro';
@@ -9,46 +9,52 @@ import { rules } from '../../../lib/data';
 
 export const ruleSetsWith = (limit) =>
 	rules.presets
-		.filter((preset) => preset.restSiteDrinks === limit)
+		.filter((preset) => preset.restSiteTabs === limit)
 		.map((preset) => preset.name)
 		.join(', ') || 'None';
 
-Next to Rest and Smith, rest sites offer two drinks you can choose to take. Taking one uses your action at that rest
-site, like Rest or Smith.
+Next to Rest and Smith, rest sites let you put a reward on your tab. Taking one uses your action at that rest site,
+like Rest or Smith. You don't drink now: you pay later, with a Tavern curse in your deck that makes you drink and gets
+in your way.
 
 <PanelGrid>
-<Panel title="Chug" image="generated/images/rest_site/spirits_chug.png">
-
-**The drink:** :kw[Chug] a whole drink.
+<Panel title="Open a Tab" image="generated/images/rest_site/spirits_chug.png">
 
 **The reward:** choose 2 of 5 [Tavern cards](../../wiki/cards/) to add to your deck, from the
 [colorless set](../../wiki/cards/?pool=colorless) plus your character's own card.
 
+**The tab:** a random minor curse: :card[Spill], :card[Drunk Text], :card[Hiccups], :card[Bar Fly] or
+:card[Sticky Floor].
+
 </Panel>
-<Panel title="Take a Shot" image="generated/images/rest_site/spirits_shot.png">
+<Panel title="Run Up the Tab" image="generated/images/rest_site/spirits_shot.png">
 
-**The drink:** take a :kw[Shot] of liquor.
+**The reward:** choose 1 of 3 [Tavern relics](../../wiki/relics/) you don't have yet. Once you own them all, you
+get a normal relic instead.
 
-**The reward:** choose 1 of 3 [Tavern relics](../../wiki/relics/) you don't have yet. They can't be found anywhere
-else. Once you own them all, you get a normal relic instead.
+**The tab:** a random major curse: :card[Hangover], :card[Beer Goggles] or :card[Fuzzy Memory]. These come from
+nowhere else.
 
 </Panel>
 </PanelGrid>
 
-The reward comes first. If you back out of the card or relic choice, you don't drink and can still Rest or Smith.
-Backing out and choosing again shows the same cards or relics, so there's no rerolling.
+The reward comes first. If you back out of the card or relic choice, you get no curse and can still Rest or Smith.
+Backing out and choosing again shows the same cards or relics, so there's no rerolling. The curse is a surprise until
+it lands in your deck, and in the built-in rule sets gaining a curse is a :kw[Sip] on the spot.
 
-These drinks are your choice, so they are never [stepped down](../how-it-works/#caps) by the per-act limits. Separately,
-the built-in rule sets hand everyone a :kw[Water] at every rest site.
+The Tavern's **Settle Up** pays off a tab: :kw[Finish Your Drink]{label="finish your drink"} to remove one Tavern
+curse from your deck. Card removal at a shop works too.
 
 ## How Often
 
-The **Rest Site Drinks** setting decides how often each player can take them.
+The **Rest Site Tabs** setting decides how often each player can take them.
 
-| Rest Site Drinks | What It Means | Rule Sets |
+| Rest Site Tabs | What It Means | Rule Sets |
 |---|---|---|
 | **Off** | Rest sites only have the game's own options. | {ruleSetsWith('Off')} |
-| **Once per Act** | Each player can Chug once and take a Shot once per act. Drinks from other sources, like dying, don't use these up. | {ruleSetsWith('OncePerAct')} |
+| **Once per Act** | Each player can open a tab once and run one up once per act. | {ruleSetsWith('OncePerAct')} |
 | **Every Rest Site** | No limit. | {ruleSetsWith('Unlimited')} |
+
+Separately, the built-in rule sets hand everyone a :kw[Water] at every rest site.
 
 See [Rule Sets](../rule-sets/) for everything else each rule set changes.
