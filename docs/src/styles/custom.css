@@ -8,6 +8,8 @@
 	--sts-green: #7fff00;
 	--sts-red: #ff5555;
 	--sts-orange: #ffa518;
+	--sts-purple: #e08cff;
+	--sts-aqua: #7fffd4;
 }
 
 :root[data-theme='light'] {
@@ -19,6 +21,8 @@
 	--sts-green: #2f7d00;
 	--sts-red: #b3261e;
 	--sts-orange: #a85d00;
+	--sts-purple: #7b3fa8;
+	--sts-aqua: #0e7c74;
 }
 
 .sts-gold { color: var(--sts-gold); font-weight: 600; }
@@ -26,6 +30,35 @@
 .sts-green { color: var(--sts-green); font-weight: 600; }
 .sts-red { color: var(--sts-red); font-weight: 600; }
 .sts-orange { color: var(--sts-orange); font-weight: 600; }
+.sts-purple { color: var(--sts-purple); font-weight: 600; }
+.sts-aqua { color: var(--sts-aqua); font-weight: 600; }
+
+/* The game's text effects, from event text: [jitter] shakes, [sine] sways. Still for readers who'd rather not. */
+.sts-jitter,
+.sts-sine {
+	display: inline-block;
+}
+.sts-jitter {
+	animation: sts-jitter 0.3s steps(3) infinite;
+}
+.sts-sine {
+	animation: sts-sine 2.4s ease-in-out infinite;
+}
+@keyframes sts-jitter {
+	0% { transform: translate(0, 0); }
+	33% { transform: translate(-0.04em, 0.05em); }
+	66% { transform: translate(0.05em, -0.04em); }
+}
+@keyframes sts-sine {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-0.12em); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.sts-jitter,
+	.sts-sine {
+		animation: none;
+	}
+}
 
 .sts-grid {
 	display: grid;

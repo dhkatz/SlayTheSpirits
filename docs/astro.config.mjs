@@ -44,13 +44,19 @@ export default defineConfig({
 						{ slug: 'play/how-it-works' },
 						{ slug: 'play/rule-sets' },
 						{ slug: 'play/rest-sites' },
-						{ slug: 'play/events' },
 						{ slug: 'play/drink-responsibly' },
 					],
 				},
 				{
 					label: 'Wiki',
-					items: [{ slug: 'wiki' }, { slug: 'wiki/cards' }, { slug: 'wiki/relics' }, { slug: 'wiki/potions' }, { slug: 'wiki/keywords' }],
+					items: [
+						{ slug: 'wiki' },
+						{ slug: 'wiki/cards' },
+						{ slug: 'wiki/relics' },
+						{ slug: 'wiki/potions' },
+						{ slug: 'wiki/events' },
+						{ slug: 'wiki/keywords' },
+					],
 				},
 				{
 					label: 'SpireKit',

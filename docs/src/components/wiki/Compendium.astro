@@ -17,7 +17,7 @@ interface Props {
 	noun: { one: string; many: string };
 	/** Prefix for URL parameters, if a page has more than one compendium. */
 	id?: string;
-	layout?: 'cards' | 'tiles';
+	layout?: 'cards' | 'tiles' | 'list';
 }
 
 const { facets, sorts, toggles = [], noun, id = '', layout = 'tiles' } = Astro.props;

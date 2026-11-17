@@ -119,7 +119,7 @@ try {
 	// Words the mod's text marks gold that are the title of one of the game's keywords.
 	const byTitle = new Map();
 	for (const [id, candidate] of candidates) if (!byTitle.has(normalizeTerm(candidate.title))) byTitle.set(normalizeTerm(candidate.title), id);
-	for (const name of ['cards', 'relics', 'potions', 'powers']) {
+	for (const name of ['cards', 'relics', 'potions', 'powers', 'events']) {
 		for (const phrase of goldPhrases(loc(name))) {
 			const id = byTitle.get(normalizeTerm(phrase));
 			if (id) wanted.add(id);

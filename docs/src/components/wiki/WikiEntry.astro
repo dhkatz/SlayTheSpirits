@@ -1,5 +1,5 @@
 ---
-// The page for one card, relic, potion or keyword, laid out like a wiki article: the text on the left (opening
+// The page for one card, relic, potion, event or keyword, laid out like a wiki article: the text on the left (opening
 // sentence, how to get it, its keywords, what uses it, notes, source), its infobox on the right, and the navigation
 // box for its kind underneath. Notes live in src/content/notes/<kind>/<slug>.md; a page without them links to GitHub
 // to add some.
@@ -31,6 +31,7 @@ const addNotes = newFileUrl(notesFolder, `${item.slug}.md`);
 
 const isKeyword = kind.key === 'keywords';
 const obtain = kind.obtain(item);
+const sections = kind.sections?.(item) ?? [];
 const plural = kind.plural.charAt(0).toUpperCase() + kind.plural.slice(1);
 ---
 
@@ -65,6 +66,15 @@ const plural = kind.plural.charAt(0).toUpperCase() + kind.plural.slice(1);
 							<p set:html={obtain} />
 						</>
 					)
+				}
+
+				{
+					sections.map((section) => (
+						<>
+							<h2 id={section.id}>{section.title}</h2>
+							<Fragment set:html={section.html} />
+						</>
+					))
 				}
 
 				{

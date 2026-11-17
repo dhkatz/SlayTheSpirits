@@ -1,10 +1,11 @@
 ---
 // One entry in a compendium: a card shows its face (and its upgraded face, for the "Show upgrades" toggle); relics,
-// potions and keywords show their icon, name and text. The whole tile is a link, so keywords in the text only get
+// potions and keywords show their icon, name and text; an event is a row with its picture, acts, options and the start
+// of its text, like the community wiki's events list. The whole tile is a link, so keywords in the text only get
 // hover boxes.
 import CardFace from './CardFace.astro';
 import ItemIcon from './ItemIcon.astro';
-import { refs, type Card } from '../../lib/data';
+import { asset, refs, type Card, type GameEvent } from '../../lib/data';
 import { entryHref, kinds, type Entry, type Kind, type KindKey } from '../../lib/wiki';
 
 interface Props {
@@ -17,6 +18,9 @@ const kind = kinds[Astro.props.kind] as unknown as Kind<Entry>;
 const link = entryHref(kind.key, item.slug);
 const other = item as Entry & { image?: string | null; icon?: string | null; rarity?: string };
 const meta = kind.facts(item)[0]?.value;
+const event = item as unknown as GameEvent;
+/** The event's opening paragraph, as plain words (its colors and effects are for its own page). */
+const opening = kind.key === 'events' ? event.intro.split('<br><br>')[0].replace(/<[^>]+>/g, '') : '';
 ---
 
 {
@@ -24,6 +28,16 @@ const meta = kind.facts(item)[0]?.value;
 		<a class="sts-card-link" href={link} aria-label={item.title}>
 			<CardFace card={item as unknown as Card} size="sm" class="sts-face-base" />
 			<CardFace card={item as unknown as Card} size="sm" upgraded class="sts-face-up" />
+		</a>
+	) : kind.key === 'events' ? (
+		<a class="sts-tile sts-tile--link sts-event-row" href={link}>
+			{event.image ? <img src={asset(event.image)} alt="" loading="lazy" /> : <span />}
+			<div>
+				<h3>{item.title}</h3>
+				<p class="sts-meta">{meta}</p>
+				<p class="sts-text" set:html={refs.terms(kind.text(item), 'hover')} />
+				<p class="sts-flavor" set:html={opening} />
+			</div>
 		</a>
 	) : (
 		<a class="sts-tile sts-tile--link" href={link}>

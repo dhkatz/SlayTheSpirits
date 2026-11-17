@@ -1,6 +1,6 @@
 // Markdown directives for inline references, in any .md or .mdx page or note:
 //
-//   :card[Down the Hatch]   :relic[Hip Flask]   :potion[Tallboy]   :kw[Tipsy]   :char[Ironclad]
+//   :card[Down the Hatch]   :relic[Hip Flask]   :potion[Tallboy]   :event[Speakeasy]   :kw[Tipsy]   :char[Ironclad]
 //
 // Each becomes the entry's icon and name, linked to its page, with a hover box (src/lib/refs.mjs). To show other
 // words, give a label: :kw[Finish Your Drink]{label="finishing your drink"}. To drop the icon, add {noicon}.
