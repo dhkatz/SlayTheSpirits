@@ -404,3 +404,51 @@ public sealed class SpiritsBlackout() : SpiritsCard(3, CardType.Skill, CardRarit
 
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
+
+/// <summary>1: Gain 8 (11) Block. Choose a teammate; the next penalty they'd receive comes to you instead.</summary>
+public sealed class SpiritsTakeOneForTheTeam() : SpiritsCard(1, CardType.Skill, CardRarity.Uncommon, TargetType.AnyAlly)
+{
+    public override bool GainsBlock => true;
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(8m, ValueProp.Move)];
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        ArgumentNullException.ThrowIfNull(cardPlay.Target?.Player);
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        SlayTheSpiritsMod.Game?.AddTakeover(new PlayerId(cardPlay.Target.Player.NetId), new PlayerId(Owner.NetId));
+    }
+
+    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3m);
+}
+
+/// <summary>Common. 0: Gain 5 (8) Block. Drink some Water.</summary>
+public sealed class SpiritsWaterBreak() : SpiritsCard(0, CardType.Skill, CardRarity.Common, TargetType.Self)
+{
+    public override bool GainsBlock => true;
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(5m, ValueProp.Move)];
+
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Water];
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        await TakeWaterAsync(choiceContext);
+    }
+
+    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3m);
+}
+
+/// <summary>Power. 1 (0): Whenever you take a Sip, draw 1 card.</summary>
+public sealed class SpiritsHappyHour() : SpiritsCard(1, CardType.Power, CardRarity.Uncommon, TargetType.Self)
+{
+    protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
+
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<SpiritsHappyHourPower>()];
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+        await PowerCmd.Apply<SpiritsHappyHourPower>(choiceContext, Owner.Creature, 1m, Owner.Creature, this);
+
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+}

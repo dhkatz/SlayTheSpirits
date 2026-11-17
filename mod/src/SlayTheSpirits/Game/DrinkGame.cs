@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Runs;
 using SlayTheSpirits.Engine;
 using SlayTheSpirits.Party;
 using SlayTheSpirits.Penalties;
+using SlayTheSpirits.Powers;
 using SlayTheSpirits.Presentation;
 using SlayTheSpirits.Relics;
 using SlayTheSpirits.Rules;
@@ -90,6 +91,12 @@ internal sealed class DrinkGame
     /// <summary>Passes the player's next penalty to someone else (Slip Away).</summary>
     public void AddRedirect(PlayerId player) => EnsureEngine()?.AddRedirects(player);
 
+    /// <summary><paramref name="taker"/> takes <paramref name="player"/>'s next penalty (Take One for the Team).</summary>
+    public void AddTakeover(PlayerId player, PlayerId taker) => EnsureEngine()?.AddTakeover(player, taker);
+
+    /// <summary>Passes the player's next penalty this turn to someone else (Dine and Dash).</summary>
+    public void ArmTurnRedirect(PlayerId player) => EnsureEngine()?.ArmTurnRedirect(player);
+
     private async Task OnGameEventAsync(IGameEvent gameEvent)
     {
         switch (gameEvent)
@@ -111,16 +118,16 @@ internal sealed class DrinkGame
             case CombatStarted:
                 if (EnsureEngine() is { } engine && _run is { } run)
                 {
-                    // Immunity lasts one combat. It's also cleared on victory, but a combat can end without
-                    // one (the dev console's `room`, escapes), and the power that showed it is gone by now.
-                    engine.ClearImmunities();
+                    // Immunity and per-turn redirects last one combat. They're also cleared on victory, but a
+                    // combat can end without one (the dev console's `room`, escapes), and their powers are gone.
+                    engine.ClearCombatEffects();
                     await TipsyBuff.RestoreAsync(run, engine).ConfigureAwait(true);
                 }
 
                 await ApplyAsync(GameTriggers.From(gameEvent), null, CombatPhase.Starting).ConfigureAwait(true);
                 return;
             case CombatWon:
-                _engine?.ClearImmunities();
+                _engine?.ClearCombatEffects();
                 break;
         }
 
@@ -230,6 +237,7 @@ internal sealed class DrinkGame
         await BarTab.AddAsync(run, assignments, choiceContext).ConfigureAwait(true);
         await TipsyBuff.AddAsync(run, assignments, choiceContext).ConfigureAwait(true);
         await SpiritsRelic.AfterDrinksAsync(run, assignments, choiceContext).ConfigureAwait(true);
+        await DrinkListeners.AfterDrinksAsync(run, assignments, choiceContext).ConfigureAwait(true);
     }
 
     /// <summary>

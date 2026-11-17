@@ -18,29 +18,36 @@ public interface IPenaltyPolicy
 }
 
 /// <summary>
-/// Passes a player's next penalty to a random other player (e.g. Slip Away). The rest of a redirected batch
-/// (<see cref="PenaltyRequest.Batch"/>) follows it to the same player without using up another redirect.
+/// Passes a player's penalty to someone else, first match wins:
+/// <list type="number">
+/// <item>The rest of a batch that was already passed on (<see cref="PenaltyRequest.Batch"/>) follows it, without
+/// using anything up.</item>
+/// <item>A teammate who offered to take their next penalty (Take One for the Team) gets it.</item>
+/// <item>The first penalty of their turn goes to a random other player (Dine and Dash).</item>
+/// <item>Their next penalty goes to a random other player (Slip Away).</item>
+/// </list>
 /// </summary>
 public sealed class RedirectPolicy : IPenaltyPolicy
 {
     public IEnumerable<PenaltyAssignment> Apply(PenaltyAssignment assignment, PolicyContext context)
     {
         var state = context.State;
+        var player = assignment.Player.Value;
         if (assignment.OriginalPlayer is not null)
         {
             return [assignment];
         }
 
         if (assignment.Batch is { } batch
-            && state.RedirectedBatches.TryGetValue(assignment.Player.Value, out var redirected)
+            && state.RedirectedBatches.TryGetValue(player, out var redirected)
             && redirected.Batch == batch)
         {
             return [Redirect(assignment, redirected.Target)];
         }
 
-        if (!state.PendingRedirects.TryGetValue(assignment.Player.Value, out var remaining) || remaining <= 0)
+        if (state.PendingTakeovers.Remove(player, out var taker) && taker != player)
         {
-            return [assignment];
+            return [Redirect(assignment, new PlayerId(taker), state)];
         }
 
         var others = context.Party.Members.Where(m => m.Id != assignment.Player).ToList();
@@ -49,22 +56,37 @@ public sealed class RedirectPolicy : IPenaltyPolicy
             return [assignment];
         }
 
+        if (state.TurnRedirects.Remove(player))
+        {
+            return [Redirect(assignment, context.Rng.Pick(others).Id, state)];
+        }
+
+        if (!state.PendingRedirects.TryGetValue(player, out var remaining) || remaining <= 0)
+        {
+            return [assignment];
+        }
+
         if (remaining == 1)
         {
-            state.PendingRedirects.Remove(assignment.Player.Value);
+            state.PendingRedirects.Remove(player);
         }
         else
         {
-            state.PendingRedirects[assignment.Player.Value] = remaining - 1;
+            state.PendingRedirects[player] = remaining - 1;
         }
 
-        var target = context.Rng.Pick(others).Id;
-        if (assignment.Batch is { } first)
+        return [Redirect(assignment, context.Rng.Pick(others).Id, state)];
+    }
+
+    /// <summary>Passes it on, and remembers where its batch went so the rest follows.</summary>
+    private static PenaltyAssignment Redirect(PenaltyAssignment assignment, PlayerId target, RunPenaltyState state)
+    {
+        if (assignment.Batch is { } batch)
         {
-            state.RedirectedBatches[assignment.Player.Value] = (first, target);
+            state.RedirectedBatches[assignment.Player.Value] = (batch, target);
         }
 
-        return [Redirect(assignment, target)];
+        return Redirect(assignment, target);
     }
 
     private static PenaltyAssignment Redirect(PenaltyAssignment assignment, PlayerId target) => assignment with

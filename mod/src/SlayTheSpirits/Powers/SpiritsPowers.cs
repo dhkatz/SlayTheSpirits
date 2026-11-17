@@ -3,7 +3,10 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Models.Orbs;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using SlayTheSpirits.Engine;
 using SlayTheSpirits.Party;
 using SlayTheSpirits.Penalties;
 using SlayTheSpirits.Presentation;
@@ -72,6 +75,101 @@ public sealed class SpiritsDrunkDriverPower : SpirePower
 
         Flash();
         await CreatureCmd.Damage(choiceContext, target, damage, ValueProp.Unpowered, Owner, null, null);
+    }
+}
+
+/// <summary>Beer Muscles: whenever its owner drinks, they gain Strength (Amount per drink).</summary>
+public sealed class SpiritsBeerMusclesPower : SpirePower, ISpiritsDrinkListener
+{
+    public override PowerType Type => PowerType.Buff;
+
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public async Task AfterDrinkAsync(PenaltyAssignment drink, bool mine, PlayerChoiceContext choiceContext)
+    {
+        if (mine)
+        {
+            Flash();
+            await PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount * drink.Penalty.Count, Owner, null);
+        }
+    }
+}
+
+/// <summary>Brain Freeze: whenever its owner drinks, they Channel Frost (Amount per drink).</summary>
+public sealed class SpiritsBrainFreezePower : SpirePower, ISpiritsDrinkListener
+{
+    public override PowerType Type => PowerType.Buff;
+
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public async Task AfterDrinkAsync(PenaltyAssignment drink, bool mine, PlayerChoiceContext choiceContext)
+    {
+        if (!mine || Owner.Player is not { } player)
+        {
+            return;
+        }
+
+        Flash();
+        for (var i = 0; i < Amount * drink.Penalty.Count; i++)
+        {
+            await OrbCmd.Channel<FrostOrb>(choiceContext, player);
+        }
+    }
+}
+
+/// <summary>Wake: whenever a teammate drinks, its owner Summons Amount (per drink).</summary>
+public sealed class SpiritsWakePower : SpirePower, ISpiritsDrinkListener
+{
+    public const int Summon = 2;
+
+    public override PowerType Type => PowerType.Buff;
+
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public async Task AfterDrinkAsync(PenaltyAssignment drink, bool mine, PlayerChoiceContext choiceContext)
+    {
+        if (mine || Owner.Player is not { } player)
+        {
+            return;
+        }
+
+        Flash();
+        await OstyCmd.Summon(choiceContext, player, Amount * drink.Penalty.Count, this);
+    }
+}
+
+/// <summary>Happy Hour: whenever its owner takes a Sip, they draw Amount cards (per Sip).</summary>
+public sealed class SpiritsHappyHourPower : SpirePower, ISpiritsDrinkListener
+{
+    public override PowerType Type => PowerType.Buff;
+
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public async Task AfterDrinkAsync(PenaltyAssignment drink, bool mine, PlayerChoiceContext choiceContext)
+    {
+        if (mine && drink.Penalty.Kind == PenaltyKind.Sip && Owner.Player is { } player)
+        {
+            Flash();
+            await CardPileCmd.Draw(choiceContext, Amount * drink.Penalty.Count, player);
+        }
+    }
+}
+
+/// <summary>Dine and Dash: at the start of each of its owner's turns, their first penalty goes to a random teammate.</summary>
+public sealed class SpiritsDineAndDashPower : SpirePower
+{
+    public override PowerType Type => PowerType.Buff;
+
+    public override PowerStackType StackType => PowerStackType.Single;
+
+    public override Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (player.Creature == Owner)
+        {
+            SlayTheSpiritsMod.Game?.ArmTurnRedirect(new PlayerId(player.NetId));
+        }
+
+        return Task.CompletedTask;
     }
 }
 

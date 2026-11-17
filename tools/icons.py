@@ -206,6 +206,28 @@ def relic_icons():
             'drinking_buddy': drinking_buddy, 'pint_glass': pint_glass, 'jungle_juice': jungle_juice}
 
 
+def card_power_icons():
+    """Powers from Tavern cards: Beer Muscles, Brain Freeze, Wake, Happy Hour, Dine and Dash."""
+    beer_muscles = mug((200, 70, 40, 255), (255, 240, 220, 255), (175, 140, 95, 255))
+    cube = rounded_rect(26, 26, 102, 102, 14)
+    brain_freeze = shape_icon([
+        (cube, (150, 210, 245, 230)),
+        (rounded_rect(34, 34, 62, 50, 6), (240, 250, 255, 200)),
+        (lambda x, y: cube(x, y) and x + y > 160, (100, 170, 220, 200)),
+    ])
+    wake = glass(trapezoid(34, 94, 42, 86, 22, 114), trapezoid(37, 91, 44, 84, 56, 111), (190, 170, 230, 160),
+                 glass_tint=(220, 225, 240, 120))
+    face = circle(64, 64, 48)
+    hand = lambda x, y: (abs(x - 64) <= 3 and 30 <= y <= 66) or (abs(y - 64) <= 3 and 62 <= x <= 90)
+    happy_hour = shape_icon([(face, (250, 215, 80, 255)), (circle(64, 64, 40), (255, 245, 210, 255)), (hand, (60, 40, 20, 255))])
+    receipt = rounded_rect(36, 16, 92, 112, 4)
+    lines = lambda x, y: receipt(x, y) and 44 <= x <= 84 and int(y) % 14 in (0, 1, 2) and 28 <= y <= 98
+    dine_and_dash = shape_icon([(receipt, (245, 240, 225, 255)), (lines, (120, 110, 100, 255)),
+                                (lambda x, y: circle(80, 92, 14)(x, y), (90, 170, 80, 255))])
+    return {'beer_muscles': beer_muscles, 'brain_freeze': brain_freeze, 'wake': wake,
+            'happy_hour': happy_hour, 'dine_and_dash': dine_and_dash}
+
+
 def steering_wheel():
     """Drunk Driver: a steering wheel, slightly crooked."""
     rim = ring(64, 64, 50, 38)
@@ -249,6 +271,8 @@ def main(images_dir):
     png(f'{powers}/spirits_tipsy_power.png', mug((231, 160, 40, 255), (255, 248, 232, 255), (190, 205, 215, 255)))
     png(f'{powers}/spirits_designated_driver_power.png', mug((110, 190, 245, 255), (210, 236, 255, 255), (190, 205, 215, 255)))
     png(f'{powers}/spirits_drunk_driver_power.png', steering_wheel())
+    for name, img in card_power_icons().items():
+        png(f'{powers}/spirits_{name}_power.png', img)
     tabs = tab_icons()
     for kind, img in tabs.items():
         png(f'{powers}/spirits_{kind}_tab_power.png', img)

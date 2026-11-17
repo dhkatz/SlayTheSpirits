@@ -28,6 +28,19 @@ public sealed class RunPenaltyState
     public Dictionary<ulong, int> PendingRedirects { get; init; } = [];
 
     /// <summary>
+    /// Per player: a teammate who'll take their next penalty instead (e.g. Take One for the Team), keyed by the player
+    /// whose penalty it is.
+    /// </summary>
+    public Dictionary<ulong, ulong> PendingTakeovers { get; init; } = [];
+
+    /// <summary>
+    /// Players whose first penalty this turn goes to a random other player (e.g. Dine and Dash, which re-arms it every
+    /// turn). Combat-only, cleared when combat starts and ends, so not persisted.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public HashSet<ulong> TurnRedirects { get; } = [];
+
+    /// <summary>
     /// Per player: the last batch of drinks that was redirected away from them, and to whom, so the rest of that batch
     /// follows (<see cref="PenaltyRequest.Batch"/>). A batch is one card play, which never spans a save, so this isn't
     /// persisted.

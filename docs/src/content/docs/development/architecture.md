@@ -160,9 +160,19 @@ tune Tipsy-scaling cards against.
   card plays, so caps, immunity and redirects apply then. The Sips from one play share a `PenaltyRequest.Batch`, so
   a redirect (Slip Away) passes them all to the same player. Call it last in `OnPlay`: after another player's
   choice the rest of the play runs on that player's queue (same as the base game's Tutor).
-- `GiveEveryoneAsync(ctx, kind)`: all other players confirm simultaneously; drinks then play in seat order,
+- `GiveEveryoneSipsAsync(ctx, count)`: all other players confirm simultaneously; drinks then play in seat order,
   so the engine sees the same sequence on every peer regardless of who answers first.
-- `ShuffleDrinksAsync(player, kind, n, pile)`: drink cards in a draw/discard pile auto-play when drawn.
+- `ShuffleSipsAsync(player, n, pile)`: Sip cards in a draw/discard pile auto-play when drawn.
+- `TakeWaterAsync(ctx)`: the owner drinks Water (`SpiritsWater`), which immunity and caps never touch.
+
+**Passing drinks on** (`RedirectPolicy`), first match wins: the rest of an already-redirected batch follows it; a
+teammate's takeover (`PenaltyEngine.AddTakeover`, Take One for the Team, persisted) sends the next one to them; a
+per-turn redirect (`ArmTurnRedirect`, re-armed each turn by Dine and Dash's power, cleared with immunities by
+`ClearCombatEffects`) sends one to a random teammate; then Slip Away's `PendingRedirects`.
+
+**Whenever you drink.** Powers implementing `ISpiritsDrinkListener` (Beer Muscles, Brain Freeze, Wake, Happy Hour)
+hear every delivered drink in combat (not Water) from `DrinkListeners`, players in seat order, right after the
+Tavern relics' `AfterDrinkAsync`.
 
 **Bar tab.** During combat each player shows one counter per drink kind they've been handed this
 combat (`SpiritsTabPower`: "Shots 1", "Sips 2"), counted after caps, immunity and redirects (`BarTab`).

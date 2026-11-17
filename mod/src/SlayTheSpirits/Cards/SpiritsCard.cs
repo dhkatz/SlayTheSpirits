@@ -115,6 +115,10 @@ public abstract class SpiritsCard(int energyCost, CardType type, CardRarity rari
         }
     }
 
+    /// <summary>The owner drinks some Water, as a drink card played straight away.</summary>
+    protected async Task TakeWaterAsync(PlayerChoiceContext choiceContext) =>
+        await DrinkCards.PlayAsync(choiceContext, DrinkCards.Create(CombatState!, Owner, PenaltyKind.Water, CardCause, Owner));
+
     /// <summary>Shuffles Sips into a player's pile; they auto-play whenever they're drawn.</summary>
     protected async Task ShuffleSipsAsync(Player drinker, int count, PileType pile = PileType.Draw)
     {

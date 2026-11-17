@@ -6,5 +6,19 @@
   "SPIRITS_DESIGNATED_DRIVER_POWER.description": "Immune to penalties this combat. Water still counts.",
   "SPIRITS_DRUNK_DRIVER_POWER.title": "Drunk Driver",
   "SPIRITS_DRUNK_DRIVER_POWER.description": "At the start of your turn, deal damage equal to a quarter of your [gold]Tipsy[/gold] to a random enemy.",
-  "SPIRITS_DRUNK_DRIVER_POWER.smartDescription": "At the start of your turn, deal damage equal to a quarter of your [gold]Tipsy[/gold] (max [blue]{Amount}[/blue]) to a random enemy."
+  "SPIRITS_DRUNK_DRIVER_POWER.smartDescription": "At the start of your turn, deal damage equal to a quarter of your [gold]Tipsy[/gold] (max [blue]{Amount}[/blue]) to a random enemy.",
+  "SPIRITS_BEER_MUSCLES_POWER.title": "Beer Muscles",
+  "SPIRITS_BEER_MUSCLES_POWER.description": "Whenever you drink, gain [gold]Strength[/gold].",
+  "SPIRITS_BEER_MUSCLES_POWER.smartDescription": "Whenever you drink, gain [blue]{Amount}[/blue] [gold]Strength[/gold].",
+  "SPIRITS_BRAIN_FREEZE_POWER.title": "Brain Freeze",
+  "SPIRITS_BRAIN_FREEZE_POWER.description": "Whenever you drink, [gold]Channel[/gold] [gold]Frost[/gold].",
+  "SPIRITS_BRAIN_FREEZE_POWER.smartDescription": "Whenever you drink, [gold]Channel[/gold] [blue]{Amount}[/blue] [gold]Frost[/gold].",
+  "SPIRITS_WAKE_POWER.title": "Wake",
+  "SPIRITS_WAKE_POWER.description": "Whenever a teammate drinks, [gold]Summon[/gold].",
+  "SPIRITS_WAKE_POWER.smartDescription": "Whenever a teammate drinks, [gold]Summon[/gold] [blue]{Amount}[/blue].",
+  "SPIRITS_HAPPY_HOUR_POWER.title": "Happy Hour",
+  "SPIRITS_HAPPY_HOUR_POWER.description": "Whenever you take a [gold]Sip[/gold], draw cards.",
+  "SPIRITS_HAPPY_HOUR_POWER.smartDescription": "Whenever you take a [gold]Sip[/gold], draw [blue]{Amount}[/blue] card(s).",
+  "SPIRITS_DINE_AND_DASH_POWER.title": "Dine and Dash",
+  "SPIRITS_DINE_AND_DASH_POWER.description": "This combat, the first penalty you would receive each turn goes to a random teammate."
 }
