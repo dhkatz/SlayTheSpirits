@@ -1,8 +1,10 @@
 # Builds a release and uploads it to the Steam Workshop.
 #
-# To release: bump <Version> in mod/src/SlayTheSpirits/SlayTheSpirits.csproj, merge it, then publish a GitHub release
-# tagged v<Version>. This workflow downloads the game (the build compiles against it), runs the tests, builds the mod,
-# attaches it to the release as a zip, and uploads it to the Workshop with the release notes as the change note.
+# To release: merge the open release PR (release-please.yml). That bumps <Version> in
+# mod/src/SlayTheSpirits/SlayTheSpirits.csproj, tags v<Version>, creates the GitHub release, and starts this workflow on
+# the tag. (Publishing a v<Version> release by hand also starts it.) This workflow downloads the game (the build compiles
+# against it), runs the tests, builds the mod, attaches it to the release as a zip, and uploads it to the Workshop with
+# the release notes as the change note.
 #
 # Actions → Release → Run workflow on a v* tag re-runs it; untick "upload" to only download, test and build.
 #
