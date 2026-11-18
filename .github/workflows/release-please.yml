@@ -1,0 +1,41 @@
+# Keeps a release PR open for the next version (release-please).
+#
+# Every push to main updates the PR from the Conventional Commit titles merged since the last release:
+# feat → minor, fix → patch (while the mod is 0.x, a breaking change is a minor bump too). The PR bumps <Version> in
+# SlayTheSpirits.csproj and adds the release to CHANGELOG.md. Merging it tags v<Version>, creates the GitHub release,
+# and starts the Release workflow on that tag, which builds the mod and uploads it to the Steam Workshop.
+#
+# Config: release-please-config.json and .release-please-manifest.json (the last released version).
+#
+# Setup: repo Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests".
+name: Release PR
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write       # the release branch, tags and GitHub releases
+  pull-requests: write  # the release PR
+  actions: write        # start the Release workflow
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v5
+
+      # A release created with GITHUB_TOKEN doesn't fire `release: published`, but workflow_dispatch is allowed.
+      # Running it on the tag keeps the steam-workshop environment's v* tag rule and the version check working.
+      - name: Start the Release workflow
+        if: steps.release.outputs.release_created
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag_name }}
+        run: gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref "$TAG"
