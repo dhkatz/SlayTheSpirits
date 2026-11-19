@@ -368,7 +368,10 @@ public sealed class SpiritsBottomlessMimosas() : SpiritsCard(0, CardType.Attack,
         }
 
         await GiveSipsAsync(choiceContext, Owner, refills);
-        await DamageCmd.Attack(DynamicVars.CalculatedDamage)
+
+        // Fixed once for every hit: Attack(CalculatedDamage) would recalculate per hit, so Tipsy gained mid-attack
+        // (a big hit back from Thorns is a penalty) would make later hits stronger.
+        await DamageCmd.Attack(DynamicVars.CalculatedDamage.Calculate(null))
             .WithHitCount(refills)
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(CombatState!)
