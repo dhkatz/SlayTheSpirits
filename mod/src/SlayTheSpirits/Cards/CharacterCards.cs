@@ -1,8 +1,10 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Orbs;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -16,29 +18,37 @@ namespace SlayTheSpirits.Cards;
 // Registered into the character's pool, so they appear in that character's normal rewards (multiplayer only).
 
 /// <summary>
-/// "Down the Hatch" (Ironclad). 2: Take 2 Sips. Deal 8 (12) + half your Tipsy damage. Keeps Keg Stand's id so saved
-/// runs load. The Sips land first, so they count toward the damage.
+/// "Down the Hatch" (Ironclad). 2: Take 2 Sips. Deal 8 (12) damage, +1 for every 2 Tipsy. Keeps Keg Stand's id so saved
+/// runs load. The Sips land first, so they count toward the damage (the preview, shown before them, doesn't).
 /// </summary>
 public sealed class SpiritsKegStand() : SpiritsCard(2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy), ISpiritsCharacterCard
 {
     private const string Sips = "Sips";
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(8m, ValueProp.Move), new DynamicVar(Sips, 2m)];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new CalculationBaseVar(8m),
+        new ExtraDamageVar(1m),
+        new CalculatedDamageVar(ValueProp.Move).WithMultiplier(HalfTipsy),
+        new DynamicVar(Sips, 2m),
+    ];
 
     protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
+
+    private static decimal HalfTipsy(CardModel card, Creature? target) => OwnerTipsyOf(card) / 2;
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await GiveSipsAsync(choiceContext, Owner, DynamicVars[Sips].IntValue);
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue + (OwnerTipsy / 2))
+        await DamageCmd.Attack(DynamicVars.CalculatedDamage)
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
             .WithHitFx("vfx/vfx_attack_blunt", null, "blunt_attack.mp3")
             .Execute(choiceContext);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(4m);
+    protected override void OnUpgrade() => DynamicVars.CalculationBase.UpgradeValueBy(4m);
 }
 
 /// <summary>Silent. 1 (0): The next penalty you'd receive goes to a random teammate. Draw 1 card.</summary>
@@ -335,15 +345,22 @@ public sealed class SpiritsKaraokeDuet() : SpiritsCard(1, CardType.Skill, CardRa
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3m);
 }
 
-/// <summary>Fool. Uncommon. 1: Deal 6 (9) damage, plus 1 for every drink anyone has taken this combat.</summary>
+/// <summary>Fool. Uncommon. 1: Deal 6 (9) damage, +1 for each drink anyone has taken this combat.</summary>
 public sealed class SpiritsDrunkenBallad() : SpiritsCard(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy), ISpiritsCharacterCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(6m, ValueProp.Move)];
+    // A CalculatedDamageVar rather than a bonus added in OnPlay, so the card's number (and the preview over an enemy)
+    // includes the drinks.
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new CalculationBaseVar(6m),
+        new ExtraDamageVar(1m),
+        new CalculatedDamageVar(ValueProp.Move).WithMultiplier(DrinksThisCombat),
+    ];
 
     /// <summary>Everyone's bar tabs this combat (Water doesn't count).</summary>
-    private int DrinksThisCombat => CombatState is null
+    private static decimal DrinksThisCombat(CardModel card, Creature? target) => card.CombatState is not { } combat
         ? 0
-        : CombatState.PlayerCreatures
+        : combat.PlayerCreatures
             .SelectMany(static c => c.Powers.OfType<SpiritsTabPower>())
             .Where(static p => p.Kind != PenaltyKind.Water)
             .Sum(static p => p.Amount);
@@ -351,12 +368,12 @@ public sealed class SpiritsDrunkenBallad() : SpiritsCard(1, CardType.Attack, Car
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue + DrinksThisCombat)
+        await DamageCmd.Attack(DynamicVars.CalculatedDamage)
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
             .WithHitFx("vfx/vfx_attack_blunt", null, "blunt_attack.mp3")
             .Execute(choiceContext);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3m);
+    protected override void OnUpgrade() => DynamicVars.CalculationBase.UpgradeValueBy(3m);
 }

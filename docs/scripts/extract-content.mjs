@@ -203,7 +203,11 @@ function cardFace(description, keywords) {
 
 // --- Numbers ------------------------------------------------------------------------------------------------------
 
-/** CanonicalVars: [new CardsVar(2), new PowerVar<StrengthPower>(2m), new DynamicVar(MaxHeal, 10m)] -> { Cards: 2, ... }. */
+/**
+ * CanonicalVars: [new CardsVar(2), new PowerVar<StrengthPower>(2m), new DynamicVar(MaxHeal, 10m)] -> { Cards: 2, ... }.
+ * A CalculatedDamageVar (base + extra x something in combat) is its CalculationBaseVar outside combat, so the base
+ * is read as CalculatedDamage.
+ */
 function vars(model, body) {
 	const block = body.match(/CanonicalVars\s*=>\s*\[([\s\S]*?)\];/);
 	if (!block) return {};
@@ -217,8 +221,11 @@ function vars(model, body) {
 			// DynamicVar(Name, 10m), or a typed var given a name: DamageVar(Name, 10m, ValueProp.Unblockable).
 			name = consts[parts[0]] ?? parts[0].replace(/"/g, '');
 			raw = parts[1];
-		} else if (type === 'String') {
+		} else if (type === 'String' || type === 'CalculatedDamage') {
 			continue;
+		} else if (type === 'CalculationBase') {
+			name = 'CalculatedDamage';
+			raw = parts[0];
 		} else {
 			name = generic ?? type; // PowerVar<StrengthPower> -> StrengthPower, CardsVar -> Cards
 			raw = parts[0];
@@ -230,8 +237,8 @@ function vars(model, body) {
 	return result;
 }
 
-// DynamicVars.Strength is the StrengthPower var; the rest are named after their type.
-const varAlias = { Strength: 'StrengthPower', Dexterity: 'DexterityPower' };
+// DynamicVars.Strength is the StrengthPower var; the rest are named after their type. CalculationBase: see vars().
+const varAlias = { Strength: 'StrengthPower', Dexterity: 'DexterityPower', CalculationBase: 'CalculatedDamage' };
 
 /** OnUpgrade: var increases and cost changes, or null if the model has no upgrade. */
 function upgrade(model, body) {
@@ -256,7 +263,7 @@ function upgrade(model, body) {
 }
 
 /** "StrengthPower" -> "Strength", "MaxHeal" -> "Max Heal": a var's name for people. */
-const varLabel = (name) => name.replace(/Power$/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+const varLabel = (name) => (name === 'CalculatedDamage' ? 'Damage' : name.replace(/Power$/, '').replace(/([a-z])([A-Z])/g, '$1 $2'));
 
 // --- Tooltips -----------------------------------------------------------------------------------------------------
 
