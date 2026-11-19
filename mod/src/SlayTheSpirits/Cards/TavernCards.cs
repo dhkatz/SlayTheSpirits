@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -347,9 +348,16 @@ public sealed class SpiritsBottomlessMimosas() : SpiritsCard(0, CardType.Attack,
 
     protected override bool HasEnergyCostX => true;
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(4m, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new CalculationBaseVar(4m),
+        new ExtraDamageVar(1m),
+        new CalculatedDamageVar(ValueProp.Move).WithMultiplier(TipsyBonus),
+    ];
 
     protected override IEnumerable<PenaltyKind> PenaltyKeywords => [PenaltyKind.Sip];
+
+    private static decimal TipsyBonus(CardModel card, Creature? target) => OwnerTipsyOf(card) / TipsyPerDamage;
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -360,7 +368,10 @@ public sealed class SpiritsBottomlessMimosas() : SpiritsCard(0, CardType.Attack,
         }
 
         await GiveSipsAsync(choiceContext, Owner, refills);
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue + (OwnerTipsy / TipsyPerDamage))
+
+        // Fixed once for every hit: Attack(CalculatedDamage) would recalculate per hit, so Tipsy gained mid-attack
+        // (a big hit back from Thorns is a penalty) would make later hits stronger.
+        await DamageCmd.Attack(DynamicVars.CalculatedDamage.Calculate(null))
             .WithHitCount(refills)
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(CombatState!)
@@ -368,7 +379,7 @@ public sealed class SpiritsBottomlessMimosas() : SpiritsCard(0, CardType.Attack,
             .Execute(choiceContext);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2m);
+    protected override void OnUpgrade() => DynamicVars.CalculationBase.UpgradeValueBy(2m);
 }
 
 /// <summary>

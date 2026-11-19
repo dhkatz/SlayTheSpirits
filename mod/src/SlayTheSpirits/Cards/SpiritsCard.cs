@@ -3,6 +3,8 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models;
 using SlayTheSpirits.Engine;
 using SlayTheSpirits.Party;
 using SlayTheSpirits.Penalties;
@@ -53,6 +55,12 @@ public abstract class SpiritsCard(int energyCost, CardType type, CardRarity rari
 
     /// <summary>The card owner's current Tipsy (the buff amount; 0 outside combat or on library cards).</summary>
     protected int OwnerTipsy => IsMutable && CombatState is not null ? Owner.Creature.GetPowerAmount<SpiritsTipsyPower>() : 0;
+
+    /// <summary>
+    /// <see cref="OwnerTipsy"/> of <paramref name="card"/>, for a <see cref="CalculatedVar"/> multiplier (which must
+    /// be static, so it can't read the property itself).
+    /// </summary>
+    protected static int OwnerTipsyOf(CardModel card) => card is SpiritsCard spirits ? spirits.OwnerTipsy : 0;
 
     private PenaltyCause CardCause => new(Id.ToString(), Title);
 
