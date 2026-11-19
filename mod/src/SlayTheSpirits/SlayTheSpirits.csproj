@@ -8,16 +8,16 @@
     <RootNamespace>SlayTheSpirits</RootNamespace>
     <AssemblyName>SlayTheSpirits</AssemblyName>
     <ModId>SlayTheSpirits</ModId>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <UsesSts2Game>true</UsesSts2Game>
     <IsSts2Mod>true</IsSts2Mod>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SlayTheSpirits.Domain\SlayTheSpirits.Domain.csproj" />
-    <ProjectReference Include="..\..\..\sdk\src\SpireKit\SpireKit.csproj" />
+    <ProjectReference Include="..\SlayTheSpirits.Domain\SlayTheSpirits.Domain.csproj"/>
+    <ProjectReference Include="..\..\..\sdk\src\SpireKit\SpireKit.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="mod.json" />
-    <None Include="Assets\**\*" />
+    <None Include="mod.json"/>
+    <None Include="Assets\**\*"/>
   </ItemGroup>
 </Project>
