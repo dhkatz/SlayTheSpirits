@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Models.CardPools;
+using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.PotionPools;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using SlayTheSpirits.Cards;
@@ -9,6 +10,7 @@ using SlayTheSpirits.Potions;
 using SlayTheSpirits.Presentation;
 using SlayTheSpirits.Relics;
 using SlayTheSpirits.Rules;
+using SpireKit.Compat;
 using SpireKit.Modding;
 
 namespace SlayTheSpirits;
@@ -114,6 +116,26 @@ public sealed class SlayTheSpiritsMod : SpireMod
             .AddEvent<SpiritsSevenGrand>()
             .SetCardFilter(Rules.IsCardAllowed)
             .SetPotionFilter(potion => DrinkGame.IsMultiplayerRun && Rules.IsPotionAllowed(potion));
+
+        // Tavern runes for ARAM: Mayhem, only if it's installed: its act-start rune choice offers them in multiplayer
+        // runs with the drinking game and Tavern runes on. Generic ones say "Tavern"; character ones keep the
+        // character's label, and are only offered to that character.
+        context.Hextech
+            .SetSectionTitle(SpiritsRune.SectionTitleKey)
+            .AddRune<SpiritsChaser>(HextechRarity.Silver, "SURVIVAL", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsCheersToThat>(HextechRarity.Silver, "MULTIPLAYER", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsSocialDrinker>(HextechRarity.Silver, "DRAW", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsTolerance>(HextechRarity.Gold, "STACKING", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsPartyAnimal>(HextechRarity.Gold, "RESOURCE", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsIronLiver>(HextechRarity.Gold, "SURVIVAL", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsKingsCup>(HextechRarity.Prismatic, "MULTIPLAYER", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsWaterfall>(HextechRarity.Prismatic, "MULTIPLAYER", poolLabel: SpiritsRune.PoolLabelKey, isAvailable: SpiritsRune.IsOffered)
+            .AddRune<SpiritsBarBrawler>(HextechRarity.Silver, "OUTPUT", HextechCharacter.Ironclad, isAvailable: SpiritsRune.IsOfferedTo<Ironclad>)
+            .AddRune<SpiritsKaraokeNight>(HextechRarity.Silver, "MULTIPLAYER", HextechCharacter.Fool, isAvailable: SpiritsRune.IsOfferedTo<Fool>)
+            .AddRune<SpiritsSpikedDrink>(HextechRarity.Gold, "POISON", HextechCharacter.Silent, isAvailable: SpiritsRune.IsOfferedTo<Silent>)
+            .AddRune<SpiritsEnergyDrink>(HextechRarity.Gold, "ORB", HextechCharacter.Defect, isAvailable: SpiritsRune.IsOfferedTo<Defect>)
+            .AddRune<SpiritsRoyalToast>(HextechRarity.Gold, "STARLIGHT", HextechCharacter.Regent, isAvailable: SpiritsRune.IsOfferedTo<Regent>)
+            .AddRune<SpiritsBottledSpirits>(HextechRarity.Gold, "SUMMON", HextechCharacter.Necrobinder, isAvailable: SpiritsRune.IsOfferedTo<Necrobinder>);
     }
 
     protected override void OnGameReady(ModContext context)

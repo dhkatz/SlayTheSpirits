@@ -18,11 +18,12 @@ export const taxonomy = () => json(join(docs, 'src/lib/taxonomy.json'));
 /** SpiritsHipFlask -> SPIRITS_HIP_FLASK (the game's id rule: class name, words split on capitals). */
 export const entryOf = (className) => className.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase();
 
-/** "Cheers!" -> "cheers", "Hair of the Dog" -> "hair-of-the-dog": a page's URL. */
+/** "Cheers!" -> "cheers", "Hair of the Dog" -> "hair-of-the-dog", "King's Cup" -> "kings-cup": a page's URL. */
 export const slugOf = (title) =>
 	title
 		.normalize('NFKD')
 		.toLowerCase()
+		.replace(/['’]/g, '')
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-|-$/g, '');
 

@@ -68,6 +68,8 @@ reference into the mod DLL with ILRepack. Consequences:
 | Relic and potion icons come from the game's atlases through non-virtual getters (`RelicModel.Icon`/`IconOutline`/`BigIcon`, `PotionModel.Image`/`Outline`/`LargeImage`); the scenes scale whatever texture they get | SDK patches serve one raw PNG per relic or potion, with a generated outline |
 | The relic grab bag only holds Common/Uncommon/Rare/Shop relics; nothing draws from `EventRelicPool` at random | Event-rarity mod relics drop only where mod code hands them out |
 | Every random potion source reads `PotionPoolModel.GetUnlockedPotions` (the shared pool doesn't override it) | One postfix implements per-run potion toggles (`SetPotionFilter`) |
+| ARAM: Mayhem (`HextechRunes`) has a public soft-dependency API (`HextechRunes.HextechRunesInterop`, API version 2) for player runes only; its enemy hexes are internal | `HextechRuneRegistry` adds runes by reflection; there are no enemy Tavern runes until ARAM offers a way |
+| ARAM's real assembly is `HextechRunes` (its 44 KB `HextechRunes.dll` is `HextechRunes.Loader`, which loads a per-version DLL) and its registration window stays open until the shared relic pool is first used | Runes register the moment that assembly loads, whichever mod initializes first |
 | A loaded multiplayer save reaches clients as a `SerializableRun` packet; mid-run rejoin isn't supported | `RunData` appends its bundle to that packet, so clients have it before the run starts |
 | Peers must match gameplay mods exactly (`id-version`) | Rule sync can assume both sides run the same code |
 | Settings tabs are hardcoded in `NSettingsTabManager._Ready` (`_tabs` dictionary); the same screen serves the main menu and the pause menu | A postfix adds mod tabs to `_tabs`, so tab switching, bumpers and fades work unchanged |
@@ -98,6 +100,8 @@ reference into the mod DLL with ILRepack. Consequences:
 | Rest sites | `ModContext.RestSite.Add(player => option)`, `SpireRestSiteOption` | options next to Rest and Smith, with the mod's own icon; text from the `rest_site_ui` table; an option that throws is used up, never left to pick again |
 | Giving things | `SpireCmd.AddCursesToDeck`, `AddToDeck`, `ObtainRelic`, `TryToProcurePotion` | take a canonical model or a player's copy and pass the game the one it wants |
 | Sharing | `ShareCode` | `PREFIX:base64url(deflate(json))` |
+| Optional mods | `OptionalAssembly.WhenLoaded(name, …)` (SpireKit.Core) | runs code when another mod's assembly is loaded, now or later, without referencing it; a failing callback is logged, never thrown into the other mod's loader |
+| ARAM: Mayhem runes | `ModContext.Hextech.AddRune<T>(tier, tag, character, options, poolLabel, isAvailable)`, `SetSectionTitle(key)`; `HextechInterop` (SpireKit.Core) | Hextech runes in ARAM's act-start choice when it's installed, through its public interop API by reflection (unit-tested against a fake); health feature `compat.hextechRunes` (only reported when ARAM is installed) |
 | Run data | `ModContext.RunData.Register(slot, capture, restore)` | per-run state that survives save/quit: captured when the game snapshots the run, stored beside its save (`rundata/profile<N>/current_run[_mp].json`, stamped with seed + start time), sent to clients inside the loaded save, restored before `RunStarted` |
 
 ## The Drinking Game
@@ -150,6 +154,17 @@ Juice (a random buff at combat start, plus one per 20 Tipsy, up to 4; rolled on 
 lockstep. **Tavern potions** (`SpiritsPotion`, shared pool, multiplayer runs, `ContentToggles.TavernPotions`): Light
 Beer (1 Sip; 2 Strength, 2 Dexterity), Tallboy (2 Sips; 15 Block, 3 Strength), Firewater (3 Sips; 25 to all
 enemies, 2 Energy), priced with `SpiritsPotion(sips)`. Using one doesn't also fire the "uses a potion" rule.
+
+**Tavern runes** (`SpiritsRune`, `Relics/SpiritsRunes.cs`): Hextech runes for ARAM: Mayhem, registered with
+`context.Hextech` and only used when it's installed. Starter rarity (ARAM requires it: nothing else draws Starter relics
+at random). Eight are for everyone, labelled "Tavern" on ARAM's choice (Silver: Chaser, Cheers to That, Social Drinker;
+Gold: Tolerance, Party Animal, Iron Liver; Prismatic: King's Cup, Waterfall), and one per character keeps the
+character's label (Bar Brawler, Spiked Drink, Energy Drink, Royal Toast, Bottled Spirits, Karaoke Night). ARAM asks
+`SpiritsRune.IsOffered` / `IsOfferedTo<TCharacter>` on every peer: multiplayer runs under host rules with the drinking
+game and `ContentToggles.HextechRunes` on (the Settings row only shows when ARAM is installed). A character pool only
+weights and labels a rune in ARAM, so the filter checks the character. They're Tavern relics underneath, so they hear
+every drink through `AfterDrinkAsync`; King's Cup hands out its Sips in `BeforeCombatStartLate`, after Tipsy is
+restored. ARAM has no API for enemy hexes yet, so there are no enemy runes.
 
 `PenaltyEngine.Handle`: rule lookup (`RuleResolver`) → targets (`TargetResolver`, seeded RNG) → policies
 (`RedirectPolicy` → `ImmunityPolicy` → `CapPolicy`) → Tipsy (`TipsyWeights`, configurable per kind) →
@@ -225,6 +240,13 @@ icon at `Assets/images/powers/<entry>.png` (`tools/icons.py` makes placeholders)
 `localization/eng/relics.json` (`.title`, `.description`, `.flavor`), art at `Assets/images/relics/<entry>.png`.
 A relic for normal drops instead: subclass `SpireRelic` with a Common/Uncommon/Rare rarity and add it to
 `SharedRelicPool`.
+
+**Add a Tavern rune** (ARAM: Mayhem). Subclass `SpiritsRune` (prefixed name), override game hooks or
+`AfterDrinkAsync`, and register it on `context.Hextech` in `SlayTheSpiritsMod.OnInitialize` with its tier, one of ARAM's
+tag keys (`SURVIVAL`, `OUTPUT`, `MULTIPLAYER`… see its `INTEGRATION.md`) and `isAvailable: SpiritsRune.IsOffered` (or a
+character pool plus `SpiritsRune.IsOfferedTo<TCharacter>`). Text in `localization/eng/relics.json`, art at
+`Assets/images/relics/<entry>.png` (`tools/icons.py` draws hexagonal placeholders). ARAM's labels read the
+`relic_collection` table (`localization/eng/relic_collection.json`).
 
 **Add a Tavern potion.** Subclass `SpiritsPotion(sips)`, implement `AfterDrinkAsync`, register it with
 `AddPotion<SharedPotionPool, …>()`; text in `localization/eng/potions.json`, art at `Assets/images/potions/<entry>.png`.

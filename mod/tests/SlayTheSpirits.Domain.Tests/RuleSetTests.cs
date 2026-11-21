@@ -52,6 +52,7 @@ public sealed class RuleSetTests
         Assert.Equal(defaults.Content.CharacterCards, result.Value.Content.CharacterCards);
         Assert.Equal(defaults.Content.TavernPotions, result.Value.Content.TavernPotions);
         Assert.True(result.Value.Content.TavernEvents);
+        Assert.True(result.Value.Content.HextechRunes);
         Assert.Equal(defaults.RestSiteTabs, result.Value.RestSiteTabs);
         Assert.NotNull(result.Value.Content.DisabledCards);
     }
