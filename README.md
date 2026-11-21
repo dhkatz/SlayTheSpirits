@@ -11,6 +11,7 @@ test-first modding SDK that lives in this repo (and is designed to be split out 
 - **Rest site tabs**: open a tab to pick 2 of 5 Tavern cards, or run one up to choose one of the **Tavern relics** (Hip Flask, Beer Belly, Tip Jar, Drinking Buddy, Pint Glass, Jungle Juice). You pay with a **Tavern curse** in your deck (Hiccups, Bar Fly, Hangover, Beer Goggles…) that makes you drink later. Settle up at the Tavern. Off, once per act, or at every rest site.
 - **Tavern events**: the *Speakeasy* (know the password, or bluff your way past the bouncer) and *Seven Grand* (a whiskey bar: the bartender's pick, a flight, or a game of pool where the loser drinks).
 - **Tavern potions** that you drink for real: *Light Beer* (1 Sip), *Tallboy* (2 Sips), *Firewater* (3 Sips).
+- **Tavern runes** for [ARAM: Mayhem](https://steamcommunity.com/sharedfiles/filedetails/?id=3747501308), if you have it: 14 drinking-game Hextech runes (8 for everyone, one per character) in its act-start rune choice. Optional: without ARAM nothing changes.
 - **Tipsy**: a run-long buff that some cards scale with. A per-combat **bar tab** under each player shows what they owe.
 - **Host-authoritative rules**: the host's profile is sent to everyone and locked for the run. Clients never use local settings.
 - Presets (Casual / Standard / Degenerate / Sober), per-act caps that downgrade penalties, custom labels, share codes.

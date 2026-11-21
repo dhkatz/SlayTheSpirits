@@ -1,4 +1,5 @@
 using HarmonyLib;
+using SpireKit.Compat;
 using SpireKit.Content;
 using SpireKit.Diagnostics;
 using SpireKit.Events;
@@ -31,6 +32,7 @@ public sealed class ModContext
         Toasts = new ToastOverlay(Log.WithScope("ui"));
         Loc = new LocInjector(Log.WithScope("loc"));
         RunData = new RunDataRegistry(Log.WithScope("rundata"));
+        Hextech = new HextechRuneRegistry(this);
         _storage = new Lazy<IFileStore>(() => ModStorage.Create(mod.Id, Log));
     }
 
@@ -73,6 +75,9 @@ public sealed class ModContext
 
     /// <summary>Tabs this mod adds to the game's Settings screen (main menu and pause menu).</summary>
     public SettingsTabRegistry SettingsTabs { get; } = new();
+
+    /// <summary>Runes this mod adds to ARAM: Mayhem, if it's installed (an optional integration).</summary>
+    public HextechRuneRegistry Hextech { get; }
 
     /// <summary>The mod's private folder in the game's user data directory. Resolved on first use.</summary>
     public IFileStore Storage => _storage.Value;

@@ -429,18 +429,16 @@ const cards = registered('Card')
 
 const relicText = loc('relics');
 const relicClasses = classes('Relics');
-const relics = registered('Relic').map(({ pool: poolClass, name }) => {
-	const found = relicClasses.get(name);
-	if (!found) return fail(name, 'registered but no class found in Relics/');
-	const poolInfo = pool(name, 'relicPools', poolClass) ?? {};
+/** A relic's wiki entry; runes pass their Hextech tier as the rarity and say which character they're for. */
+function relicEntry(name, poolInfo, rarity, found, foundText = poolInfo.found) {
 	const entry = entryOf(name);
 	const description = render(name, relicText[`${entry}.description`], vars(name, found.body));
 	return {
 		...common(name, found, relicText, entry),
 		pool: poolInfo.key,
 		poolName: poolInfo.name,
-		found: poolInfo.found,
-		rarity: known(name, enumProperty(relicClasses, found, 'Rarity', 'RelicRarity') ?? fail(name, "can't read its rarity"), taxonomy.rarities, 'rarity'),
+		found: foundText,
+		rarity: known(name, rarity ?? fail(name, "can't read its rarity"), taxonomy.rarities, 'rarity'),
 		description,
 		searchText: plain(description),
 		flavor: relicText[`${entry}.flavor`] ?? '',
@@ -450,7 +448,27 @@ const relics = registered('Relic').map(({ pool: poolClass, name }) => {
 		}),
 		image: image('relics', entry),
 	};
+}
+
+const relics = registered('Relic').map(({ pool: poolClass, name }) => {
+	const found = relicClasses.get(name);
+	if (!found) return fail(name, 'registered but no class found in Relics/');
+	return relicEntry(name, pool(name, 'relicPools', poolClass) ?? {}, enumProperty(relicClasses, found, 'Rarity', 'RelicRarity'), found);
 });
+
+// Tavern runes for ARAM: Mayhem: `context.Hextech.AddRune<SpiritsX>(HextechRarity.Gold, "TAG", HextechCharacter.Silent, ...)`.
+const runePool = pool('Tavern runes', 'relicPools', 'HextechRunes') ?? {};
+for (const [, name, tier, character] of read(join(mod, 'SlayTheSpiritsMod.cs')).matchAll(
+	/\.AddRune<(\w+)>\(HextechRarity\.(\w+)(?:, "\w+")?(?:, HextechCharacter\.(\w+))?/g
+)) {
+	const found = relicClasses.get(name);
+	if (!found) {
+		fail(name, 'registered as a rune but no class found in Relics/');
+		continue;
+	}
+	const only = character ? ` Only offered to the ${character}.` : '';
+	relics.push(relicEntry(name, runePool, tier, found, `${runePool.found}${only}`));
+}
 
 // --- Potions ------------------------------------------------------------------------------------------------------
 

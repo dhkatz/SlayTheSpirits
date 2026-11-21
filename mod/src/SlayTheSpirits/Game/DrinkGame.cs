@@ -57,10 +57,13 @@ internal sealed class DrinkGame
     /// <summary>Whether the current run has more than one player (Tavern content is multiplayer-only).</summary>
     public bool IsMultiplayerRun => _run?.Players.Count > 1;
 
-    /// <summary>Hands out an explicit penalty (cards, relics, potions) and updates Tipsy. Await it from <c>OnPlay</c>.</summary>
-    public Task PenalizeAsync(PenaltyRequest request, PlayerChoiceContext? choiceContext) =>
+    /// <summary>
+    /// Hands out an explicit penalty (cards, relics, potions) and updates Tipsy. Await it from <c>OnPlay</c>. Pass
+    /// <see cref="CombatPhase.Starting"/> from combat-start hooks so the announcement waits for the game's own banners.
+    /// </summary>
+    public Task PenalizeAsync(PenaltyRequest request, PlayerChoiceContext? choiceContext, CombatPhase phase = CombatPhase.Ongoing) =>
         EnsureEngine() is { } engine && _run is { } run
-            ? DeliverAsync(run, engine.Handle(request, Party(run)), choiceContext, CombatPhase.Ongoing)
+            ? DeliverAsync(run, engine.Handle(request, Party(run)), choiceContext, phase)
             : Task.CompletedTask;
 
     /// <summary>

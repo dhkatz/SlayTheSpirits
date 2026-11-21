@@ -137,6 +137,9 @@ public sealed record ContentToggles
     /// <summary>Tavern events (the Speakeasy, Seven Grand) among the "?" rooms.</summary>
     public bool TavernEvents { get; init; } = true;
 
+    /// <summary>Tavern runes among ARAM: Mayhem's Hextech runes (only matters when that mod is installed).</summary>
+    public bool HextechRunes { get; init; } = true;
+
     /// <summary>Individual cards switched off, by card id.</summary>
     public IReadOnlyList<string> DisabledCards { get; init; } = [];
 }

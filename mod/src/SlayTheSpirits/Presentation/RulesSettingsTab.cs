@@ -2,6 +2,7 @@ using Godot;
 using SlayTheSpirits.Penalties;
 using SlayTheSpirits.Rules;
 using SlayTheSpirits.Triggers;
+using SpireKit.Compat;
 using SpireKit.Modding;
 using SpireKit.Multiplayer;
 using SpireKit.UI;
@@ -89,6 +90,12 @@ internal sealed class RulesSettingsTab
         page.Toggle("Character Cards", shown.Content.CharacterCards, on => Edit(page, r => r with { Content = r.Content with { CharacterCards = on } }), editable);
         page.Toggle("Tavern Potions", shown.Content.TavernPotions, on => Edit(page, r => r with { Content = r.Content with { TavernPotions = on } }), editable);
         page.Toggle("Tavern Events", shown.Content.TavernEvents, on => Edit(page, r => r with { Content = r.Content with { TavernEvents = on } }), editable);
+        if (HextechRuneRegistry.IsInstalled)
+        {
+            // Only with ARAM: Mayhem installed; every player has the same mods, so the host's switch covers everyone.
+            page.Toggle("Tavern Runes (ARAM: Mayhem)", shown.Content.HextechRunes, on => Edit(page, r => r with { Content = r.Content with { HextechRunes = on } }), editable);
+        }
+
         var limits = Enum.GetValues<RestSiteTabLimit>();
         page.Choice("Rest Site Tabs", [.. limits.Select(LimitName)], Array.IndexOf(limits, shown.RestSiteTabs), i => Edit(page, r => r with { RestSiteTabs = limits[i] }), editable);
         var taverns = Enum.GetValues<TavernLimit>();

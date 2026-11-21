@@ -97,6 +97,11 @@
 			"key": "tavern",
 			"name": "Tavern",
 			"found": "Only from running up a tab at a [rest site](play/rest-sites/) or the Tavern's Top Shelf, which offer 3 you don't have yet."
+		},
+		"HextechRunes": {
+			"key": "runes",
+			"name": "Tavern rune",
+			"found": "Only with the [ARAM: Mayhem](https://steamcommunity.com/sharedfiles/filedetails/?id=3747501308) mod installed: its rune choice at the start of each act can offer it, in multiplayer runs while **Tavern Runes** is on."
 		}
 	},
 	"potionPools": {
@@ -114,6 +119,9 @@
 		"Rare",
 		"Shop",
 		"Event",
+		"Silver",
+		"Gold",
+		"Prismatic",
 		"Ancient",
 		"Curse",
 		"Status"
